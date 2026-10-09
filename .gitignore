@@ -1,21 +1,13 @@
-# Ignore Second Brain directories (this repo is for setup files only)
+# Ignore local Second Brain directories (this repo is for setup files only)
 /Archives
 /Areas
 /Projects
 /Resources
 /Inbox
 
-# Ignore local workspace layout and cache to prevent sync conflicts
-.obsidian/workspace.json
-.obsidian/workspace-mobile.json
-.obsidian/cache/
-
-# OPTIONAL: Ignore all community plugin settings if you store sensitive API tokens
-.obsidian/plugins/
-
----
-
-# SECTION - JUST IN CASE!!!!
+.git/
+.git/*
+*.git
 
 # ==========================================
 # 🛑 SECRETS & ENVIRONMENT VARIABLES (NEVER COMMIT)
@@ -29,91 +21,13 @@
 *.pem
 *.key
 
-# ==========================================
-# 💻 OPERATING SYSTEM FILES
-# ==========================================
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-._*
+# Ignore local workspace layout and cache to prevent sync conflicts
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache/*
 
-# Windows
-Thumbs.db
-Thumbs.db:encryptable
-ehthumbs.db
-ehthumbs_vista.db
-*.lnk
-*.cab
-
-# Linux
-*~
-.fuse_hidden*
-.directory
-.Trash-*
-
-# ==========================================
-# 📦 COMMON DEPENDENCIES & PACKAGE MANAGERS
-# ==========================================
-# JavaScript / Node.js
-node_modules/
-jspm_packages/
-.pnpm-store/
-.yarn/
-! .yarn/releases/
-! .yarn/plugins/
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-.venv/
-venv/
-ENV/
-env/
-
-# PHP / Ruby
-vendor/
-.bundle/
-
-# ==========================================
-# 🚀 BUILD OUTPUTS & COMPILED CODE
-# ==========================================
-dist/
-build/
-out/
-target/
-*.com
-*.class
-*.dll
-*.exe
-*.o
-*.so
-
-# ==========================================
-# 📝 LOGS & DATABASES
-# ==========================================
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-*.sql
-*.sqlite
-*.db
-
-# ==========================================
-# 🛠️ IDE & CODE EDITORS (OPTIONAL / PERSONAL)
-# ==========================================
-# Visual Studio Code
-.vscode/*
-!.vscode/extensions.json
-!.vscode/launch.json
-
-# IntelliJ / WebStorm / PyCharm
-.idea/
-*.iml
-*.iws
-
-# Sublime Text
-*.sublime-project
-*.sublime-workspace
+# OPTIONAL: Ignore all community plugin settings if you store sensitive API tokens
+.obsidian/plugins/copilot/*
+.obsidian/plugins/obsidian-copilot/*
+.obsidian/plugins/fit/*
+.obsidian/plugins/git/*

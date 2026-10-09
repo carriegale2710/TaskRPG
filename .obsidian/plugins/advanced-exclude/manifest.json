@@ -1,0 +1,11 @@
+{
+  "author": "mnaoumov",
+  "authorUrl": "https://github.com/mnaoumov/",
+  "description": "Enhances the Excluded files setting bringing gitignore syntax.",
+  "fundingUrl": "https://www.buymeacoffee.com/mnaoumov",
+  "id": "advanced-exclude",
+  "isDesktopOnly": false,
+  "name": "Advanced Exclude",
+  "version": "4.1.3",
+  "minAppVersion": "1.13.7"
+}

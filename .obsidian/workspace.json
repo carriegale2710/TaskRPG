@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "e57f41aa73d170a6",
+        "id": "eb22d9201a68695f",
         "type": "tabs",
         "children": [
           {
-            "id": "7b8af84b9215a3a7",
+            "id": "f261daa24c8ec3ba",
             "type": "leaf",
             "state": {
               "type": "empty",
@@ -181,6 +181,11 @@
       "bases:Create new base": false
     }
   },
-  "active": "7b8af84b9215a3a7",
-  "lastOpenFiles": []
+  "active": "f261daa24c8ec3ba",
+  "lastOpenFiles": [
+    "Projects/On Hold/project-skills/README.md",
+    "Projects/master-resume/skills/README.md",
+    "Projects/On Hold/thumbnail-saas/research/market/competitor-landscape-and-gaps.md",
+    "Resources/Programming/Untitled/gemini-agent-skills/README.md"
+  ]
 }
