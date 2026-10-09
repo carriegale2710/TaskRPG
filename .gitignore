@@ -1,4 +1,13 @@
+# Ignore Second Brain directories (this repo is for setup files only)
 /Archives
 /Areas
 /Projects
 /Resources
+
+# Ignore local workspace layout and cache to prevent sync conflicts
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache/
+
+# OPTIONAL: Ignore all community plugin settings if you store sensitive API tokens
+# .obsidian/plugins/
