@@ -1,9 +1,9 @@
 # Ignore local Second Brain directories (this repo is for setup files only)
-/Archives
-/Areas
-/Projects
-/Resources
-/Inbox
+/Archives/*
+/Areas/*
+/Projects/*
+/Resources/*
+/Inbox/*
 
 .git/
 .git/*
