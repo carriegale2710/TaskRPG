@@ -4,17 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "eb22d9201a68695f",
+        "id": "0b2f270c03c7a322",
         "type": "tabs",
         "children": [
           {
-            "id": "f261daa24c8ec3ba",
+            "id": "39e781299576a61b",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "SETUP_GUIDE.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "New tab"
+              "title": "SETUP_GUIDE"
             }
           }
         ]
@@ -79,7 +83,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 209.5
   },
   "right": {
     "id": "d49c2867cc4d787d",
@@ -162,6 +166,16 @@
               "icon": "lucide-list",
               "title": "Outline"
             }
+          },
+          {
+            "id": "189e480afb1c4d7e",
+            "type": "leaf",
+            "state": {
+              "type": "DICE_ROLLER_VIEW",
+              "state": {},
+              "icon": "dices",
+              "title": "Dice Tray"
+            }
           }
         ]
       }
@@ -178,14 +192,59 @@
       "daily-notes:Open today's daily note": false,
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
-      "bases:Create new base": false
+      "bases:Create new base": false,
+      "fit:Sync to GitHub": false,
+      "templater-obsidian:Templater": false
     }
   },
-  "active": "f261daa24c8ec3ba",
+  "active": "27ac3a931d4e283d",
   "lastOpenFiles": [
-    "Projects/On Hold/project-skills/README.md",
-    "Projects/master-resume/skills/README.md",
-    "Projects/On Hold/thumbnail-saas/research/market/competitor-landscape-and-gaps.md",
-    "Resources/Programming/Untitled/gemini-agent-skills/README.md"
+    "Projects/portfolio-projects/TriviaGame/trivia/README.md",
+    "Projects/portfolio-projects/TriviaGame/trivia/CHANGELOG.md",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/employee/CHANGELOG.md",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/project-brief.md",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/prd.md",
+    "Projects/microsaas-vault/4.projects/antiscroll-app/Project Kanban.md",
+    "Projects/microsaas-vault/4.projects/antiscroll-app/Research Board.canvas",
+    "Projects/microsaas-vault/4.projects/antiscroll-app/Project Roadmap.md",
+    "Projects/microsaas-vault/4.projects/antiscroll-app/Project Overview.md",
+    "SETUP_GUIDE.md",
+    "Campaign/00 Hero.md",
+    "Campaign/01 Campaign Rules.md",
+    "Campaign/02 Story So Far.md",
+    "Campaign/04 Rewards & Loot.md",
+    "Campaign/03 Quest Board.md",
+    "README.md",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/employee/src/main/java/io/carrie/employee/contract/dtos/ResponseContractDTO.java",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/employee/src/main/java/io/carrie/employee/contract/dtos/CreateContractDTO.java",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/employee/src/main/java/io/carrie/employee/contract/enums/Department.java",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/employee/src/main/java/io/carrie/employee/contract/enums/ContractType.java",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/employee/src/main/java/io/carrie/employee/employee/enums/EmployeeStatus.java",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/employee/src/main/java/io/carrie/employee/employee/dtos/CreateEmployeeDTO.java",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/employee/src/main/java/io/carrie/employee/employee/dtos/UpdateEmployeeDTO.java",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/employee/src/main/java/io/carrie/employee/common/exceptions/EmailAlreadyExistsException.java",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/employee/src/main/java/io/carrie/employee/common/exceptions/NotFoundException.java",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/employee/src/test/java/io/carrie/employee/employee/EmployeeServiceTest.java",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/front-end/design-assets/mockups/version2.0/image.png",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/front-end/design-assets/mockups/version2.0/image-3.png",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/front-end/design-assets/mockups/version2.0/image-2.png",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/front-end/design-assets/mockups/version2.0/image-1.png",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/front-end/design-assets/mockups/version1.0/image-8.png",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/front-end/design-assets/mockups/version1.0/image.png",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/front-end/design-assets/mockups/version1.0/image-7.png",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/front-end/design-assets/mockups/version1.0/image-6.png",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/front-end/design-assets/mockups/version1.0/image-5.png",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/front-end/design-assets/mockups/version1.0/image-4.png",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/employee/assets/diagrams/sequence/sequence-diagram.md",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/employee/assets/diagrams/flows/SearchBar.md",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/employee/assets/diagrams/erd/erd.md",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/front-end/design-assets/flows/employee-form-flow.md",
+    "Projects/portfolio-projects/EmployeeCreator/employee-creator/front-end/design-assets/flows/contract-form-flow.md",
+    "Projects/skills-library/skills/experts/product-manager/product-spec/references/spec-writing-guide.md",
+    "Projects/skills-library/skills/experts/marketing-sales/seo/references/technical-checklist.md",
+    "Projects/skills-library/skills/experts/marketing-sales/seo/references/link-building.md",
+    "Projects/skills-library/skills/experts/marketing-sales/seo/references/keyword-content-strategy.md",
+    "Projects/skills-library/skills/experts/marketing-sales/seo/references/common-mistakes.md",
+    "Projects/skills-library/skills/experts/marketing-sales/seo/references/benchmarks-timelines.md"
   ]
 }

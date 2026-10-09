@@ -1,3 +1,9 @@
 [
-  "advanced-exclude"
+  "advanced-exclude",
+  "fit",
+  "templater-obsidian",
+  "dataview",
+  "quickadd",
+  "obsidian-dice-roller",
+  "periodic-notes"
 ]
