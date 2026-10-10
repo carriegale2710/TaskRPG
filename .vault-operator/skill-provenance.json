@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "sandbox-environment": {
+      "source": "builtin",
+      "hash": "6l2.1w02ins"
+    },
+    "vault-health-batch": {
+      "source": "builtin",
+      "hash": "3da.1vn2bw0"
+    },
+    "vault-operator-guide": {
+      "source": "builtin",
+      "hash": "54q.zhx97z"
+    }
+  }
+}

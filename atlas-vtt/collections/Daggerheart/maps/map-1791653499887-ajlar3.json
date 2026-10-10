@@ -1,0 +1,21 @@
+{
+  "id": "map-1791653499887-ajlar3",
+  "name": "map",
+  "mapFilePath": "atlas-vtt/assets/map_1791653499729_yg6mlb.jpg",
+  "tags": [],
+  "collection": "Daggerheart",
+  "createdAt": 1791653499887,
+  "modifiedAt": 1791653499887,
+  "atlasRecord": {
+    "format": 1,
+    "type": "map",
+    "name": "map",
+    "mapFilePath": "atlas-vtt/assets/map_1791653499729_yg6mlb.jpg",
+    "collection": "Daggerheart",
+    "tags": [],
+    "thumbnailPath": "atlas-vtt/assets/thumbnails/map_1791653499729_yg6mlb-573893b8.webp",
+    "id": "map-1791653499887-ajlar3",
+    "createdAt": 1791653499887,
+    "modifiedAt": 1791653499887
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "format": 1,
+  "uid": "9a039a58-2bcc-4fff-9c32-a5b1384da059",
+  "version": 1,
+  "tags": {},
+  "settings": {
+    "conditions": [
+      {
+        "id": "daggerheart-hidden",
+        "name": "Hidden",
+        "color": "#475569",
+        "icon": "hidden"
+      },
+      {
+        "id": "daggerheart-restrained",
+        "name": "Restrained",
+        "color": "#0d9488",
+        "icon": "imprisoned"
+      },
+      {
+        "id": "daggerheart-vulnerable",
+        "name": "Vulnerable",
+        "color": "#dc2626",
+        "icon": "cracked-shield"
+      }
+    ],
+    "gridDefaults": {
+      "unitType": "feet",
+      "unitDistance": 5,
+      "measurementMode": "abstract",
+      "diagonalRule": "equidistant",
+      "abstractRangeBands": [
+        {
+          "name": "Melee",
+          "maxSquares": 1
+        },
+        {
+          "name": "Very Close",
+          "maxSquares": 3
+        },
+        {
+          "name": "Close",
+          "maxSquares": 6
+        },
+        {
+          "name": "Far",
+          "maxSquares": 12
+        },
+        {
+          "name": "Very Far",
+          "maxSquares": 13
+        }
+      ]
+    },
+    "defaultWidgets": {
+      "hpBar": true,
+      "stressBar": true
+    },
+    "dice": {
+      "defaultRoll": "1d20",
+      "crit": "natural"
+    },
+    "resources": [
+      {
+        "key": "hp",
+        "name": "HP",
+        "field": "hp",
+        "direction": "drains",
+        "color": "#22c55e",
+        "defeatedWhenSpent": true,
+        "visibleToPlayers": false
+      },
+      {
+        "key": "stress",
+        "name": "Stress",
+        "field": "stress",
+        "direction": "fills",
+        "color": "#a855f7",
+        "visibleToPlayers": false
+      }
+    ],
+    "systemPresetId": "builtin:daggerheart"
+  },
+  "createdAt": 1791653355288,
+  "modifiedAt": 1791653355570,
+  "publisherId": "5d8cf536-f847-4f7a-9f77-b3ade63b7d21"
+}

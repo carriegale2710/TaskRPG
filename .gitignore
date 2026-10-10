@@ -27,7 +27,10 @@
 .obsidian/cache/*
 
 # OPTIONAL: Ignore all community plugin settings if you store sensitive API tokens
+.obsidian/*
 .obsidian/plugins/copilot/*
 .obsidian/plugins/obsidian-copilot/*
 .obsidian/plugins/fit/*
 .obsidian/plugins/git/*
+.obsidian/plugins/vault-operator/
+.obsidian/plugins/vault-operator/*
