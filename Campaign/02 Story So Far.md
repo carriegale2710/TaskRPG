@@ -1,5 +1,3 @@
-# Story So Far
-
 ## Current arc
 Recover the Case Study Codex before Veyra unlocks the Deep Vault.
 

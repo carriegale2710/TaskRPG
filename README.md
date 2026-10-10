@@ -1,122 +1,80 @@
-# SecondBrainRPG 
+# TaskRPG
 
->Your second brain, enchanted.
+> Your second brain, enchanted.
 
-Turn your daily tasks, habits, and projects into a living D&D-style campaign—where your real energy decides the quest, finishing work advances the story, and every completed task earns XP, loot, and a new chapter in your personal saga.
+Turn your daily tasks, habits, and projects into a living D&D-style campaign—where your real productivity decides the quest, finishing work advances the story, and every completed task earns XP, loot, and a new chapter in your personal saga.
 
-SecondBrainRPG is a journal-driven productivity layer for your existing second brain (Obsidian, Notion, Logseq—wherever your notes live). Each morning, you log your MP (mana/energy), capacity, and plan. Your AI Game Master then frames a quest that matches your actual capacity—not some idealized version of it.
-
-Low on mana? The story shifts to a rest-and-scout mission: smaller scope, gentler rewards, and a narrative that treats recovery as progress, not failure. High on mana? The GM opens a bolder chapter—bigger risks, richer loot, and a reason to push further.
-
-Finish a real task, and the story continues: a new scene, a plot twist, a relic uncovered, a rival outmaneuvered. Your journal becomes the campaign log; your master summary becomes the living map of where your story is heading.
-
-No guilt. No grind. Just a campaign that meets you where you are.
+TaskRPG is a journal-driven productivity layer for your existing second brain (Obsidian, Notion, Logseq—wherever your notes live). Finish a real task, and the story continues: a new scene, a plot twist, a relic uncovered, a rival outmaneuvered. Your journal becomes the campaign log; your master summary becomes the living map of where your story is heading in TaskRPG.
 
 ---
+
 ## Quick Start
 
 1. Copy folder structure into a new Obsidian vault
-2. Install plugins: Templater, Dataview, QuickAdd, Dice Roller, Periodic Notes, Calendar, Text Generator, Life RPG, Atlas VTT, Kanban
+2. Install plugins
 3. Configure an AI provider in Text Generator or use gm_bridge.py with Anthropic API
 4. Run `python gm_bridge.py morning` each morning, `evening` after tasks
-
----
-## Setup Package
-
-Complete setup files for a story-driven productivity system inside Obsidian.
-
-### Repo Structure
-
-```txt
-SecondBrainRPG/
-├── README.md
-├── SETUP_GUIDE.md
-├── ONBOARDING_GUIDE.md
-|
-|── AGENTS.md          ← root GM agent rules
-├── gm_bridge.py       ← Python bridge (vault <-> AI)
-|── atlas-vtt/         ← Atlas-generated maps/tokens (plugin)
-|
-├── Campaign/          ← progression/state
-├── World/             ← canonical lore/content
-|	├── NPCs/
-|	├── Quests/
-|	└── Regions/
-|	
-├── Journal/           ← daily notes (bujo + diary + story)
-├── Templates/         ← vault-wide templates
-|
-└── SecondBrain/       ← import yours here
-
-```
-
-`Templates/ ── creates ──> Journal/ ── links to ──> Campaign/ ── references ──> World/`
 
 ---
 
 ## Who It’s For
 
-SecondBrainRPG is built for people who want their productivity system to feel like an adventure—not another chore.
+TaskRPG is built for people who want their productivity system to feel like an adventure—not another chore.
 
 ## You’ll love it if you…
 
 - **Have ADHD or fluctuating energy** and need a system that adapts to your real capacity instead of punishing you for “off” days.
-    
 - **Already use a second brain** (Obsidian, Notion, Logseq) and want to layer a narrative reward on top without abandoning your existing notes.aiproductweekly.substack+1
-    
 - **Get bored easily** with traditional productivity apps and need novelty, surprise, and story progression to stay engaged.
-    
 - **Work solo** on long-running projects (coding, game dev, research, creative work) and miss the sense of momentum that comes from a shared campaign.
-    
 - **Love D&D, RPGs, or lore-heavy stories** and want your real life to feel like part of an epic.mainquest
-    
 - **Struggle with perfectionism or guilt** over unfinished tasks and need a system that treats recovery as progress, not failure.
 
 ## Features & Benefits
 
-SecondBrainRPG isn’t just another habit tracker—it’s a narrative reward layer that adapts to your real capacity, keeps your story coherent, and stays low-maintenance.
+TaskRPG isn’t just another habit tracker—it’s a narrative reward layer that adapts to your real capacity, keeps your story coherent, and stays low-maintenance.
 
 ### Core Features
 
-|Feature|What it does|
-|---|---|
-|**MP-adaptive quests**|Your logged energy (MP 1–10) determines quest type, scope, and rewards—low MP means recovery missions, high MP unlocks bolder chapters.|
-|**AI Game Master**|Generates lore-heavy quest framings (morning) and completion beats (evening) that reference your actual vault context.|
-|**Journal-as-campaign-log**|Your daily notes serve triple duty: bujo, diary, and story log—no separate “campaign diary” to maintain.|
-|**Master Story So Far**|A living plot summary with a timeline linking back to each day’s original entry, so you (and the AI) can always trace context.|
-|**Skill progression**|Real skills (TypeScript, Product Design, AI Agents, etc.) level up as you complete work—your character grows with you.|
-|**Atlas VTT integration**|Pin quests to map locations, reveal fog, move tokens, and unlock regions as visual payoff for real progress.|
-|**Habit & deadline awareness**|The GM factors your habit streaks and upcoming deadlines into quest framing, adding urgency or recovery framing as needed.|
-|**Weekly review**|A built-in ritual that rolls up the week’s quests, XP, and story beats, then prunes stale quests without guilt.|
+| Feature                        | What it does                                                                                                                            |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **MP-adaptive quests**         | Your logged energy (MP 1–10) determines quest type, scope, and rewards—low MP means recovery missions, high MP unlocks bolder chapters. |
+| **AI Game Master**             | Generates lore-heavy quest framings (morning) and completion beats (evening) that reference your actual vault context.                  |
+| **Journal-as-campaign-log**    | Your daily notes serve triple duty: bujo, diary, and story log—no separate “campaign diary” to maintain.                                |
+| **Master Story So Far**        | A living plot summary with a timeline linking back to each day’s original entry, so you (and the AI) can always trace context.          |
+| **Skill progression**          | Real skills (TypeScript, Product Design, AI Agents, etc.) level up as you complete work—your character grows with you.                  |
+| **Atlas VTT integration**      | Pin quests to map locations, reveal fog, move tokens, and unlock regions as visual payoff for real progress.                            |
+| **Habit & deadline awareness** | The GM factors your habit streaks and upcoming deadlines into quest framing, adding urgency or recovery framing as needed.              |
+| **Weekly review**              | A built-in ritual that rolls up the week’s quests, XP, and story beats, then prunes stale quests without guilt.                         |
 
 ### Benefits
 
-|Benefit|Why it matters|
-|---|---|
-|**No guilt on low-energy days**|Low MP triggers recovery-framed quests with real (small) rewards—never failure or shame.|
-|**Prevents overcommitment**|You set capacity _before_ the quest is framed, so the story respects your actual limits.|
-|**Story continuity without bloat**|Layered memory (summary + structured state + recent beats) keeps the plot coherent without dumping full history into every prompt.|
-|**Your journal stays useful**|One note per day handles tasks, mood, and story—no duplicate systems to abandon.|
-|**Motivation that scales both ways**|Good days unlock bolder quests; bad days still feel productive—never stagnant or patronizing. [[strayspark](https://www.strayspark.studio/blog/difficulty-systems-players-enjoy)][[playquestmaster](https://www.playquestmaster.com/smarter-difficulty-scaling-modern-rpgs/)]|
-|**Full vault control**|Everything lives in your own Obsidian vault (or Notion/Logseq); no vendor lock-in, no cloud dependency required. [[forum.obsidian](https://forum.obsidian.md/t/nested-vaults-usage-and-risks/6360)][[github](https://github.com/rbcodelabs/obsidian-vault-bridges)]|
-|**Built for ADHD brains**|Novelty, surprise, and recovery-as-progress mechanics combat boredom and perfectionism.|
+| Benefit                              | Why it matters                                                                                                                                                                                                                                                                |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **No guilt on low-energy days**      | Low MP triggers recovery-framed quests with real (small) rewards—never failure or shame.                                                                                                                                                                                      |
+| **Prevents overcommitment**          | You set capacity _before_ the quest is framed, so the story respects your actual limits.                                                                                                                                                                                      |
+| **Story continuity without bloat**   | Layered memory (summary + structured state + recent beats) keeps the plot coherent without dumping full history into every prompt.                                                                                                                                            |
+| **Your journal stays useful**        | One note per day handles tasks, mood, and story—no duplicate systems to abandon.                                                                                                                                                                                              |
+| **Motivation that scales both ways** | Good days unlock bolder quests; bad days still feel productive—never stagnant or patronizing. [[strayspark](https://www.strayspark.studio/blog/difficulty-systems-players-enjoy)][[playquestmaster](https://www.playquestmaster.com/smarter-difficulty-scaling-modern-rpgs/)] |
+| **Full vault control**               | Everything lives in your own Obsidian vault (or Notion/Logseq); no vendor lock-in, no cloud dependency required. [[forum.obsidian](https://forum.obsidian.md/t/nested-vaults-usage-and-risks/6360)][[github](https://github.com/rbcodelabs/obsidian-vault-bridges)]           |
+| **Built for ADHD brains**            | Novelty, surprise, and recovery-as-progress mechanics combat boredom and perfectionism.                                                                                                                                                                                       |
 
 ### What makes it different
 
-Most gamified productivity apps treat your energy as a **decoration** (HP bars that go down when you miss a day). SecondBrainRPG treats it as a **hard input**: your logged MP literally changes the quest you receive, the scope you’re given, and the reward you earn.
+Most gamified productivity apps treat your energy as a **decoration** (HP bars that go down when you miss a day). TaskRPG treats it as a **hard input**: your logged MP literally changes the quest you receive, the scope you’re given, and the reward you earn.
 
-|Typical gamified app|SecondBrainRPG|
-|---|---|
-|HP drops on missed days → guilt|Low MP → recovery quest, smaller rewards, no shame|
-|Fixed daily goals regardless of energy|Capacity set by you, quest adapts to it|
-|Story is separate from real work|Story is a direct mirror of your real capacity|
-|Requires a new app/habit to maintain|Layers onto your existing journal/notes|
+| Typical gamified app                   | TaskRPG                                            |
+| -------------------------------------- | -------------------------------------------------- |
+| HP drops on missed days → guilt        | Low MP → recovery quest, smaller rewards, no shame |
+| Fixed daily goals regardless of energy | Capacity set by you, quest adapts to it            |
+| Story is separate from real work       | Story is a direct mirror of your real capacity     |
+| Requires a new app/habit to maintain   | Layers onto your existing journal/notes            |
 
 This is the core insight: **the story is a mirror of your real capacity, not a separate fiction ignoring it.**
 
 ## How It Works
 
-SecondBrainRPG turns your existing second brain into a living campaign by following one simple daily loop:
+TaskRPG turns your existing second brain into a living campaign by following one simple daily loop:
 
 ```
 ┌─────────────────────────────────────────────┐
@@ -177,7 +135,7 @@ Low MP is never framed as failure—it’s a tactical retreat, a scouting missio
 
 ### Step 3 — Do the real work
 
-This is where the actual productivity happens: complete tickets in your project repos, check off habits, run focus sessions. SecondBrainRPG doesn’t replace your existing workflow—it layers a narrative reward on top of it.
+This is where the actual productivity happens: complete tickets in your project repos, check off habits, run focus sessions. TaskRPG doesn’t replace your existing workflow—it layers a narrative reward on top of it.
 
 ### Step 4 — The story continues
 
@@ -203,31 +161,9 @@ Once a week, run a **summary refresh**: your GM rewrites the Story So Far (200�
 
 ## FAQ
 
-### What’s a “Second Brain”?
-
-A **second brain** is a personal, external system for capturing, organising, and retrieving information your own memory can’t reliably hold—notes, ideas, tasks, references, and project context. Instead of relying on willpower to remember everything, you build a searchable “external memory” you can trust.
-
-In practice, it usually looks like:
-
-- A notes app (Obsidian, Notion, Logseq) where you capture thoughts, tasks, and references
-- A folder/tag/link structure that makes information findable later
-- A review habit that turns raw captures into useful, connected knowledge
-
-The term was popularised by Tiago Forte’s _Building a Second Brain_ (BASB) methodology, which frames it as a four-step loop: **Capture → Organise → Distil → Express**.
-
-**Why it matters for SecondBrainRPG:** the RPG layer needs something to attach to—your tasks, projects, habits, and notes. If you don’t have a second brain yet, the system still works, but you’ll get more out of it once your notes have a basic structure.
-
-**Learn more:**
-
-- [Building a Second Brain — official site](https://www.buildingasecondbrain.com/) — Tiago Forte’s core methodology and book.
-- [Obsidian — official site](https://obsidian.md/) — the local-first, Markdown-based app this system is designed around.
-- [Notion — official site](https://www.notion.so/) — popular all-in-one workspace alternative.
-- [Logseq — official site](https://logseq.com/) — open-source, outliner-style alternative.
-- [Zettelkasten method — beginner’s guide](https://zenkit.com/en/blog/a-beginners-guide-to-the-zettelkasten-method/) — a linked-note approach that pairs well with SecondBrainRPG’s campaign/journal structure.
-
 ### Do I need to use Obsidian?
 
-No—but it’s the best-supported setup. SecondBrainRPG is designed around Markdown files, YAML frontmatter, and wikilinks, which Obsidian handles natively. You can adapt the system for Notion, Logseq, or any folder-based notes app, but you’ll lose some of the plug-and-play integrations (Atlas VTT, Life RPG, Text Generator).
+No—but it’s the best-supported setup. TaskRPG is designed around Markdown files, YAML frontmatter, and wikilinks, which Obsidian handles natively. You can adapt the system for Notion, Logseq, or any folder-based notes app, but you’ll lose some of the plug-and-play integrations (Atlas VTT, Life RPG, Text Generator).
 
 ### Do I need to pay for an AI provider?
 
@@ -239,15 +175,15 @@ Yes—everything lives in your own vault/folder on your device. If you use a clo
 
 ### How is this different from Habitica or MainQuest?
 
-||Habitica / MainQuest|SecondBrainRPG|
-|---|---|---|
-|Quest scope|Fixed daily habits/tasks|Adapts to your logged MP/capacity|
-|Story|Light RPG framing|Deep, evolving lore with continuity|
-|Journal integration|Separate app|Your existing daily notes ARE the log|
-|Energy handling|HP drops on missed days|Low MP triggers recovery quests, no shame|
-|Project doc linking|Limited|Direct wikilinks to your project repos/docs|
+| Habitica / MainQuest | TaskRPG                  |
+| -------------------- | ------------------------ | ------------------------------------------- |
+| Quest scope          | Fixed daily habits/tasks | Adapts to your logged MP/capacity           |
+| Story                | Light RPG framing        | Deep, evolving lore with continuity         |
+| Journal integration  | Separate app             | Your existing daily notes ARE the log       |
+| Energy handling      | HP drops on missed days  | Low MP triggers recovery quests, no shame   |
+| Project doc linking  | Limited                  | Direct wikilinks to your project repos/docs |
 
-SecondBrainRPG is built for people who want the **story to mirror their real capacity**, not just decorate a checklist.
+TaskRPG is built for people who want the **story to mirror their real capacity**, not just decorate a checklist.
 
 ### Can I use this for team projects?
 

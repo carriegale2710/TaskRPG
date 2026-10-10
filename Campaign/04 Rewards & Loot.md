@@ -1,4 +1,3 @@
-# Rewards & Loot
 
 ## Reward Shop
 | Reward | Cost |

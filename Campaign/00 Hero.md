@@ -7,8 +7,8 @@ mp: 6
 mp_max: 10
 gold: 45
 campaign: Archivist's Coast
+cover: "[[hero-witch.webp]]"
 ---
-
 # Wandering Artificer
 
 ## Stats

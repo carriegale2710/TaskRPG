@@ -4,69 +4,24 @@
     "type": "split",
     "children": [
       {
-        "id": "4509724f8bf84da7",
+        "id": "c0b65b9d03e78b7c",
         "type": "tabs",
         "children": [
           {
-            "id": "e7a7b303c61786dc",
+            "id": "98db9f758334ef64",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "2026-10-11.md",
+                "file": "Campaign/00 Hero.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "2026-10-11"
-            }
-          },
-          {
-            "id": "064c186b24d4658d",
-            "type": "leaf",
-            "state": {
-              "type": "atlas-vtt-dashboard",
-              "state": {},
-              "icon": "home",
-              "title": "Atlas dashboard"
-            }
-          },
-          {
-            "id": "15a162737f76b4b7",
-            "type": "leaf",
-            "state": {
-              "type": "planner-release-notes",
-              "state": {},
-              "icon": "lucide-file",
-              "title": "Day Planner Release 0.35.1"
-            }
-          },
-          {
-            "id": "d27c5c10eff22e28",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "World/Characters/Veyra.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "Veyra"
-            }
-          },
-          {
-            "id": "6ddee11c6830246b",
-            "type": "leaf",
-            "state": {
-              "type": "planner-weekly",
-              "state": {},
-              "icon": "table-2",
-              "title": "Oct, 11–Oct, 13"
+              "title": "00 Hero"
             }
           }
-        ],
-        "currentTab": 4
+        ]
       }
     ],
     "direction": "vertical"
@@ -134,8 +89,7 @@
               "title": "Recent files"
             }
           }
-        ],
-        "currentTab": 3
+        ]
       }
     ],
     "direction": "horizontal",
@@ -215,6 +169,7 @@
             "state": {
               "type": "outline",
               "state": {
+                "file": "Campaign/00 Hero.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -224,179 +179,22 @@
             }
           },
           {
-            "id": "29bdedf8d1b60357",
+            "id": "a96bfcef4d707324",
             "type": "leaf",
             "state": {
-              "type": "calendar",
+              "type": "DICE_ROLLER_VIEW",
               "state": {},
-              "icon": "calendar-with-checkmark",
-              "title": "Calendar"
-            }
-          },
-          {
-            "id": "86a06d2413e80d6e",
-            "type": "leaf",
-            "state": {
-              "type": "obsidian-agent-sidebar",
-              "state": {},
-              "icon": "square-slash",
-              "title": "Vault Operator"
-            }
-          },
-          {
-            "id": "d6b177dfe125282f",
-            "type": "leaf",
-            "state": {
-              "type": "reminder-list",
-              "state": {},
-              "icon": "clock",
-              "title": "Reminders"
-            }
-          },
-          {
-            "id": "7f208ad008dde2ea",
-            "type": "leaf",
-            "state": {
-              "type": "Strange New Worlds",
-              "state": {},
-              "icon": "file-digit",
-              "title": "Strange New Worlds"
-            }
-          },
-          {
-            "id": "e1d34947ba8d5dfa",
-            "type": "leaf",
-            "state": {
-              "type": "planner-timeline",
-              "state": {},
-              "icon": "calendar-with-checkmark",
-              "title": "Timeline"
-            }
-          },
-          {
-            "id": "5d251dccc9277206",
-            "type": "leaf",
-            "state": {
-              "type": "planner-time-tracker",
-              "state": {},
-              "icon": "timer",
-              "title": "Time Tracker"
-            }
-          },
-          {
-            "id": "a4c890702aa48f0d",
-            "type": "leaf",
-            "state": {
-              "type": "ttrpg-campaign-sidebar",
-              "state": {},
-              "icon": "sword",
-              "title": "TTRPG"
-            }
-          },
-          {
-            "id": "92942accfd3fe3a4",
-            "type": "leaf",
-            "state": {
-              "type": "storyteller-dashboard-view",
-              "state": {},
-              "icon": "book-open",
-              "title": "Storyteller suite"
-            }
-          },
-          {
-            "id": "b8d78d148b834a33",
-            "type": "leaf",
-            "state": {
-              "type": "fcg-generator-panel",
-              "state": {},
-              "icon": "scroll-text",
-              "title": "Generator"
-            }
-          },
-          {
-            "id": "b1eb5d0b8bc7a8fe",
-            "type": "leaf",
-            "state": {
-              "type": "town-forge-preview",
-              "state": {},
-              "icon": "map",
-              "title": "Town Forge"
-            }
-          },
-          {
-            "id": "3b783803d4eb3b42",
-            "type": "leaf",
-            "state": {
-              "type": "world-builder-sidebar",
-              "state": {},
-              "icon": "globe",
-              "title": "World Builder"
-            }
-          },
-          {
-            "id": "435fe3a091ad12fd",
-            "type": "leaf",
-            "state": {
-              "type": "ttrpg-soundboard-view",
-              "state": {
-                "activeSlot": "A"
-              },
-              "icon": "music",
-              "title": "Soundboard"
-            }
-          },
-          {
-            "id": "291071ff8b4c9276",
-            "type": "leaf",
-            "state": {
-              "type": "todo",
-              "state": {},
-              "icon": "checkmark",
-              "title": "Checklist"
-            }
-          },
-          {
-            "id": "583650f70c3ddb6b",
-            "type": "leaf",
-            "state": {
-              "type": "ttrpg-tools-controls-view",
-              "state": {},
-              "icon": "layout-dashboard",
-              "title": "Controls"
-            }
-          },
-          {
-            "id": "a3d853b32df7aaea",
-            "type": "leaf",
-            "state": {
-              "type": "rpg-manager-options",
-              "state": {},
-              "icon": "d20",
-              "title": "RPG Manager"
+              "icon": "dices",
+              "title": "Dice Tray"
             }
           }
         ],
-        "currentTab": 19
-      },
-      {
-        "id": "4755f940a81673c6",
-        "type": "tabs",
-        "children": [
-          {
-            "id": "306b01c90bf4aada",
-            "type": "leaf",
-            "state": {
-              "type": "ttrpg-soundboard-nowplaying",
-              "state": {},
-              "icon": "music-2",
-              "title": "Now playing"
-            }
-          }
-        ]
+        "currentTab": 2
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -410,80 +208,74 @@
       "fit:Sync to GitHub": false,
       "templater-obsidian:Templater": false,
       "obsidian-kanban:Create new board": false,
-      "vibe-rpg:Открыть Vibe RPG": false,
-      "obsidian-textgenerator-plugin:Generate Text!": false,
-      "obsidian-textgenerator-plugin:Text Generator: Templates Packages Manager": false,
-      "vault-operator:Vault Operator": false,
       "atlas-vtt:Display image on player view": false,
       "rpg-manager:RPG Manager": false,
       "homepage:Open homepage": false,
+      "vault-operator:Vault Operator": false,
       "pexels-banner:🚩 Pixel Banner Menu": false,
-      "obsidian-5e-statblocks:Open Creature pane": false,
-      "solo-rpg-toolkit:Solo RPG Toolkit": false,
-      "storyteller-suite:Open storyteller dashboard": false,
-      "storyteller-suite:Open campaign view": false,
-      "storyteller-suite:Apply template to story": false,
-      "town-forge:Town Forge: open map preview": false,
-      "fantasy-content-generator:Open TTRPG Content Generator": false,
-      "ttrpg-campaign-manager:TTRPG Campaign Manager": false,
-      "world-builder:World Builder": false,
-      "ttrpg-soundboard:Open soundboard": false,
-      "ttrpg-tools-controls:Open TTRPG Tools - Controls": false,
-      "initiative-tracker:Initiative Tracker Encounter Builder": false,
+      "vibe-rpg:Открыть Vibe RPG": false,
       "obsidian-day-planner:Open Timeline": false,
       "obsidian-day-planner:Open Multi-Day View": false,
-      "obsidian-checklist-plugin:Open Checklist": false,
-      "table-editor-obsidian:Advanced Tables Toolbar": false
+      "sync-google-calendar:Sync Google Calendar": false,
+      "tasknotes:Open mini calendar view": false,
+      "tasknotes:Open calendar view": false,
+      "tasknotes:Open tasks view": false,
+      "tasknotes:Open agenda view": false,
+      "tasknotes:Open Kanban board": false,
+      "tasknotes:Open Pomodoro timer": false,
+      "tasknotes:Open Pomodoro statistics": false,
+      "tasknotes:Create new task": false,
+      "obsidian-textgenerator-plugin:Generate Text!": false,
+      "obsidian-textgenerator-plugin:Text Generator: Templates Packages Manager": false
     }
   },
-  "active": "a3d853b32df7aaea",
+  "active": "98db9f758334ef64",
   "lastOpenFiles": [
-    "SecondBrain",
-    "New folder",
-    "World/Characters/Veyra.md",
-    "2026-10-11.md",
+    "Campaign/01 Campaign Rules.md",
+    "Campaign/00 Hero.md",
+    "Assets/Characters/hero-witch.webp",
+    "Assets/Banners/11d62031-1f5f-4dcf-81fc-1c28da0decb2.webp",
+    "Assets/Characters/5d7aeebc13de16ce514b6609cb198eeb.jpg",
+    "Assets/Characters/Unconfirmed 393990.crdownload",
+    "Assets/Characters/hero-profile.jfif",
+    "Assets/Characters/Unconfirmed 31128.crdownload",
+    "Assets/Characters",
+    "Campaign/02 Story So Far.md",
+    "Campaign/03 Quest Board.md",
+    "TaskNotes/Start Here.md",
+    "TaskNotes/Views/tasks-default.base",
+    "TaskNotes/Views/relationships.base",
+    "TaskNotes/Views/pomodoro-stats.base",
+    "TaskNotes/Views/kanban-default.base",
+    "TaskNotes/Views/agenda-default.base",
+    "Campaign/AGENTS.md",
+    "Campaign/04 Rewards & Loot.md",
+    "Assets/Banners/quest-board-banner.webp",
+    "Assets/Banners",
+    "README.md",
+    "PLUGINS.md",
+    "PRD.md",
+    "Journal/Templates/Daily.md",
+    "Journal/2026-10-11.md",
+    "atlas-vtt/assets/thumbnails/Fighter_1791581776507_pus9fi-3ea30b95.webp",
+    "atlas-vtt/assets/Fighter_1791581776507_pus9fi.webp",
+    "atlas-vtt/assets/Assassin_1791581776707_2xzzk2.webp",
+    "atlas-vtt/assets/map_1791653499729_yg6mlb.jpg",
+    "World/Regions/Sunken Archive.md",
+    "AGENTS.md",
+    "World/AGENTS.md",
+    "Journal/AGENTS.md",
     "Maps/frostkey-river.png",
-    "Maps",
-    "StorytellerSuite/Templates/Notes/CampaignSessions",
-    "StorytellerSuite/Templates/Notes/Books",
-    "StorytellerSuite/Templates/Notes/CompendiumEntries",
-    "StorytellerSuite/Templates/Notes/References",
-    "StorytellerSuite/Templates/Notes/Scenes",
-    "StorytellerSuite/Templates/Notes/Chapters",
-    "StorytellerSuite/Templates/Notes/MagicSystems",
-    "StorytellerSuite/Templates/Notes/Economies",
-    "World/Characters/The Archivist.md",
-    "World/Tokens/Creatures/Dragon/Sea_Serpent/Sea_Serpent_A1_Segment_B_Huge_Dragon_01.webp",
-    "World/Tokens/Creatures/Dragon/Sea_Serpent/Sea_Serpent_A1_Tail_Huge_Dragon_01.webp",
-    "World/Tokens/Creatures/Dragon/Sea_Serpent/Sea_Serpent_A1_Segment_A_Huge_Dragon_01.webp",
-    "World/Tokens/Creatures/Dragon/Sea_Serpent/Sea_Serpent_A1_Head_Huge_Dragon_01.webp",
-    "World/Tokens/Creatures/Dragon/5e_White_Dragon/Young_White_Dragon_A1_Large_Scale200_Dragon_01.webp",
-    "World/Tokens/Creatures/Dragon/5e_White_Dragon/Wyrmling_White_Dragon_A1_Medium_Scale300_Dragon_01.webp",
-    "World/Tokens/Creatures/Dragon/5e_White_Dragon/Ancient_White_Dragon_A1_Gargantuan_Dragon_38x33_01.webp",
-    "World/Tokens/Creatures/Dragon/5e_White_Dragon/Adult_White_Dragon_A1_Huge_Scale233_Dragon_01.webp",
-    "World/Tokens/Creatures/Dragon/5e_Guard_Drake/White_Guard_Drake_A1_Medium_Dragon_01.webp",
+    "World/NPCs/Veyra.md",
+    "Maps/FA_Battlemaps/Thundertree_58x38/WebP/Overlay/nospider_noroof_grid.webp",
+    "2026-10-11.md",
+    "World/NPCs/The Archivist.md",
     "World/Veyra.md",
     "World/The Archivist.md",
     "Areas/Developer Portfolio/stitch_portfolio/design/copy/home.md",
-    "README.md",
     "Templates/Daily.md",
     "ONBOARDING_GUIDE.md",
-    "AGENTS.md",
     "Templates/Note Template.md",
-    "Templates/Source Template.md",
-    "Templates/Meeting Note Template.md",
-    "SETUP_GUIDE.md",
-    "Untitled Kanban.md",
-    "World/Quests/Recover the Case Study Codex.md",
-    "Campaign/03 Quest Board.md",
-    "Templates/GM/GM-Morning-Quest.md",
-    "Templates/GM/GM-Refresh Story So Far.md",
-    "Templates/GM/GM-Evening-Completion.md",
-    "Templates/GM/GM-Campaign Continuity Audit.md",
-    "Projects/microsaas-vault/CLAUDE.md",
-    "Projects/microsaas-vault/AGENTS.md",
-    "Projects/portfolio-projects/TriviaGame/trivia/README.md",
-    "Projects/portfolio-projects/TriviaGame/trivia/CHANGELOG.md",
     "Projects/microsaas-vault/4.projects/antiscroll-app/Research Board.canvas"
   ]
 }

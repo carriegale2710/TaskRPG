@@ -24,13 +24,23 @@
 # Ignore local workspace layout and cache to prevent sync conflicts
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
+.obsidian/community-plugins.json
 .obsidian/cache/*
 
 # OPTIONAL: Ignore all community plugin settings if you store sensitive API tokens
+
+.obsidian/
+.obsidian\
 .obsidian/*
-.obsidian/plugins/copilot/*
+
+.obsidian/plugins/*
 .obsidian/plugins/obsidian-copilot/*
 .obsidian/plugins/fit/*
 .obsidian/plugins/git/*
 .obsidian/plugins/vault-operator/
 .obsidian/plugins/vault-operator/*
+
+.vault-operator/*
+.vault-operator/*
+
+atlas-vtt/*
