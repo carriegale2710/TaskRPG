@@ -1,7 +1,0 @@
-{
-  "excludeMode": "Full",
-  "obsidianIgnoreContent": "/Archives/\n/Archives/*\n\n!.obsidian/\n!.obsidian/*\n!.agents/\n!.agents/*\n!.copilot/\n!.copilot/*\n\n.env\n.env.local\n.env.development.local\n.env.test.local\n.env.production.local\n_.secret\n_.pem\n\\*.key\n\n.DS*Store\n.AppleDouble\n.LSOverride\n.*\\*\n\nThumbs.db\nThumbs.db:encryptable\nehthumbs.db\nehthumbs*vista.db\n*.lnk\n\\_.cab\n\n_~\n.fuse_hidden_\n.directory\n.Trash-\\*\n\nnode_modules/\njspm_packages/\n.pnpm-store/\n.yarn/\n! .yarn/releases/\n! .yarn/plugins/\n\n**pycache**/\n_.py[cod]\n_$py.class\n.venv/\nvenv/\nENV/\nenv/\n\nvendor/\n.bundle/\n\n.gradle/\ndist/\nbuild/\nout/\ntarget/\n_.com\n_.class\n_.dll\n_.exe\n_.o\n_.so\n\n_.log\nnpm-debug.log_\nyarn-debug.log*\nyarn-error.log*\n_.sql\n_.sqlite\n\\*.db\n\n.vscode/\\*\n!.vscode/extensions.json\n!.vscode/launch.json\n\n.idea/\n_.iml\n_.iws\n\n_.sublime-project\n_.sublime-workspace\n",
-  "shouldHideEmptyFolders": true,
-  "shouldIgnoreExcludedFiles": false,
-  "shouldIncludeGitIgnorePatterns": false
-}
