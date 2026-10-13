@@ -1,0 +1,36 @@
+{
+  "day": null,
+  "HP": 10,
+  "MP": 10,
+  "skillXP": {
+    "focus": 0,
+    "vitality": 0,
+    "craft": 0,
+    "mind": 0,
+    "presence": 0
+  },
+  "projectThreat": {},
+  "focus": null,
+  "habits": {},
+  "hpLostByDay": {},
+  "restDays": [],
+  "pauses": [],
+  "maxHP": 10,
+  "maxMP": 10,
+  "levels": {
+    "focus": 1,
+    "vitality": 1,
+    "craft": 1,
+    "mind": 1,
+    "presence": 1
+  },
+  "diceBonus": {
+    "focus": 0,
+    "vitality": 0,
+    "craft": 0,
+    "mind": 0,
+    "presence": 0
+  },
+  "wounded": false,
+  "paused": false
+}
