@@ -22,8 +22,23 @@
               "icon": "lucide-file",
               "title": "2026-10-13"
             }
+          },
+          {
+            "id": "cbb1345b53129852",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "CHANGELOG.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "CHANGELOG"
+            }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -171,7 +186,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Campaign/02 Story So Far.md",
+                "file": "CHANGELOG.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -211,11 +226,11 @@
             }
           }
         ],
-        "currentTab": 6
+        "currentTab": 7
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 330.2999267578125
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -242,31 +257,49 @@
       "tasknotes:Open Pomodoro timer": false,
       "tasknotes:Open Pomodoro statistics": false,
       "tasknotes:Create new task": false,
-      "vault-operator:Vault Operator": false
+      "vault-operator:Vault Operator": false,
+      "copilot:Open Copilot Agent Chat": false,
+      "world-builder:World Builder": false
     }
   },
-  "active": "27ac3a931d4e283d",
+  "active": "2c6fecefb9e79268",
   "lastOpenFiles": [
+    "copilot/skills/miyo-parse/SKILL.md",
+    "copilot/skills/miyo-parse/miyo-parse.cmd",
+    "copilot/skills/miyo-parse/miyo-parse.sh",
+    "copilot/skills/miyo-parse",
+    "CLAUDE.md",
+    "copilot/skills/obsidian-cli/SKILL.md",
+    "copilot/skills/obsidian-cli/LICENSE",
+    "copilot/skills/obsidian-cli",
+    "copilot/skills/json-canvas/SKILL.md",
+    "copilot/skills/json-canvas/LICENSE",
+    "copilot/skills/json-canvas/references/EXAMPLES.md",
+    "copilot/skills/json-canvas/references",
+    "copilot/skills/json-canvas",
+    "copilot/skills/obsidian-bases/SKILL.md",
+    "copilot/skills/obsidian-bases/LICENSE",
+    "copilot/skills/obsidian-bases/references/EXAMPLES.md",
+    "copilot/skills/obsidian-bases/references/FUNCTIONS_REFERENCE.md",
+    "copilot/skills/obsidian-bases/references",
+    "copilot/skills/obsidian-markdown/SKILL.md",
+    "copilot/skills/obsidian-markdown/references/PROPERTIES.md",
+    "copilot/skills/obsidian-markdown/references/EMBEDS.md",
+    "copilot/skills/obsidian-markdown/references/CALLOUTS.md",
+    "copilot/skills/openartifacts-publish/SKILL.md",
+    "copilot/skills/openartifacts-publish/themes/research-memo.md",
+    "copilot/skills/copilot-fetch-x/SKILL.md",
+    "copilot/skills/copilot-youtube-transcript/SKILL.md",
+    "2026-10-13.md",
+    "CHANGELOG.md",
+    "TESTING.md",
+    "Engine/Test Events.md",
+    "Engine/Test State.md",
     "World/AGENTS.md",
     "Journal/AGENTS.md",
     "Campaign/AGENTS.md",
-    "TaskNotes/Views/agenda-default.base",
-    "TaskNotes/Views/kanban-default.base",
-    "TaskNotes/Views/tasks-default.base",
-    "TaskNotes/Views/calendar-default.base",
-    "TaskNotes/Views/mini-calendar-default.base",
-    "2026-10-13.md",
     "BUILD_PROMPT.md",
-    "TaskNotes/Views/relationships.base",
-    "TaskNotes/Views/pomodoro-stats.base",
-    "TaskNotes/Views",
-    "TaskNotes",
-    "Backlog",
     "Engine/Settings.md",
-    "AGENTS.md",
-    "PLUGINS.md",
-    "PRD.md",
-    "README.md",
     "atlas-vtt/assets/Occultist_1791863354106_nr4rdi.webp",
     "atlas-vtt/assets/Assassin_1791863354080_jv87po.webp",
     "atlas-vtt/assets/Knight_1791863354029_6tvl0a.webp",
@@ -277,21 +310,6 @@
     "atlas-vtt/assets/Paladin_1791863353865_8w6lna.webp",
     "atlas-vtt/assets/Fighter_1791863353839_tornzt.webp",
     "atlas-vtt/assets/Cleric_1791863353794_b994d0.webp",
-    "Campaign/02 Story So Far.md",
-    "Campaign/01 Campaign Rules.md",
-    "Campaign/00 Hero.md",
-    "Campaign/03 Quest Board.md",
-    "TaskNotes/Start Here.md",
-    "Campaign/04 Rewards & Loot.md",
-    "Journal/Templates/Daily.md",
-    "Journal/2026-10-11.md",
-    "World/Regions/Sunken Archive.md",
-    "World/NPCs/Veyra.md",
-    "2026-10-11.md",
-    "World/NPCs/The Archivist.md",
-    "World/Veyra.md",
-    "World/The Archivist.md",
-    "Areas/Developer Portfolio/stitch_portfolio/design/copy/home.md",
     "Projects/microsaas-vault/4.projects/antiscroll-app/Research Board.canvas"
   ]
 }
