@@ -1,46 +1,26 @@
-# Ignore local Second Brain directories (this repo is for setup files only)
-/Archives/*
-/Areas/*
-/Projects/*
-/Resources/*
-/Inbox/*
+# Local Obsidian configuration and plugin state
+/.obsidian/
 
-.git/
-.git/*
-*.git
+# Local agent inventory, telemetry, memory and runtime state
+/.vault-operator/
+/.copilot/
+/copilot/
 
-# ==========================================
-# 🛑 SECRETS & ENVIRONMENT VARIABLES (NEVER COMMIT)
-# ==========================================
+
+# Credentials and environment files
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
 *.secret
 *.pem
 *.key
 
-# Ignore local workspace layout and cache to prevent sync conflicts
-.obsidian/workspace.json
-.obsidian/workspace-mobile.json
-.obsidian/community-plugins.json
-.obsidian/cache/*
-
-# OPTIONAL: Ignore all community plugin settings if you store sensitive API tokens
-
-.obsidian/
-.obsidian\
-.obsidian/*
-
-.obsidian/plugins/*
-.obsidian/plugins/obsidian-copilot/*
-.obsidian/plugins/fit/*
-.obsidian/plugins/git/*
-.obsidian/plugins/vault-operator/
-.obsidian/plugins/vault-operator/*
-
-.vault-operator/*
-.vault-operator/*
-
-atlas-vtt/*
+# Python development artifacts
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+dist/
+build/
+*.egg-info/
