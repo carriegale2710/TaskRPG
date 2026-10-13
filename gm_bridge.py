@@ -19,8 +19,12 @@ What it never does
   - Compute or change game rules, HP, MP, XP or rolls. The engine owns those.
     This script only reads the hero note and the event log and narrates them.
   - Write outside the Story and Characters folders (enforced in write()).
-  - Read the Private folder (enforced in read()).
   - Edit task lines, the journal, the backlog or the Engine folder.
+
+Model visibility
+  Content this script reads is sent to the configured Anthropic model. No vault
+  folder is a privacy boundary; do not store content here that you would not
+  consent to sending to that provider.
 
 Usage
   python gm_bridge.py status
@@ -49,7 +53,6 @@ ENGINE_DIR = VAULT / "Engine"          # read only
 STORY_DIR = VAULT / "Story"            # read + write
 CHAR_DIR = VAULT / "Characters"        # read + write
 JOURNAL_DIR = VAULT / "Journal"        # read only
-PRIVATE_DIR = VAULT / "Private"        # never read
 
 EVENT_LOG = ENGINE_DIR / "Event Log.md"
 HERO_NOTE = ENGINE_DIR / "Hero.md"
@@ -107,8 +110,6 @@ def _inside(path: Path, folder: Path) -> bool:
 
 
 def read(path: Path) -> str:
-    if _inside(path, PRIVATE_DIR):
-        raise PermissionError(f"Refusing to read Private folder: {path}")
     return path.read_text(encoding="utf-8") if path.exists() else ""
 
 

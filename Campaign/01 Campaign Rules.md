@@ -8,17 +8,13 @@ status: active
 ## World Premise
 A coastal kingdom where inventors, scholars, and artificers recover unstable knowledge from drowned archives. Magic is volatile--unfinished projects can become dangerous.
 
-## Core Mechanics
-| MP Range | Quest Type | Capacity | Reward |
-|---|---|---|---|
-| 1-4 | Rest/Scout | 1-2 tasks | Small XP, MP recovery |
-| 5-7 | Standard | 2-3 tasks | Moderate XP |
-| 8-10 | Deep/Bold | 3-4 tasks | Larger XP, plot risk |
+## Game Mechanics
 
-- Low MP never punished; framed as tactical retreat/recovery
-- Rewards scale with capacity
-- No new major plot threads on low-MP days
-- Habits completed: +5 XP each, capped +15/day
+TaskRPG mechanics are defined by the current PRD and implemented by the engine;
+this note does not define alternate MP, HP, XP, task, or habit rules. MP is an
+in-game budget, not a measure of real-world capacity. Campaigns share the
+player's engine-owned progression, while each campaign keeps its own story
+history, arcs, and quests.
 
 ## Active Plot Threads
 - Recover the Case Study Codex before Veyra unlocks the Deep Vault

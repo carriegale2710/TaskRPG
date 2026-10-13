@@ -1,7 +1,6 @@
 [
   "image-converter",
   "lazy-plugins",
-  "periodic-notes",
   "obsidian-plugin-toc",
   "obsidian-auto-link-title",
   "dataview",
@@ -13,11 +12,14 @@
   "harper",
   "tag-wrangler",
   "url-into-selection",
-  "obsidian-rollover-daily-todos",
   "vault-operator",
-  "calendar",
-  "rpg-manager",
-  "obsidian-style-settings",
   "templater-obsidian",
-  "atlas-vtt"
+  "obsidian-dice-roller",
+  "obsidian-linter",
+  "pretty-properties",
+  "obsidian-style-settings",
+  "obsidian-meta-bind-plugin",
+  "tasknotes",
+  "quickadd",
+  "obsidian-reminder-plugin"
 ]

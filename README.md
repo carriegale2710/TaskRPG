@@ -129,16 +129,20 @@ The narrator also offers a **shake-up** when things get stale, and adds a **week
 
 ## What's in the vault
 
-The vault is organised by who owns each file.
+The vault is organised by ownership and by which story data is shared across campaigns.
 
 | Folder         | Contents                                                        | Who writes it                                |
 | -------------- | --------------------------------------------------------------- | -------------------------------------------- |
-| **Engine**     | Event log, hero note, habit notes, settings note                | The QuickAdd macros only                     |
-| **Story**      | Story log, briefings, quest board, random tables, GM-only prefs | The narrator                                 |
-| **Characters** | Persona files, private memory, relationship notes               | The characters                               |
-| **Journal**    | Daily notes, with a "Today's turns" section                     | You (only this folder is pruned, to 30 days) |
-| **Backlog**    | TaskNotes tasks                                                 | You and TaskNotes                            |
-| **Private**    | Anything you don't want sent to a model provider                | You. Agents can't see it                     |
+| **Engine**     | Shared event log, derived hero state, habit notes, settings     | The QuickAdd macros only                     |
+| **Scripts**    | Standalone engine and QuickAdd scripts                          | The coding agent                             |
+| **World**      | Shared world canon: rules, regions, factions and reusable NPCs  | User and narrator, with approval             |
+| **Story**      | Cross-campaign canon log, tables, narrator preferences, index   | The narrator, with approval                  |
+| **Campaigns**  | Separate story log, arcs, quests and outcomes per campaign      | The narrator, with approval                  |
+| **Characters** | Stable hero/companion profiles and character-scoped memories    | User and character agents, with approval     |
+| **Journal**    | Daily notes and a generated "Today's turns" view                | You and macros (only this folder is pruned)  |
+| **Backlog**    | TaskNotes tasks, optionally linked to a campaign                | You and TaskNotes                            |
+
+The existing `Campaign/` folder is the current campaign's legacy location until a separately approved migration. The hero profile there contains stable identity only; live stats and inventory belong to `Engine/`. Shared hero progression applies across campaigns; each campaign's narrative history stays separate.
 
 Scripts live in a **visible** folder, because QuickAdd can't load them from a hidden one.
 
@@ -224,8 +228,9 @@ Override models with `GM_MODEL_STRONG` and `GM_MODEL_SMALL`.
 
 ### Output and safety
 
-- **Writes:** `Story/Briefings/<date>.md`, `Story/Today's quests.md` (each quest links to its real task), and a row in the Story So Far timeline.
-- **Enforced in code:** it can write only to Story and Characters, and it refuses to read the Private folder. It never computes or changes HP, MP, XP or rolls, never edits task lines, and never touches the journal or the Engine folder.
+- **Writes:** the legacy bridge writes `Story/Briefings/<date>.md`, `Story/Today's quests.md` (each quest links to its real task), and the Story So Far timeline.
+- **Enforced in code:** it can write only to Story and Characters. It never computes or changes HP, MP, XP or rolls, never edits task lines, and never touches the journal or the Engine folder.
+- **Scope:** this bridge predates the multi-campaign layout and is not campaign-aware. Do not use it for multiple campaigns until it is updated to select and isolate a campaign.
 - **If the API fails:** it says so and exits without changing anything. The next briefing covers the missed days.
 - It won't overwrite an existing briefing without `--force`, so it doesn't clobber one the narrator already wrote. Don't run it while a Vault Operator session is writing the same files.
 
@@ -233,9 +238,9 @@ Override models with `GM_MODEL_STRONG` and `GM_MODEL_SMALL`.
 
 Edit the config block at the top of the script if your vault differs.
 
-- Folders and files named as in the table above (`Engine/Event Log.md`, `Engine/Hero.md`, `Engine/Settings.md`, `Story/Story So Far.md`, `Characters/Narrator.md`, and so on).
+- Folders and files named as in the table above (`Engine/Event Log.md`, `Engine/Hero.md`, `Engine/Settings.md`, `Story/Story So Far.md`, `Characters/Narrator.md`, and so on). These are the bridge's legacy single-campaign paths, not the final multi-campaign layout.
 - Event-log lines start with a real date and 24-hour time (for example `2026-10-12 14:00 | ...`). The script applies the 4:00 AM rollover itself.
-- The hero note keeps HP, MP and unlocked rules in its frontmatter. The settings note is a table of `| Name | Value |` rows.
+- The bridge expects a separate engine-owned live-state note with HP, MP and unlocked rules; `Campaign/00 Hero.md` is the stable character profile and must not hold live stats. The settings note is a table of `| Name | Value |` rows.
 - Daily-note task lines use the inline format `[skill:: craft] [size:: 3] [urgent:: true]`, and the results sit under a **Today's turns** heading.
 
 ### Migrating from v1
@@ -249,7 +254,7 @@ Edit the config block at the top of the script if your vault differs.
 - **Phone for quick taps, desktop for everything else.** Done presses, habit presses and the New task form are meant to work on the phone. Planning, engine changes and character chats stay on desktop. Mobile support for the macros, TaskNotes and pop-ups is _untested_ and is checked in Steps 2 and 3.
 - **Fit** syncs the vault. Genuine conflicts land in a `_fit` folder: merge by hand, then press **recalculate**. Plugin settings don't sync by default, so QuickAdd macros and Meta Bind setup need opting in or recreating on the phone.
 - **Reminders** are 3 to 5 recurring phone alarms, one per habit block. They aren't linked to the game.
-- **Privacy:** agents read your whole journal (a bullet journal of what you did, not a diary). Anything you wouldn't want a model provider to see goes in **Private**, which agents can't read. On the **free Gemini tier**, Google's terms say what you send is used to improve its products and may be read by human reviewers, and the regional exception doesn't cover Australia. GitHub Copilot's data terms haven't been checked. `gm_bridge.py` sends prompt context to Anthropic's API.
+- **Model visibility:** treat every vault file as potentially model-visible. Agents should receive only the context needed for a task, but folders, ignore files and plugin permissions are not confidentiality guarantees. Do not store content in the vault that you would not consent to sending to the configured provider. Review that provider's data terms before sending content; `gm_bridge.py` sends selected prompt context to Anthropic's API.
 - **Cost:** not estimated. Measure real usage and rate limits during the trial week.
 
 ---

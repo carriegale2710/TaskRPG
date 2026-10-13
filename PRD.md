@@ -56,7 +56,7 @@
 ### 4.2 Architecture
 
 - **Hybrid:** Obsidian is the UI (buttons, hero sheet, dashboard, map). The narrator and characters run in Vault Operator, an AI agent plugin inside Obsidian that reads and writes the vault. It is desktop only, and it uses Gemini or GitHub Copilot as the model (see 4.24 and 4.38).
-- **One agent per character,** and one for the narrator, each with its own persona file. You chat with them in the Obsidian sidebar, not in a terminal. The agent loads the persona file, the character's private memory and the shared story log (see 4.4).
+- **One agent per character,** and one for the narrator, each with its own persona file. You chat with them in the Obsidian sidebar, not in a terminal. The agent loads the persona file, relevant character-scoped memory and the selected campaign's story log (see 4.4). Treat every vault file as potentially model-visible.
 - When a session ends, the agent writes a **summary plus extracted changes** (new facts, relationship shifts, plot events) back to the vault. Full transcripts are not saved.
 - The same agent setup runs the narrator, the morning briefing and the random-table refresh.
 - **Story output when you press Done on a task (v1):** a script rolls the dice and instantly shows a short result drawn from the tables. The narrator turns the day's results into prose in the next morning briefing.
@@ -68,19 +68,20 @@
 
 - The **narrator** is a wise-wizard or fortune-teller persona who speaks to you directly. It has a persona file with the same structure as the characters.
 - **Onboarding** is one longer quiz of about 20 questions (genre, tone, character types, themes, pet peeves), plus a short "never include" list of hard limits. Answers are saved as you go to a GM-only preferences note. You can pause and resume. The narrator builds the world, the party and the first tables from the answers.
-- **The narrator keeps learning through the story**, using forks in the plot and character reactions, and infers your tastes from your choices. The preferences note is for the GM only, and you don't read it. Direct questions are rare and skippable.
+- **The narrator keeps learning through the story**, using forks in the plot and character reactions, and infers your tastes from your choices. The preferences note is for the GM's workflow, not a privacy boundary. Direct questions are rare and skippable.
 - **Cast:** a core party of recurring characters, each with a deep persona file, plus occasional NPCs generated from a shared template.
 - Each character has a relationship note with you. Affinity changes are **proposed** by the agent in its session summary, a dice roll sets how big the shift is, and you approve them at the end of each session.
 - **Morning briefing:** after you press "plan my day", the narrator opens the day, frames your planned tasks as quests and gives a short recap of yesterday's results. Sessions at other times are optional. Skipping a briefing costs nothing, and the next one just covers more days.
-- **Write permissions:** the narrator and characters write only story files (summaries, memory, story log, relationship notes, quest board, preferences and tables), enforced by the folder rules in 4.15. HP, MP and skill XP are owned by the engine.
+- **Write permissions:** the narrator and characters write only designated Story, Campaigns, World and Characters files (summaries, memory, story log, relationship notes, quest board, preferences, tables and approved canon), enforced by the folder rules in 4.15. HP, MP and skill XP are owned by the engine.
+- Multiple campaigns may take place in the same world. They reuse shared world lore, characters and approved canon, while keeping campaign story logs, arcs and quest boards separate. A campaign-specific event becomes shared canon only when explicitly approved.
 - Talking to characters costs no MP.
 
 ### 4.4 Memory (layered)
 
-- A **shared story log** holds public events that everyone knows.
-- **Private per-character memory** holds one-on-one conversations.
-- A short "who knows what" note tracks sensitive facts. A character learns something private only if you tell them, or if another character tells them in-fiction. Dice can decide whether a secret leaks.
-- **Layered memory keeps each character manageable over months.** A short core facts note (under about a page) is always loaded, the last 10 sessions are kept in detail, and older sessions are compressed into monthly digests (defaults). You can **pin** key moments, such as a promise, a secret or a big win, so they are never compressed. Every original summary stays in GitHub history. The narrator and characters do the compression, inside their own folders.
+- A **shared story log** holds world-level events approved as canon across campaigns. Each campaign also has its own story log, so campaign-specific events do not silently become shared canon.
+- **Character-scoped memory** holds one-on-one conversations. This is narrative organization, not a privacy boundary: these files are still potentially model-visible.
+- A short "who knows what" note tracks in-fiction secrets. A character learns a fact only if you tell them, or if another character tells them in-fiction. Dice can decide whether a secret leaks.
+- **Layered memory keeps each character manageable over months.** A short core facts note (under about a page) is always loaded, the last 10 sessions are kept in detail, and older sessions are compressed into monthly digests (defaults). You can **pin** key moments, such as a promise or a big win, so they are never compressed. Every original summary stays in GitHub history. The narrator and characters do the compression in their assigned folders.
 
 ### 4.5 Stats and inputs
 
@@ -147,19 +148,22 @@
 ### 4.10 Tasks, planning and the daily note
 
 - **Backlog:** tasks live in TaskNotes, which needs the built-in Bases plugin switched on. A **"New task" form** (type the name, tap skill, size and flags) creates each task with those fields, so there is one way to create a task. A Google Calendar or Google Tasks feed can be added once the core loop works.
+- A task may optionally link to a campaign for story framing. Completing it records one global game event and awards shared progression once, even if the task advances a campaign story.
 - A **button beside each backlog task** adds it to today's todo list in the daily note. This is the "plan my day" pick-list.
 - When you add a task to today you choose **urgent and important**. Urgent is pre-ticked if the task is due today or overdue.
 - Task lines in today's list use a readable inline format so scripts and Dice Roller can read them, for example `[skill:: craft] [size:: 3] [urgent:: true]`.
 - **Unfinished tasks:** at the end of the day, tasks you planned but didn't finish go quietly back to the backlog. There is no penalty and no MP refund, and tomorrow you pick again. The morning briefing gives a one-line mention, for example "3 quests left unfinished yesterday".
 - **Daily note:** your journal, plus a "Today's turns" section pulled from the event log (task results, habit status lines, and a link to the session summary).
-- **Quest board:** the narrator writes a "Today's quests" note in the story files. Each quest links to its real task. The daily note can show each quest's title beside its task. The narrator never edits task lines.
+- **Quest board:** the narrator writes a "Today's quests" note in the selected campaign's files. Each quest links to its real task. The daily note can show each quest's title beside its task. The narrator never edits task lines.
 - **Pruning:** only the last 30 daily notes stay in the vault. Older ones live in GitHub history. This is safe only because nothing the game needs lives only in a daily note, so the event log, story log, hero note, habit notes, quest board, character memory and preferences are never pruned. Each daily note must be committed before it is removed.
 
 ### 4.11 Game state and engine
 
-- An **event log** is the source of truth. It is one shared file, and every action (a task Done, a habit Done, a missed deadline, an overdraft, a rest day, a pause, a session) adds one line.
+- An **event log** is the source of truth for the player's shared game progression. It is one shared file, and every action (a task Done, a habit Done, a missed deadline, an overdraft, a rest day, a pause, a session) adds one line.
+- A task linked to a campaign records that campaign ID as narrative metadata in its event; it does not create a second event or separate game progression.
 - If you log on your phone and your desktop before syncing, Fit saves the conflicting copy in its `_fit` folder. You merge it by hand and press recalculate.
 - After each action the script **recalculates** HP, MP and skill XP from the log and saves them to the hero note, which the Meta Bind panels display. A recalculate button repairs any drift or hand-edit.
+- The hero's game progression is shared across campaigns because it reflects one player's real tasks and habits. Each campaign has separate arcs, quests, story history and campaign-specific outcomes. A task may be linked to one campaign for narration; shared progression is awarded once.
 - QuickAdd macros do the work: plan my day, Done for a task, Done for a habit, rest day, pause and resume, recalculate, and back-filling missed habit blocks when you open the vault.
 - A coding agent in VS Code (GitHub Copilot) writes and maintains the scripts, with each script owned by one button.
 
@@ -186,23 +190,32 @@ About 20 of the 70 plugins on your list were read in full on their community pag
 ### 4.14 Build order
 
 - Build **one small piece at a time** and try each before the next (see 4.33). The first piece is a **thin slice of everything**: one habit, one task, the engine, a starter table, the quiz, the narrator, one companion and the morning briefing, all wired together end to end. The narrator, the companion and the tables can't be placeholders.
+- The first slice uses one campaign. Keep campaign identity explicit in narrative records so other campaigns can later reuse the same world and player progression without sharing campaign-specific plot state.
 - The slice starts with the **full onboarding quiz**, run by the narrator as your first interaction. You can pause and resume it. The slice begins on the day the quiz finishes.
 - After the first week, you decide whether to widen or fix before adding anything new. Then widen one thing at a time: more habits, skills, tables and characters, then projects and arcs, companion team-ups, and boss challenges.
 
-### 4.15 Vault folders
+### 4.15 Vault folders and campaign boundaries
 
-The vault is organised by who owns each file.
+The vault is organized by ownership and by what is shared across campaigns. A world can contain multiple campaigns; campaign notes never replace or duplicate shared world canon.
 
-| Folder     | Contents                                                          | Who writes it                                                               |
-| ---------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| Engine     | Event log, hero note, habit notes                                 | The QuickAdd macros only                                                    |
-| Story      | Story log, quest board, random tables, world, GM-only preferences | The narrator (Vault Operator)                                               |
-| Characters | Persona files, private memory, relationship notes                 | The characters (Vault Operator)                                             |
-| Journal    | Daily notes                                                       | You, plus the "Today's turns" section. Only this folder is pruned (30 days) |
-| Backlog    | TaskNotes tasks                                                   | You and the TaskNotes plugin                                                |
+| Folder | Contents | Who writes it |
+| --- | --- | --- |
+| `Engine/` | Shared event log, derived hero state, habit records and settings | QuickAdd macros only |
+| `Scripts/` | Standalone engine and thin QuickAdd scripts; visible because QuickAdd requires it | Coding agent |
+| `World/` | Shared world canon: rules, regions, factions and reusable NPC facts | Narrator, with approval |
+| `Story/` | Shared story log for events approved as cross-campaign canon, shared random tables, narrator preferences and campaign index | Narrator, with approval |
+| `Campaigns/<campaign-id>/` | One campaign's story log and timeline, arcs/projects, quest board and campaign-specific outcomes | Narrator, with approval |
+| `Characters/` | Stable hero and companion profiles plus shared character facts | User and narrator/characters, with approval |
+| `Campaigns/<campaign-id>/Characters/` | Campaign-scoped character session summaries and relationship changes | Relevant character agent, with approval |
+| `Journal/` | Daily notes and generated "Today's turns" view; only this folder is pruned after backup | User and macros |
+| `Backlog/` | TaskNotes tasks, optionally linked to a campaign | User and TaskNotes |
 
-- Vault Operator may write only to Story and Characters, which is how the rule that the narrator never touches HP, MP or XP is enforced. This is set through its write-approval settings and its ignore file, and it is tested in the thin slice. It can't see a Private folder that you keep for anything you don't want sent to a model provider.
-- The macro scripts live in a non-hidden folder, as QuickAdd requires. A coding agent in VS Code writes and maintains them when you ask it to change the engine.
+- The hero's profile contains stable identity information only (for example name, appearance, background, class, personality and goals). It does not hold HP, MP, XP, skill levels, inventory, active quests or other live state. Shared live game state belongs to the engine and is recalculated from its event log.
+- Shared progression belongs to the player, not to an individual campaign. Campaign story state is isolated by campaign ID; one task completion can advance shared progression only once.
+- The existing `Campaign/` folder remains the current campaign's legacy location until a separate, approved migration. New campaign support follows `Campaigns/<campaign-id>/`; do not mass-move existing notes as part of this documentation change.
+- Folder boundaries and plugin permissions protect ownership and prevent accidental edits. They do not make any content confidential or guarantee that an agent cannot read it. There is no `Private/` area.
+- Vault Operator may write only to the designated Story, Campaigns, World and Characters areas; it must not write Engine state, task lines or user-authored journal content. The user approves model access and writes. These restrictions protect data integrity, not privacy.
+- The macro scripts live in the visible `Scripts/` folder. A coding agent in VS Code writes and maintains them.
 
 ### 4.16 Devices and sync
 
@@ -239,7 +252,7 @@ The vault is organised by who owns each file.
 
 ### 4.20 Journal access and real talk
 
-- The narrator and characters can read the whole journal. It is a bullet journal of what you did each day, not a diary, so it gives them context for briefings and conversations. A Private folder that they can't see is kept for anything you don't want sent to a model provider. They write only to the Story and Characters folders (see 4.15).
+- Agents receive only the notes needed for the current interaction, not the whole journal by default. Any note they do read may be sent to the configured model provider. No vault file or folder is private by guarantee; do not store content in the vault that you would not consent to sending to that provider. Agents write only to their designated Story, Campaigns, World and Characters areas (see 4.15).
 - Only the narrator or game system gives **real-talk lines**: a short, plain, out-of-story line that follows an in-character one. Characters stay in the fiction. They give advice only when you ask, and otherwise react to your stats and actions.
 - Defaults: at most one real-talk line a day, and only when planned MP is over budget, a focus project has been untouched for a week, or HP is at 0. The wording is neutral and kind, with no guilt.
 
@@ -267,7 +280,7 @@ The vault is organised by who owns each file.
 
 - A stronger model runs the character chats, the narrator and the morning briefing, because personality is the part most sensitive to model quality. Default: the strongest model your provider offers (Gemini, or a model available through GitHub Copilot).
 - A smaller, faster model runs session summaries, memory compression and housekeeping. Default: a smaller model from the same provider, if Vault Operator lets you choose per agent (untested).
-- After the first week, check whether the characters feel alive, and measure the real running cost and any rate limits during the thin slice. On the free Gemini tier, Google's terms say it uses what you send to improve its products, so your daily notes go to Google. Anything private belongs in the Private folder (see 4.38).
+- After the first week, check whether the characters feel alive, and measure the real running cost and any rate limits during the thin slice. Review the configured provider's data terms before sending vault content; never rely on a folder name, ignore file or plugin setting to make a note private (see 4.38).
 
 ### 4.25 Reminders and result display
 
@@ -345,15 +358,15 @@ The vault is organised by who owns each file.
 ### 4.37 Trial week and sharing
 
 - **Trial week:** the first week uses a light setup: one habit, a few tasks and the narrator. Your current routines keep running alongside. At the end you answer a one-minute check (did you want to open it, did anything feel like a chore, did you miss anything). The answers are written to the event log so they can be compared with the week-4 gut check. Then you decide to continue, adjust or stop.
-- **Built for you, shareable later:** the engine reads skills, names and numbers from the settings note and doesn't contain them. The engine, story, characters and journal stay in separate folders, so the vault could be packaged as a starter vault later. Sharing is decided after the first month of real use.
+- **Built for you, shareable later:** the engine reads skills, names and numbers from the settings note and doesn't contain them. The engine, shared world, campaigns, characters and journal stay in separate folders, so the vault could be packaged as a starter vault later. Sharing is decided after the first month of real use.
 
 ### 4.38 Vault Operator and building tools
 
 - **The narrator and characters run in Vault Operator,** an AI agent plugin for Obsidian (desktop only). The narrator and each character is a separate agent with its own persona file. The model is Gemini (a free key) or GitHub Copilot.
 - **Building tools:** the engine, its tests and the QuickAdd macros are built in VS Code with the GitHub Copilot extension. Vault Operator can't run a terminal, so it can't build or test the engine. Check which coding agent features your Copilot plan includes before step 1.
-- **Private folder:** the agents read your daily notes but can't see a Private folder. Anything you wouldn't want sent to a model provider goes there.
+- **Model visibility:** treat every vault file as potentially model-visible. Agents should receive only the context needed for a task, but do not rely on folders, ignore files or plugin permissions for confidentiality. Do not store content in the vault that you would not consent to sending to the configured provider.
 - **Free Gemini data use:** Google's terms say the free tier uses what you send to improve its products, and human reviewers may read it. The exception for the EEA, Switzerland and the UK doesn't cover Australia. GitHub Copilot's data terms haven't been checked.
-- **Tested in the thin slice:** whether Vault Operator's built-in memory can be switched off or kept per agent, so a character's private memories don't mix; whether its write-approval settings and ignore file keep it inside the Story and Characters folders and hide the Private folder; whether a QuickAdd button can start a chat with a prepared prompt; whether you can choose a model per agent; and how well the models hold a character's voice, within the free tier's rate limits.
+- **Tested in the thin slice:** whether Vault Operator's memory can be kept per character and campaign so story continuity does not mix; whether write approvals keep agents inside their designated Story, Campaigns, World and Characters areas; whether a QuickAdd button can start a chat with a prepared prompt; whether you can choose a model per agent; and how well the models hold a character's voice, within the provider's rate limits. Read/write restrictions are not privacy guarantees.
 - How a Gemini or Copilot model responds to distressing journal entries isn't something this PRD controls (see Q74: no check-ins).
 
 ## 5. Leaning (to confirm)
@@ -365,12 +378,13 @@ The vault is organised by who owns each file.
 
 | Item                                                     | Default                                                                                                                                                                                                            |
 | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Event log and hero note                                  | Plain readable text, one line per action (date, time, type, skill, size, roll, outcome, XP, MP). The hero note holds HP, MP, XP and level per skill, inventory, each project's threat and which rules are unlocked |
+| Event log and hero state                                 | Plain readable text, one line per action (date, time, type, skill, size, roll, outcome, XP, MP). Engine-owned derived state holds HP, MP, XP and skill levels, inventory, project threat and unlocked rules; the hero profile contains stable identity only |
 | Engine                                                   | Takes the event log plus the settings note and returns the new state and the action's result. One automated test per rule in this PRD, plus tests for setting changes and undo                                     |
 | Settings note                                            | One table with a minimum and maximum beside each value                                                                                                                                                             |
 | Monthly task archive                                     | One line per task (date done, name, skill, size, project)                                                                                                                                                          |
 | Memory notes                                             | A core facts note under a page (who they are, what they know about you, promises, running jokes), and one paragraph per month in the digest                                                                        |
 | Hero persona file                                        | Name, background, class, personality, goals, flaws and how they relate to each skill                                                                                                                               |
+| Multiple campaigns in one world                          | Shared world canon and player progression; each campaign has an independent story log, arcs and quest board                                                                                                        |
 | Phone                                                    | Test the habit button in step 2. Fallback: log on desktop, with a catch-up button reading a plain note from your phone. Fit syncs only the plugin settings the buttons need                                        |
 | QuickAdd starting Vault Operator with a prepared prompt  | Test in step 4. Fallback: paste the prompt into the narrator chat, or save it as a Vault Operator skill                                                                                                            |
 | Result card                                              | One screen, tap to dismiss. If pop-ups misbehave on mobile, the phone shows a short notice instead                                                                                                                 |

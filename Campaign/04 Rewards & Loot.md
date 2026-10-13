@@ -1,4 +1,10 @@
 
+# Legacy Campaign Reward Notes
+
+This note preserves the earlier campaign's reward-shop and loot history. It is
+not the v2 rules or authoritative inventory: v2 has no gold economy, and the
+engine owns current inventory and mechanical perks.
+
 ## Reward Shop
 | Reward | Cost |
 |---|---|

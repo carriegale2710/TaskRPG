@@ -8,35 +8,22 @@
         "type": "tabs",
         "children": [
           {
-            "id": "8b9b68f6e30a0218",
+            "id": "e7a7b303c61786dc",
             "type": "leaf",
+            "pinned": true,
             "state": {
               "type": "markdown",
               "state": {
-                "file": "PRD.md",
+                "file": "2026-10-13.md",
                 "mode": "source",
                 "source": false
               },
+              "pinned": true,
               "icon": "lucide-file",
-              "title": "PRD"
-            }
-          },
-          {
-            "id": "26b98733026aec1a",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "BUILD_PROMPT.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "BUILD_PROMPT"
+              "title": "2026-10-13"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -100,8 +87,8 @@
             "state": {
               "type": "recent-files",
               "state": {},
-              "icon": "clock",
-              "title": "Recent files"
+              "icon": "lucide-ghost",
+              "title": "recent-files"
             }
           }
         ]
@@ -204,16 +191,6 @@
             }
           },
           {
-            "id": "43b75ef761877d0f",
-            "type": "leaf",
-            "state": {
-              "type": "calendar",
-              "state": {},
-              "icon": "calendar-with-checkmark",
-              "title": "Calendar"
-            }
-          },
-          {
             "id": "16cc1ce4dd13268c",
             "type": "leaf",
             "state": {
@@ -222,17 +199,28 @@
               "icon": "square-slash",
               "title": "Vault Operator"
             }
+          },
+          {
+            "id": "2c6fecefb9e79268",
+            "type": "leaf",
+            "state": {
+              "type": "reminder-list",
+              "state": {},
+              "icon": "clock",
+              "title": "Reminders"
+            }
           }
         ],
-        "currentTab": 7
+        "currentTab": 6
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "left-ribbon": {
     "hiddenItems": {
+      "obsidian-textgenerator-plugin:Generate Text!": false,
+      "obsidian-textgenerator-plugin:Text Generator: Templates Packages Manager": false,
       "switcher:Open quick switcher": false,
       "graph:Open graph view": false,
       "canvas:Create new canvas": false,
@@ -246,34 +234,46 @@
       "atlas-vtt:Display image on player view": false,
       "rpg-manager:RPG Manager": false,
       "homepage:Open homepage": false,
+      "tasknotes:Open mini calendar view": false,
+      "tasknotes:Open calendar view": false,
+      "tasknotes:Open tasks view": false,
+      "tasknotes:Open agenda view": false,
+      "tasknotes:Open Kanban board": false,
+      "tasknotes:Open Pomodoro timer": false,
+      "tasknotes:Open Pomodoro statistics": false,
+      "tasknotes:Create new task": false,
       "vault-operator:Vault Operator": false
     }
   },
-  "active": "26b98733026aec1a",
+  "active": "27ac3a931d4e283d",
   "lastOpenFiles": [
+    "World/AGENTS.md",
+    "Journal/AGENTS.md",
+    "Campaign/AGENTS.md",
+    "TaskNotes/Views/agenda-default.base",
+    "TaskNotes/Views/kanban-default.base",
+    "TaskNotes/Views/tasks-default.base",
+    "TaskNotes/Views/calendar-default.base",
+    "TaskNotes/Views/mini-calendar-default.base",
+    "2026-10-13.md",
+    "BUILD_PROMPT.md",
+    "TaskNotes/Views/relationships.base",
+    "TaskNotes/Views/pomodoro-stats.base",
+    "TaskNotes/Views",
+    "TaskNotes",
+    "Backlog",
+    "Engine/Settings.md",
     "AGENTS.md",
     "PLUGINS.md",
-    "gm_bridge.py",
     "PRD.md",
-    "BUILD_PROMPT.md",
     "README.md",
-    "taskrpg",
-    "2026-10-13.md",
-    "atlas-vtt/collections/Default/tokens/token-starter-occultist.json",
     "atlas-vtt/assets/Occultist_1791863354106_nr4rdi.webp",
-    "atlas-vtt/collections/Default/tokens/token-starter-assassin.json",
     "atlas-vtt/assets/Assassin_1791863354080_jv87po.webp",
-    "atlas-vtt/collections/Default/tokens/token-starter-knight.json",
     "atlas-vtt/assets/Knight_1791863354029_6tvl0a.webp",
-    "atlas-vtt/collections/Default/tokens/token-starter-wizard.json",
     "atlas-vtt/assets/Wizard_1791863354006_j9i40j.webp",
-    "atlas-vtt/collections/Default/tokens/token-starter-warlock.json",
     "atlas-vtt/assets/Warlock_1791863353973_dvohtm.webp",
-    "atlas-vtt/collections/Default/tokens/token-starter-rogue.json",
     "atlas-vtt/assets/Rogue_1791863353933_49t1n5.webp",
-    "atlas-vtt/collections/Default/tokens/token-starter-ranger.json",
     "atlas-vtt/assets/Ranger_1791863353908_594ybb.webp",
-    "atlas-vtt/collections/Default/tokens/token-starter-paladin.json",
     "atlas-vtt/assets/Paladin_1791863353865_8w6lna.webp",
     "atlas-vtt/assets/Fighter_1791863353839_tornzt.webp",
     "atlas-vtt/assets/Cleric_1791863353794_b994d0.webp",
@@ -282,20 +282,16 @@
     "Campaign/00 Hero.md",
     "Campaign/03 Quest Board.md",
     "TaskNotes/Start Here.md",
-    "Campaign/AGENTS.md",
     "Campaign/04 Rewards & Loot.md",
     "Journal/Templates/Daily.md",
     "Journal/2026-10-11.md",
     "World/Regions/Sunken Archive.md",
-    "World/AGENTS.md",
-    "Journal/AGENTS.md",
     "World/NPCs/Veyra.md",
     "2026-10-11.md",
     "World/NPCs/The Archivist.md",
     "World/Veyra.md",
     "World/The Archivist.md",
     "Areas/Developer Portfolio/stitch_portfolio/design/copy/home.md",
-    "Templates/Daily.md",
     "Projects/microsaas-vault/4.projects/antiscroll-app/Research Board.canvas"
   ]
 }

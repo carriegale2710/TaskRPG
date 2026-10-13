@@ -100,7 +100,7 @@ Set up these in Vault Operator, as agents and skills:
 
 ## 7. Step 5: One companion and the morning briefing
 
-- One **companion** as a Vault Operator agent that you open in the sidebar, for example "talk to Elara". It loads her persona file, her private memory and the shared story log. At the end of a session it writes a summary and the extracted changes. The core facts note stays under about a page. Check that Vault Operator's built-in memory doesn't mix the characters' memories (switch it off or keep it per agent), and that it can only write to the Story and Characters folders.
+- One **companion** as a Vault Operator agent that you open in the sidebar, for example "talk to Elara". It loads her persona, relevant character-scoped memory and the selected campaign's story log. At the end of a session it writes a summary and the extracted changes. The core facts note stays under about a page. Check that Vault Operator keeps character and campaign context separate, and that its write approvals limit writes to the Story, Campaigns, World and Characters areas.
 - A **morning briefing** button in Obsidian that starts Vault Operator through a QuickAdd macro and an Obsidian command. It writes a briefing note and a "Today's quests" note, with each quest linked to its real task. If the button can't start Vault Operator with a prepared prompt, the fallback is pasting the prompt into the narrator chat, or saving it as a Vault Operator skill.
 
 **Done when:** you plan a day, press the briefing button, get the quests and have a first conversation that is remembered in the next one.
@@ -115,8 +115,10 @@ Widen one thing at a time, in this order: more habits and skills, then projects 
 
 ## 10. Rules for the agent characters
 
-- The narrator and characters write only to the Story and Characters folders, and can't see the Private folder. They never edit task lines.
-- They can read the whole journal.
+- The narrator and characters write only to their designated Story, Campaigns, World and Characters areas. They never edit task lines, Engine state or user-authored journal content.
+- They receive only the journal context needed for the current interaction, not the whole journal by default.
+- Treat every vault file as potentially model-visible. Do not create or rely on a Private folder, ignore file or plugin permission for confidentiality; do not store content in the vault that you would not consent to sending to the configured provider.
+- Multiple campaigns may share one world's canon and the hero's game progression, but each campaign keeps its own story log, arcs and quest board. A campaign-specific event becomes shared canon only with approval.
 - Only the narrator or game system gives real-talk lines (at most one a day, kind and neutral). Characters stay in the fiction and give advice only when asked.
 - Use a stronger model for chats, the narrator and the briefing, and a smaller one for summaries and housekeeping.
 - The game must work without the AI. If Vault Operator or the model provider is unavailable, the buttons, dice and stats still run, and the narrator catches up later.
