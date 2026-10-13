@@ -1,6 +1,6 @@
-# TaskRPG: Build brief for Claude Code
+# TaskRPG: Build brief
 
-**Companion to PRD v2.** Give Claude Code this brief and the PRD together (export both as Markdown). Build one step at a time, and stop at the end of each step so the user can try it before you continue.
+**Companion to PRD v2.** Give your coding agent (VS Code with GitHub Copilot) this brief and the PRD together (export both as Markdown). Steps 0 to 3 are code and are built there. Steps 4 and 5 are set up inside Vault Operator, which can't run a terminal. Build one step at a time, and stop at the end of each step so the user can try it before you continue.
 
 ## 1. Ground rules
 
@@ -10,7 +10,7 @@
 - **Don't change rules without asking.** If a rule is unclear, ask the user. Placeholders are marked below.
 - **Use the folder layout in PRD section 4.15.** Keep the engine, story, characters and journal in separate folders. Don't touch the user's other notes.
 - **Scripts must live in a visible folder** (not a hidden one) so QuickAdd can load them.
-- **Plugins to confirm in the vault first:** QuickAdd, Meta Bind, Dice Roller, Templater, TaskNotes (with the built-in Bases plugin switched on), Lazy Plugin Loader and Fit.
+- **Plugins to confirm in the vault first:** QuickAdd, Meta Bind, Dice Roller, Templater, TaskNotes (with the built-in Bases plugin switched on), Lazy Plugin Loader, Fit and Vault Operator.
 
 ## 2. Step 0: Setup
 
@@ -89,7 +89,7 @@ Build a QuickAdd macro for "Done" on a habit, with one note per habit, the hero 
 
 ## 6. Step 4: The quiz, the narrator and the tables
 
-Build Claude Code commands for:
+Set up these in Vault Operator, as agents and skills:
 
 - The **onboarding quiz** (pausable), run by the narrator as the user's first interaction.
 - The **narrator persona** and a GM-only preferences note.
@@ -100,8 +100,8 @@ Build Claude Code commands for:
 
 ## 7. Step 5: One companion and the morning briefing
 
-- One **companion** persona with a command like "talk to Elara". It loads her persona file, her private memory and the shared story log. At the end of a session it writes a summary and the extracted changes. The core facts note stays under about a page.
-- A **morning briefing** button in Obsidian that launches Claude Code. It writes a briefing note and a "Today's quests" note, with each quest linked to its real task. If the button can't launch Claude Code, the fallback is typing `/briefing`.
+- One **companion** as a Vault Operator agent that you open in the sidebar, for example "talk to Elara". It loads her persona file, her private memory and the shared story log. At the end of a session it writes a summary and the extracted changes. The core facts note stays under about a page. Check that Vault Operator's built-in memory doesn't mix the characters' memories (switch it off or keep it per agent), and that it can only write to the Story and Characters folders.
+- A **morning briefing** button in Obsidian that starts Vault Operator through a QuickAdd macro and an Obsidian command. It writes a briefing note and a "Today's quests" note, with each quest linked to its real task. If the button can't start Vault Operator with a prepared prompt, the fallback is pasting the prompt into the narrator chat, or saving it as a Vault Operator skill.
 
 **Done when:** you plan a day, press the briefing button, get the quests and have a first conversation that is remembered in the next one.
 
@@ -115,8 +115,8 @@ Widen one thing at a time, in this order: more habits and skills, then projects 
 
 ## 10. Rules for the agent characters
 
-- The narrator and characters write only to the Story and Characters folders. They never edit task lines.
+- The narrator and characters write only to the Story and Characters folders, and can't see the Private folder. They never edit task lines.
 - They can read the whole journal.
 - Only the narrator or game system gives real-talk lines (at most one a day, kind and neutral). Characters stay in the fiction and give advice only when asked.
 - Use a stronger model for chats, the narrator and the briefing, and a smaller one for summaries and housekeeping.
-- The game must work without the AI. If Claude Code is unavailable, the buttons, dice and stats still run, and the narrator catches up later.
+- The game must work without the AI. If Vault Operator or the model provider is unavailable, the buttons, dice and stats still run, and the narrator catches up later.

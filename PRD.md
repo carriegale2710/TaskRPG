@@ -10,7 +10,7 @@
 | User         | Solo founder / full-stack dev, AuDHD, novelty-driven                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | Core barrier | Boredom and lack of novelty stop projects from being finished and habits and routines from sticking                                                                                                                                                                                                                                                                                                                                                                                  |
 | Strategy     | Make the game layer immersive first, because immersion is how the productivity gets delivered. External sync comes later                                                                                                                                                                                                                                                                                                                                                             |
-| Stack        | Obsidian (QuickAdd, Meta Bind, Dice Roller, Templater, Bases, Lazy Plugin Loader) plus Claude Code for the narrator and characters. Vault backed up on GitHub                                                                                                                                                                                                                                                                                                                        |
+| Stack        | Obsidian (QuickAdd, Meta Bind, Dice Roller, Templater, Bases, Lazy Plugin Loader) plus Vault Operator (an AI agent inside Obsidian, using Gemini or GitHub Copilot) for the narrator and characters, and VS Code with GitHub Copilot to build the engine. Vault backed up on GitHub                                                                                                                                                                                                  |
 | Core loop    | Each morning, press "plan my day": add tasks from your backlog to today, set urgent and important, and MP refills to 10. The narrator gives a morning briefing that frames your planned tasks as quests and recaps yesterday. Through the day, press Done on tasks (instant dice roll and table result) and on core habits (one-line status). HP, MP and skill XP recalculate from the event log. Talk to characters any time. Sessions write summaries and proposals back to memory |
 
 ## 2. What changed from v1
@@ -24,7 +24,7 @@
 | Source of truth  | The daily journal                                                 | An event log. The daily note is a journal with a "Today's turns" section                                                |
 | Priority         | Productivity mechanics with a story wrapper                       | Immersive RPG layer first, external sync later                                                                          |
 | Interest         | Lore, map and campaign                                            | Characters, relationships and personalisation                                                                           |
-| Automation       | None across plugins in v1                                         | QuickAdd macros run the game engine, and Claude Code writes and maintains the scripts                                   |
+| Automation       | None across plugins in v1                                         | QuickAdd macros run the game engine, and a coding agent in VS Code (GitHub Copilot) writes and maintains the scripts    |
 | Custom agents    | Won't-have                                                        | Core feature: persona agents for the narrator and party. These are persona files and prompts, not a new agent framework |
 | Metrics          | Journal entries per week, unfinished tasks, MP on low-energy days | Aspirational, to be rewritten (see section 7)                                                                           |
 
@@ -55,13 +55,14 @@
 
 ### 4.2 Architecture
 
-- **Hybrid:** Obsidian is the UI (buttons, hero sheet, dashboard, map). The narrator and characters run in Claude Code, which reads and writes the vault.
-- **One command per character**, for example "talk to Elara". It loads her persona file, her private memory and the shared story log, then chats live outside Obsidian. The chat is a plain terminal-style session, not a pretty window. A custom chat app is a possible later upgrade, because the data would not change.
+- **Hybrid:** Obsidian is the UI (buttons, hero sheet, dashboard, map). The narrator and characters run in Vault Operator, an AI agent plugin inside Obsidian that reads and writes the vault. It is desktop only, and it uses Gemini or GitHub Copilot as the model (see 4.24 and 4.38).
+- **One agent per character,** and one for the narrator, each with its own persona file. You chat with them in the Obsidian sidebar, not in a terminal. The agent loads the persona file, the character's private memory and the shared story log (see 4.4).
 - When a session ends, the agent writes a **summary plus extracted changes** (new facts, relationship shifts, plot events) back to the vault. Full transcripts are not saved.
-- The same Claude Code setup runs the narrator, the morning briefing and the random-table refresh.
+- The same agent setup runs the narrator, the morning briefing and the random-table refresh.
 - **Story output when you press Done on a task (v1):** a script rolls the dice and instantly shows a short result drawn from the tables. The narrator turns the day's results into prose in the next morning briefing.
 - **Later:** a button calls the narrator live (for example "continue-story" or "make-move"). The dice and tables are built so only the narration step changes.
 - Obsidian can't run anything while closed, so deadline checks run when you open the vault or press a button, and they back-fill any windows that closed in the meantime.
+- Vault Operator can't run a terminal, so it can't build or test the engine. A coding agent does that (see 4.23).
 
 ### 4.3 Narrator and characters
 
@@ -160,7 +161,7 @@
 - If you log on your phone and your desktop before syncing, Fit saves the conflicting copy in its `_fit` folder. You merge it by hand and press recalculate.
 - After each action the script **recalculates** HP, MP and skill XP from the log and saves them to the hero note, which the Meta Bind panels display. A recalculate button repairs any drift or hand-edit.
 - QuickAdd macros do the work: plan my day, Done for a task, Done for a habit, rest day, pause and resume, recalculate, and back-filling missed habit blocks when you open the vault.
-- Claude Code writes and maintains the scripts, with each script owned by one button.
+- A coding agent in VS Code (GitHub Copilot) writes and maintains the scripts, with each script owned by one button.
 
 ### 4.12 Plugin stack
 
@@ -195,13 +196,13 @@ The vault is organised by who owns each file.
 | Folder     | Contents                                                          | Who writes it                                                               |
 | ---------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | Engine     | Event log, hero note, habit notes                                 | The QuickAdd macros only                                                    |
-| Story      | Story log, quest board, random tables, world, GM-only preferences | The narrator (Claude Code)                                                  |
-| Characters | Persona files, private memory, relationship notes                 | The characters (Claude Code)                                                |
+| Story      | Story log, quest board, random tables, world, GM-only preferences | The narrator (Vault Operator)                                               |
+| Characters | Persona files, private memory, relationship notes                 | The characters (Vault Operator)                                             |
 | Journal    | Daily notes                                                       | You, plus the "Today's turns" section. Only this folder is pruned (30 days) |
 | Backlog    | TaskNotes tasks                                                   | You and the TaskNotes plugin                                                |
 
-- Claude Code may write only to Story and Characters, which is how the rule that the narrator never touches HP, MP or XP is enforced.
-- The macro scripts live in a non-hidden folder, as QuickAdd requires. Claude Code writes and maintains them when you ask it to change the engine.
+- Vault Operator may write only to Story and Characters, which is how the rule that the narrator never touches HP, MP or XP is enforced. This is set through its write-approval settings and its ignore file, and it is tested in the thin slice. It can't see a Private folder that you keep for anything you don't want sent to a model provider.
+- The macro scripts live in a non-hidden folder, as QuickAdd requires. A coding agent in VS Code writes and maintains them when you ask it to change the engine.
 
 ### 4.16 Devices and sync
 
@@ -238,7 +239,7 @@ The vault is organised by who owns each file.
 
 ### 4.20 Journal access and real talk
 
-- The narrator and characters can read the whole journal. It is a bullet journal of what you did each day, not a diary, so it gives them context for briefings and conversations. They still write only to the Story and Characters folders (see 4.15).
+- The narrator and characters can read the whole journal. It is a bullet journal of what you did each day, not a diary, so it gives them context for briefings and conversations. A Private folder that they can't see is kept for anything you don't want sent to a model provider. They write only to the Story and Characters folders (see 4.15).
 - Only the narrator or game system gives **real-talk lines**: a short, plain, out-of-story line that follows an in-character one. Characters stay in the fiction. They give advice only when you ask, and otherwise react to your stats and actions.
 - Defaults: at most one real-talk line a day, and only when planned MP is over budget, a focus project has been untouched for a week, or HP is at 0. The wording is neutral and kind, with no guilt.
 
@@ -252,21 +253,21 @@ The vault is organised by who owns each file.
 
 ### 4.22 Morning briefing trigger
 
-- A "morning briefing" button in Obsidian runs Claude Code in the background on your desktop after you plan your day. The briefing appears in a note.
-- This is desktop only. If the button route doesn't work reliably in the thin slice, the fallback is to type a short command in Claude Code, for example `/briefing`.
-- Whether QuickAdd can launch Claude Code on your setup is untested, so it gets checked early in the thin slice.
+- A "morning briefing" button in Obsidian runs a QuickAdd macro that starts Vault Operator (through an Obsidian command) after you plan your day. The briefing appears in a note.
+- This is desktop only. If the button route doesn't work reliably in the thin slice, the fallback is to open the narrator agent in the sidebar and paste a short prompt, or to save the prompt as a Vault Operator skill and run it by name.
+- Whether a QuickAdd button can start Vault Operator with a prepared prompt is untested, so it gets checked early in the thin slice.
 
 ### 4.23 Engine design
 
 - All the rules live in **one engine script**: plain JavaScript with no dependencies. The QuickAdd macros only call it. It reads the event log and returns HP, MP, XP and results.
-- Claude Code writes automated tests for the engine. The same script can be run from the terminal without Obsidian open, so Claude Code can recalculate the state when needed.
+- A coding agent in VS Code (GitHub Copilot) writes automated tests for the engine and runs them in the terminal. The same script runs from the terminal without Obsidian open. Vault Operator can't run a terminal, so it neither builds nor tests the engine.
 - It should run the same in QuickAdd on desktop and on your phone, though the phone is untested.
 
 ### 4.24 AI models by job
 
-- A stronger model runs the character chats, the narrator and the morning briefing, because personality is the part most sensitive to model quality. Default: a Sonnet-class model.
-- A smaller, faster model runs session summaries, memory compression and housekeeping. Default: a Haiku-class model.
-- After the first week, check whether the characters feel alive, and measure the real running cost during the thin slice.
+- A stronger model runs the character chats, the narrator and the morning briefing, because personality is the part most sensitive to model quality. Default: the strongest model your provider offers (Gemini, or a model available through GitHub Copilot).
+- A smaller, faster model runs session summaries, memory compression and housekeeping. Default: a smaller model from the same provider, if Vault Operator lets you choose per agent (untested).
+- After the first week, check whether the characters feel alive, and measure the real running cost and any rate limits during the thin slice. On the free Gemini tier, Google's terms say it uses what you send to improve its products, so your daily notes go to Google. Anything private belongs in the Private folder (see 4.38).
 
 ### 4.25 Reminders and result display
 
@@ -315,7 +316,7 @@ The vault is organised by who owns each file.
 ### 4.32 Day boundary, offline mode and portraits
 
 - **Day boundary (default):** your day rolls over at 4:00 AM, so a habit done at 1 AM counts for the previous day and late nights don't cost HP.
-- **Offline engine (default):** the game works without the AI. If Claude Code is unavailable or you reach a usage limit, the buttons, dice and stats still run, and the narrator catches up on the story later.
+- **Offline engine (default):** the game works without the AI. If Vault Operator or your model provider is unavailable or you reach a usage limit, the buttons, dice and stats still run, and the narrator catches up on the story later.
 - **Portraits:** characters are text only for now, except that each character profile (the hero and the companions) holds a single portrait image. Ambient sound, scene images and spoken voices are later features.
 
 ### 4.33 Build plan
@@ -346,6 +347,15 @@ The vault is organised by who owns each file.
 - **Trial week:** the first week uses a light setup: one habit, a few tasks and the narrator. Your current routines keep running alongside. At the end you answer a one-minute check (did you want to open it, did anything feel like a chore, did you miss anything). The answers are written to the event log so they can be compared with the week-4 gut check. Then you decide to continue, adjust or stop.
 - **Built for you, shareable later:** the engine reads skills, names and numbers from the settings note and doesn't contain them. The engine, story, characters and journal stay in separate folders, so the vault could be packaged as a starter vault later. Sharing is decided after the first month of real use.
 
+### 4.38 Vault Operator and building tools
+
+- **The narrator and characters run in Vault Operator,** an AI agent plugin for Obsidian (desktop only). The narrator and each character is a separate agent with its own persona file. The model is Gemini (a free key) or GitHub Copilot.
+- **Building tools:** the engine, its tests and the QuickAdd macros are built in VS Code with the GitHub Copilot extension. Vault Operator can't run a terminal, so it can't build or test the engine. Check which coding agent features your Copilot plan includes before step 1.
+- **Private folder:** the agents read your daily notes but can't see a Private folder. Anything you wouldn't want sent to a model provider goes there.
+- **Free Gemini data use:** Google's terms say the free tier uses what you send to improve its products, and human reviewers may read it. The exception for the EEA, Switzerland and the UK doesn't cover Australia. GitHub Copilot's data terms haven't been checked.
+- **Tested in the thin slice:** whether Vault Operator's built-in memory can be switched off or kept per agent, so a character's private memories don't mix; whether its write-approval settings and ignore file keep it inside the Story and Characters folders and hide the Private folder; whether a QuickAdd button can start a chat with a prepared prompt; whether you can choose a model per agent; and how well the models hold a character's voice, within the free tier's rate limits.
+- How a Gemini or Copilot model responds to distressing journal entries isn't something this PRD controls (see Q74: no check-ins).
+
 ## 5. Leaning (to confirm)
 
 - Further debuffs beyond the HP penalty and "Tired" may be added once the basic version has been played.
@@ -362,7 +372,7 @@ The vault is organised by who owns each file.
 | Memory notes                                             | A core facts note under a page (who they are, what they know about you, promises, running jokes), and one paragraph per month in the digest                                                                        |
 | Hero persona file                                        | Name, background, class, personality, goals, flaws and how they relate to each skill                                                                                                                               |
 | Phone                                                    | Test the habit button in step 2. Fallback: log on desktop, with a catch-up button reading a plain note from your phone. Fit syncs only the plugin settings the buttons need                                        |
-| QuickAdd launching Claude Code                           | Test in step 4. Fallback: type /briefing                                                                                                                                                                           |
+| QuickAdd starting Vault Operator with a prepared prompt  | Test in step 4. Fallback: paste the prompt into the narrator chat, or save it as a Vault Operator skill                                                                                                            |
 | Result card                                              | One screen, tap to dismiss. If pop-ups misbehave on mobile, the phone shows a short notice instead                                                                                                                 |
 | Undo                                                     | Same-day tasks and habits only. Boss challenges and gifts can't be undone                                                                                                                                          |
 | Projects                                                 | One note per project, with arcs as headings and quests as TaskNotes tasks linked to it. The narrator's proposals are saved as a draft note, and you approve one by moving it into the project                      |
@@ -399,7 +409,7 @@ All of these are aspirational targets, to aim at and not to pass or fail. They r
 - Backlog with a New task form (skill, size and flags), a button to add each task to today, and an urgent and important choice
 - Habit notes for 3 to 5 core habits, with the 30-day cost
 - Dice Roller rolls (2d6) and narrator-built random tables, with a "not for me" button
-- One companion at the start (up to 5 as the party grows), layered memory, session summaries and one Claude Code command per character
+- One companion at the start (up to 5 as the party grows), layered memory, session summaries and one Vault Operator agent per character
 - Morning briefing (started by a button) and "Today's quests" note
 - Result card for tasks and toast for habits
 - Daily note with a "Today's turns" section, and 30-day pruning with GitHub backup
@@ -418,7 +428,7 @@ All of these are aspirational targets, to aim at and not to pass or fail. They r
 ## 9. Assumptions
 
 - Obsidian on desktop, plus the mobile app for quick taps, synced with Fit.
-- Claude Code (or a similar agent) with read and write access to the vault folder.
+- Vault Operator (desktop only) with Gemini or GitHub Copilot as the model, with read and write access to the vault. VS Code with GitHub Copilot for building and testing the engine.
 - The vault is backed up on GitHub.
 - You press Done on tasks and habits, and the macro stamps the time.
 - Core plugins and folders are installed, and you are willing to restructure.
