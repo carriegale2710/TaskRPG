@@ -2,211 +2,306 @@
 
 > Your second brain, enchanted.
 
-Turn your daily tasks, habits, and projects into a living D&D-style campaign—where your real productivity decides the quest, finishing work advances the story, and every completed task earns XP, loot, and a new chapter in your personal saga.
+TaskRPG is an immersive, character-driven RPG layer on an Obsidian vault. Pressing **Done** on a real task is a game turn: the dice roll, a random table answers, and a narrator and a cast of characters who remember you turn the day's results into a story. Boredom is the main reason projects and routines get dropped, so TaskRPG generates the novelty for you instead of asking you to supply it.
 
-TaskRPG is a journal-driven productivity layer for your existing second brain (Obsidian, Notion, Logseq—wherever your notes live). Finish a real task, and the story continues: a new scene, a plot twist, a relic uncovered, a rival outmaneuvered. Your journal becomes the campaign log; your master summary becomes the living map of where your story is heading in TaskRPG.
-
----
-
-## Quick Start
-
-1. Copy folder structure into a new Obsidian vault
-2. Install plugins
-3. Configure an AI provider in Text Generator or use gm_bridge.py with Anthropic API
-4. Run `python gm_bridge.py morning` each morning, `evening` after tasks
+**Status:** the design (PRD v2) is complete and ready to build. The build follows `BUILD_PROMPT.md` one step at a time. Anything marked _untested_ below has not been checked on a real setup yet and is verified during the build.
 
 ---
 
-## Who It’s For
+## The idea in one paragraph
 
-TaskRPG is built for people who want their productivity system to feel like an adventure—not another chore.
+**Dice and tables decide _what_ happens. The AI narrates _how_.** Every number (HP, MP, XP, rolls, levels) comes from a small, tested JavaScript engine that reads an event log, so the randomness is real and the game works even when the AI is down. The narrator and characters run as agents inside Obsidian (Vault Operator), write only story files, and never touch your stats or your task lines.
 
-## You’ll love it if you…
+---
 
-- **Have ADHD or fluctuating energy** and need a system that adapts to your real capacity instead of punishing you for “off” days.
-- **Already use a second brain** (Obsidian, Notion, Logseq) and want to layer a narrative reward on top without abandoning your existing notes.aiproductweekly.substack+1
-- **Get bored easily** with traditional productivity apps and need novelty, surprise, and story progression to stay engaged.
-- **Work solo** on long-running projects (coding, game dev, research, creative work) and miss the sense of momentum that comes from a shared campaign.
-- **Love D&D, RPGs, or lore-heavy stories** and want your real life to feel like part of an epic.mainquest
-- **Struggle with perfectionism or guilt** over unfinished tasks and need a system that treats recovery as progress, not failure.
+## Who it's for
 
-## Features & Benefits
+You'll like TaskRPG if you:
 
-TaskRPG isn’t just another habit tracker—it’s a narrative reward layer that adapts to your real capacity, keeps your story coherent, and stays low-maintenance.
+- Have an **AuDHD or novelty-driven brain** and drop things when they get boring.
+- Are a **solo builder** (founder, full-stack dev, creative) with long-running projects and a need to prioritise real work over distractions.
+- Already live in **Obsidian** and want a game layer on top of your notes, not a separate app.
+- Want **characters, relationships and personalisation** more than maps and lore dumps.
+- Need a system with **no death and no guilt**: falling behind creates a recovery arc, never a punishment.
 
-### Core Features
+It is built for one person. Sharing the vault as a starter is a possible later step, decided after the first month of real use.
 
-| Feature                        | What it does                                                                                                                            |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| **MP-adaptive quests**         | Your logged energy (MP 1–10) determines quest type, scope, and rewards—low MP means recovery missions, high MP unlocks bolder chapters. |
-| **AI Game Master**             | Generates lore-heavy quest framings (morning) and completion beats (evening) that reference your actual vault context.                  |
-| **Journal-as-campaign-log**    | Your daily notes serve triple duty: bujo, diary, and story log—no separate “campaign diary” to maintain.                                |
-| **Master Story So Far**        | A living plot summary with a timeline linking back to each day’s original entry, so you (and the AI) can always trace context.          |
-| **Skill progression**          | Real skills (TypeScript, Product Design, AI Agents, etc.) level up as you complete work—your character grows with you.                  |
-| **Atlas VTT integration**      | Pin quests to map locations, reveal fog, move tokens, and unlock regions as visual payoff for real progress.                            |
-| **Habit & deadline awareness** | The GM factors your habit streaks and upcoming deadlines into quest framing, adding urgency or recovery framing as needed.              |
-| **Weekly review**              | A built-in ritual that rolls up the week’s quests, XP, and story beats, then prunes stale quests without guilt.                         |
+---
 
-### Benefits
-
-| Benefit                              | Why it matters                                                                                                                                                                                                                                                                |
-| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **No guilt on low-energy days**      | Low MP triggers recovery-framed quests with real (small) rewards—never failure or shame.                                                                                                                                                                                      |
-| **Prevents overcommitment**          | You set capacity _before_ the quest is framed, so the story respects your actual limits.                                                                                                                                                                                      |
-| **Story continuity without bloat**   | Layered memory (summary + structured state + recent beats) keeps the plot coherent without dumping full history into every prompt.                                                                                                                                            |
-| **Your journal stays useful**        | One note per day handles tasks, mood, and story—no duplicate systems to abandon.                                                                                                                                                                                              |
-| **Motivation that scales both ways** | Good days unlock bolder quests; bad days still feel productive—never stagnant or patronizing. [[strayspark](https://www.strayspark.studio/blog/difficulty-systems-players-enjoy)][[playquestmaster](https://www.playquestmaster.com/smarter-difficulty-scaling-modern-rpgs/)] |
-| **Full vault control**               | Everything lives in your own Obsidian vault (or Notion/Logseq); no vendor lock-in, no cloud dependency required. [[forum.obsidian](https://forum.obsidian.md/t/nested-vaults-usage-and-risks/6360)][[github](https://github.com/rbcodelabs/obsidian-vault-bridges)]           |
-| **Built for ADHD brains**            | Novelty, surprise, and recovery-as-progress mechanics combat boredom and perfectionism.                                                                                                                                                                                       |
-
-### What makes it different
-
-Most gamified productivity apps treat your energy as a **decoration** (HP bars that go down when you miss a day). TaskRPG treats it as a **hard input**: your logged MP literally changes the quest you receive, the scope you’re given, and the reward you earn.
-
-| Typical gamified app                   | TaskRPG                                            |
-| -------------------------------------- | -------------------------------------------------- |
-| HP drops on missed days → guilt        | Low MP → recovery quest, smaller rewards, no shame |
-| Fixed daily goals regardless of energy | Capacity set by you, quest adapts to it            |
-| Story is separate from real work       | Story is a direct mirror of your real capacity     |
-| Requires a new app/habit to maintain   | Layers onto your existing journal/notes            |
-
-This is the core insight: **the story is a mirror of your real capacity, not a separate fiction ignoring it.**
-
-## How It Works
-
-TaskRPG turns your existing second brain into a living campaign by following one simple daily loop:
+## The daily loop
 
 ```
-┌─────────────────────────────────────────────┐
-│ 1. LOG YOUR STATE (morning)                 │
-│ Open today's journal note.                  │
-│ Fill in MP, energy, capacity, habits.       │
-│ Write 1–3 tasks you actually plan to do.    │
-└─────────────────────────────────────────────┘
-                      ↓
-┌─────────────────────────────────────────────┐
-│ 2. GM FRAMES YOUR QUEST                     │
-│ Your AI Game Master reads your state +      │
-│ Story So Far, then writes a quest framing   │
-│ that matches your real capacity.            │
-└─────────────────────────────────────────────┘
-                      ↓
-┌─────────────────────────────────────────────┐
-│ 3. DO REAL WORK                             │
-│ Complete tasks in your project repos,       │
-│ check off habits, track focus sessions.     │
-└─────────────────────────────────────────────┘
-                      ↓
-┌─────────────────────────────────────────────┐
-│ 4. STORY CONTINUES (evening)                │
-│ Mark the quest complete. Your GM writes a   │
-│ 120–180 word story beat, appends it to your │
-│ journal, and updates the master plot map.   │
-└─────────────────────────────────────────────┘
-                      ↓
-┌─────────────────────────────────────────────┐
-│ 5. VISUAL PAYOFF (optional)                 │
-│ Update your Atlas VTT map: reveal fog,      │
-│ move your token, unlock the next region.    │
-└─────────────────────────────────────────────┘
+MORNING
+  Press "plan my day" → add tasks from the backlog to today,
+  tick urgent / important. MP refills to 10.
+  Press "morning briefing" → the narrator recaps yesterday and
+  frames today's planned tasks as quests.
+
+THROUGH THE DAY
+  Done on a task  → MP is spent, 2d6 roll, a table result, a result card.
+  Done on a habit → one-line status (+HP, +XP, −MP). No roll, no story beat.
+  Talk to a character any time. It costs no MP.
+
+OVER TIME
+  Skills level up, HP and MP recalculate from the event log, projects
+  progress through arcs, companions grow, loot drops, bosses appear.
 ```
 
-### Step 1 — Log your state
+Skipping a briefing costs nothing. The next one just covers more days.
 
-Each morning, open today’s journal note and fill in a tiny “Character Status” block:
+---
 
-- **MP** (mana/energy): 1–10
-- **Energy**: low / medium / high
-- **Capacity**: how many main tasks you can realistically handle
-- **Habits**: quick checkboxes
-- **Today’s plan**: 1–3 tasks you actually intend to do
+## How it works
 
-This takes under two minutes and becomes the **hard constraint** your GM must respect.
+TaskRPG splits the work in three, and each part has one job:
 
-### Step 2 — Your GM frames the quest
+| Layer                                        | Does                                                         | Never does                           |
+| -------------------------------------------- | ------------------------------------------------------------ | ------------------------------------ |
+| **Plugins** (QuickAdd, Meta Bind, and so on) | Buttons, panels, tasks, dice tables, sync                    | Hold game rules                      |
+| **Engine** (one plain JavaScript module)     | Every rule and number. Reads the event log and settings note | Depend on Obsidian or any plugin     |
+| **Agents** (the narrator and each character) | Write story, characters and memory, in their own folders     | Change HP, MP, XP or edit task lines |
 
-Your AI Game Master reads your MP, energy, plan, and the master Story So Far summary, then writes a short quest framing.
+The **event log** is the source of truth: one plain-text line per action. The hero note is a saved copy that a **recalculate** button can rebuild from the log at any time. QuickAdd macros are thin wrappers that call the engine, and every tunable number lives in one **settings note**.
 
-- **MP 1–4** → Rest/Scout quest: smaller scope, recovery framing, no new plot threads.
-- **MP 5–7** → Standard quest: normal scope, moderate rewards.
-- **MP 8–10** → Deep/Bold quest: bigger risks, richer rewards, plot advancement allowed.
+---
 
-Low MP is never framed as failure—it’s a tactical retreat, a scouting mission, or a chance to recover.
+## The rules at a glance
 
-### Step 3 — Do the real work
+All values below are defaults and live in the settings note, not in code. A settings change is logged with its date and only applies from then on, so your past never gets rewritten.
 
-This is where the actual productivity happens: complete tickets in your project repos, check off habits, run focus sessions. TaskRPG doesn’t replace your existing workflow—it layers a narrative reward on top of it.
+### MP: a daily budget to practise prioritising
 
-### Step 4 — The story continues
+- Max **10**, refilled every morning (the day rolls over at **4:00 AM**).
+- Task cost by size: **small 1, medium 3, large 5**. An unplanned task costs **+1**. When Wounded, every task costs **+1**. At skill levels 5 and 10, tasks in that skill cost 1 less. A task never costs less than 1.
+- Past 0 MP you can keep going: XP is halved (rounded up) and rolls get a **−1 "Tired"** penalty. HP is untouched.
+- **Habits** cost 2, 1 or 0 MP depending on how often you did them on time over the last 30 eligible days (under ⅓ / ⅓ to ⅔ / ⅔ or more). New habits start at 2 MP.
 
-When you mark a quest complete, your GM writes a 120–180 word story beat that:
+### XP, skills and levels
 
-- Advances an existing plot thread (never invents new major arcs unprompted).
-- Rewards XP/MP proportional to your morning capacity.
-- Ends with a next-chapter hook.
-- Gets appended directly into your daily journal note.
-- Adds a timeline row to your master Story So Far summary.
+- Five skills: **Focus, Vitality, Craft, Mind, Presence**. Each task or habit feeds exactly one.
+- Task XP = its size, +50% if important, +50% if urgent, +25% if it's in the weekly focus project (bonuses add; rounded up). Habits give 1 XP per press, at any MP.
+- Ten levels per skill. The **dice bonus** is +1 at levels 2, 4, 6, 8 and 10.
 
-Your journal becomes the campaign log; your Story So Far becomes the living map of where your story is heading.
+### The roll
 
-### Step 5 — See it on the map (optional)
+Roll **2d6 + skill dice bonus − HP penalty − Tired penalty** against these thresholds. A project's threat level (+1 per finished arc, max +4) raises every threshold.
 
-If you use Atlas VTT, update your world map after a quest: reveal fog, move your token, unlock a region, or defeat a boss. This is the visual payoff that makes the campaign feel real.
+| Total     | Outcome                                         |
+| --------- | ----------------------------------------------- |
+| 9 or more | Success                                         |
+| 6 to 8    | Partial success (it works, with a complication) |
+| 5 or less | Setback (a twist that moves the story on)       |
 
-### Weekly rhythm
+A success has a one-in-three chance of **loot**. A roll only changes the story, never the real task's XP or MP.
 
-Once a week, run a **summary refresh**: your GM rewrites the Story So Far (200–400 words) incorporating the last 3–5 story beats, preserving active threads and dropping resolved minor details. This keeps the overarching plot coherent without bloating context.
+### HP and Wounded
+
+- Max **10**. An on-time core habit restores 1. A late press earns XP but no HP.
+- A missed block deadline costs 1 HP, capped at 2 a day. Weekends, rest days and pause are exempt.
+- Dice penalty: HP 7–10 none, 4–6 **−1**, 1–3 **−2**, 0 **−3**. At 0 HP you are **Wounded**: tasks cost +1 MP, boss challenges are blocked, and the narrator switches to a gentle recovery arc. One on-time habit lifts you out.
+
+### Rest, pause and weekends
+
+- **Rest day:** a one-day pass, 4 a month, no HP loss, no plan needed.
+- **Pause:** freezes the game with no HP loss. Paused days are left out of every habit's measure.
+- **Weekends are optional.** Do something anyway and it earns full XP and HP.
+- Disappear without pausing and the game carries on: HP drains (max 2 a day) and you return Wounded, with a gentle first quest waiting.
+
+### Undo
+
+**Undo last** adds a correcting line to the log (nothing is deleted). It works for same-day tasks and habits only, newest first, and can't be used to re-roll.
+
+---
+
+## Later layers (after the trial week)
+
+Added one at a time, in this order:
+
+1. More habits and skills.
+2. **Projects and arcs:** up to 3 open at once, a weekly focus project, and the threat level.
+3. **Companions:** one at the start, up to 5 (one per skill). Team-up tags, affinity and small perks.
+4. **Loot and inventory:** flavour items, gifts to companions.
+5. **Boss challenges:** real-world challenges (for example "do habit X for 7 days in a row"). The engine checks the log, so success is never an honour system. Rewards carry one small perk from a fixed list.
+
+The narrator also offers a **shake-up** when things get stale, and adds a **weekly recap** to the Sunday briefing. Both use only data from the event log.
+
+---
+
+## What's in the vault
+
+The vault is organised by who owns each file.
+
+| Folder         | Contents                                                        | Who writes it                                |
+| -------------- | --------------------------------------------------------------- | -------------------------------------------- |
+| **Engine**     | Event log, hero note, habit notes, settings note                | The QuickAdd macros only                     |
+| **Story**      | Story log, briefings, quest board, random tables, GM-only prefs | The narrator                                 |
+| **Characters** | Persona files, private memory, relationship notes               | The characters                               |
+| **Journal**    | Daily notes, with a "Today's turns" section                     | You (only this folder is pruned, to 30 days) |
+| **Backlog**    | TaskNotes tasks                                                 | You and TaskNotes                            |
+| **Private**    | Anything you don't want sent to a model provider                | You. Agents can't see it                     |
+
+Scripts live in a **visible** folder, because QuickAdd can't load them from a hidden one.
+
+---
+
+## Plugins
+
+Add only what's listed. Every extra plugin slows startup. Full detail is in `PLUGINS.md`.
+
+### Required
+
+| Plugin                 | Used for                                                                 | From   |
+| ---------------------- | ------------------------------------------------------------------------ | ------ |
+| **QuickAdd**           | The glue: every button runs a macro that calls the engine                | Step 0 |
+| **Templater**          | Templates for daily, habit, persona and item notes                       | Step 0 |
+| **Lazy Plugin Loader** | Keeps startup fast                                                       | Step 0 |
+| **Meta Bind**          | The panels (HP, MP, XP) and buttons. Replaces the discontinued Buttons   | Step 2 |
+| **Fit**                | Phone ↔ desktop sync through GitHub; doubles as backup                   | Step 2 |
+| **Dice Roller**        | Draws from the random tables                                             | Step 3 |
+| **TaskNotes**          | The backlog. Each task is a note. Needs the built-in **Bases** plugin on | Step 3 |
+| **Vault Operator**     | Runs the narrator and every character as agents. Desktop only            | Step 4 |
+
+You also need **VS Code with GitHub Copilot** to build and test the engine (Vault Operator has no terminal).
+
+### Don't use
+
+Buttons (discontinued), Life RPG / LifeQuest / RPG Stat Tracker (their XP rules clash with the engine), Tasks (date-only done stamp; the game needs the time), Checklist, tabletop-GM plugins (RPG Manager, Fantasy Statblocks, and similar), **any second AI plugin alongside Vault Operator** (conflicting edits and mixed memories), and general utilities you don't need.
+
+### Optional, later, only when you ask
+
+Dataview, Storyteller Suite, Atlas VTT (probably overkill), Heatmap Calendar, presentation polish plugins, and the external-sync plugins (Google Calendar, Google Tasks).
+
+---
+
+## Quick start
+
+Build one step at a time and try each before the next. Each step ends with something you can press and see. The full brief is in `BUILD_PROMPT.md`.
+
+| Step | Build                                                                             | Done when                                                                                |
+| ---- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| 0    | Folders, stub settings note, plugin check                                         | A QuickAdd macro runs a "hello" script                                                   |
+| 1    | The engine and its automated tests (VS Code)                                      | All tests pass, and `node engine.js recalc` works in a terminal                          |
+| 2    | Habit **Done** button, hero note, Meta Bind panels                                | You press Done and see the toast, the log line and the HP change. **Test on your phone** |
+| 3    | **New task** form, add-to-today button, task **Done**, result card, **undo last** | You add, plan, finish and undo a task                                                    |
+| 4    | Quiz, narrator, hero persona, about 5 starter random tables                       | Quiz finished, hero edited, Dice Roller draws from the tables                            |
+| 5    | One companion and the morning briefing button                                     | You plan a day, get the quests and a remembered conversation                             |
+
+### The trial week
+
+The first week uses one habit, a few tasks and the narrator, with your current routines running alongside. At the end you answer a one-minute check (did you want to open it, did anything feel like a chore, did you miss anything). Then you decide to **continue, adjust or stop**. Nothing widens before that.
+
+---
+
+## `gm_bridge.py` (optional)
+
+The narrator normally runs in Vault Operator. `gm_bridge.py` is a terminal fallback that does the same two jobs through the Anthropic API, for when Vault Operator or its model provider is unavailable or rate-limited. **The game never depends on it.**
+
+### Setup
+
+```bash
+pip install anthropic pyyaml
+export ANTHROPIC_API_KEY=...
+export VAULT_PATH=~/MyVault
+```
+
+### Commands
+
+```bash
+python gm_bridge.py status                      # what the script can see; changes nothing
+python gm_bridge.py briefing --dry-run          # print the prompt, no API call
+python gm_bridge.py briefing                    # write today's briefing and quests
+python gm_bridge.py briefing --force            # replace today's briefing
+python gm_bridge.py briefing --date 2026-10-13  # override the game day
+python gm_bridge.py story                       # refresh the Story So Far digest
+```
+
+| Command    | Does                                                                                                                                                        | Model                          |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| `briefing` | Recaps every day since the last briefing (max 7), frames today's planned tasks as quests, adds the Sunday weekly recap, and at most one kind real-talk line | Stronger (`claude-sonnet-5-5`) |
+| `story`    | Rewrites the Story So Far from recent briefings. Keeps the timeline table and any line marked 📌 untouched                                                  | Smaller (`claude-haiku-5-5`)   |
+
+Override models with `GM_MODEL_STRONG` and `GM_MODEL_SMALL`.
+
+### Output and safety
+
+- **Writes:** `Story/Briefings/<date>.md`, `Story/Today's quests.md` (each quest links to its real task), and a row in the Story So Far timeline.
+- **Enforced in code:** it can write only to Story and Characters, and it refuses to read the Private folder. It never computes or changes HP, MP, XP or rolls, never edits task lines, and never touches the journal or the Engine folder.
+- **If the API fails:** it says so and exits without changing anything. The next briefing covers the missed days.
+- It won't overwrite an existing briefing without `--force`, so it doesn't clobber one the narrator already wrote. Don't run it while a Vault Operator session is writing the same files.
+
+### What it assumes
+
+Edit the config block at the top of the script if your vault differs.
+
+- Folders and files named as in the table above (`Engine/Event Log.md`, `Engine/Hero.md`, `Engine/Settings.md`, `Story/Story So Far.md`, `Characters/Narrator.md`, and so on).
+- Event-log lines start with a real date and 24-hour time (for example `2026-10-12 14:00 | ...`). The script applies the 4:00 AM rollover itself.
+- The hero note keeps HP, MP and unlocked rules in its frontmatter. The settings note is a table of `| Name | Value |` rows.
+- Daily-note task lines use the inline format `[skill:: craft] [size:: 3] [urgent:: true]`, and the results sit under a **Today's turns** heading.
+
+### Migrating from v1
+
+`morning` is now `briefing` and `summary` is now `story` (the old names still work with a notice). **`evening` is gone:** v2 has no per-day story beat, and results become prose in the next morning briefing. MP is no longer typed in as real energy, so the old capacity tiers are removed.
+
+---
+
+## Devices, sync and privacy
+
+- **Phone for quick taps, desktop for everything else.** Done presses, habit presses and the New task form are meant to work on the phone. Planning, engine changes and character chats stay on desktop. Mobile support for the macros, TaskNotes and pop-ups is _untested_ and is checked in Steps 2 and 3.
+- **Fit** syncs the vault. Genuine conflicts land in a `_fit` folder: merge by hand, then press **recalculate**. Plugin settings don't sync by default, so QuickAdd macros and Meta Bind setup need opting in or recreating on the phone.
+- **Reminders** are 3 to 5 recurring phone alarms, one per habit block. They aren't linked to the game.
+- **Privacy:** agents read your whole journal (a bullet journal of what you did, not a diary). Anything you wouldn't want a model provider to see goes in **Private**, which agents can't read. On the **free Gemini tier**, Google's terms say what you send is used to improve its products and may be read by human reviewers, and the regional exception doesn't cover Australia. GitHub Copilot's data terms haven't been checked. `gm_bridge.py` sends prompt context to Anthropic's API.
+- **Cost:** not estimated. Measure real usage and rate limits during the trial week.
 
 ---
 
 ## FAQ
 
-### Do I need to use Obsidian?
+**Do I need Obsidian?** Yes. v2 is built on Obsidian and its plugins. Notion and Logseq are not supported.
 
-No—but it’s the best-supported setup. TaskRPG is designed around Markdown files, YAML frontmatter, and wikilinks, which Obsidian handles natively. You can adapt the system for Notion, Logseq, or any folder-based notes app, but you’ll lose some of the plug-and-play integrations (Atlas VTT, Life RPG, Text Generator).
+**Do I need to pay for an AI provider?** Vault Operator can use a free Gemini key or GitHub Copilot. Check the privacy note above before sending anything sensitive. `gm_bridge.py` needs an Anthropic API key and is optional.
 
-### Do I need to pay for an AI provider?
+**What if the AI is down?** Buttons, dice, stats and the random tables keep working. The narrator catches up later.
 
-Not necessarily. You can use a local model via Ollama/LM Studio for zero API cost, or connect a paid provider (Anthropic, OpenAI, OpenRouter) if you want higher-quality story generation. Typical API usage runs $3–10/month depending on how often you generate beats.
+**What if I miss a day, or a week?** The game carries on. HP drains (max 2 a day) and you come back Wounded, with a gentle first quest. Use a rest day or pause to avoid that, any time.
 
-### Is my data private?
+**Does my real energy matter?** No. Stats are purely game state, and no health or energy data is entered. MP is an in-game budget that exists to practise choosing real, important work over busy work.
 
-Yes—everything lives in your own vault/folder on your device. If you use a cloud AI provider, only the prompt context you explicitly send (quest name, MP, plan, Story So Far excerpt) is transmitted; your full vault never leaves your machine unless you choose to sync it.
+**Can I use my own AI agent?** The narrator and each character are Vault Operator agents with persona files. Don't add a second AI plugin next to it. `gm_bridge.py` is a script, not a plugin, and is restricted to the Story and Characters folders.
 
-### How is this different from Habitica or MainQuest?
+**Is it for teams?** No, it's built for one person.
 
-| Habitica / MainQuest | TaskRPG                  |
-| -------------------- | ------------------------ | ------------------------------------------- |
-| Quest scope          | Fixed daily habits/tasks | Adapts to your logged MP/capacity           |
-| Story                | Light RPG framing        | Deep, evolving lore with continuity         |
-| Journal integration  | Separate app             | Your existing daily notes ARE the log       |
-| Energy handling      | HP drops on missed days  | Low MP triggers recovery quests, no shame   |
-| Project doc linking  | Limited                  | Direct wikilinks to your project repos/docs |
+**How much time does it take?** The aspirational target is under 10 minutes a day of upkeep. Press Done, press Done, talk to a character if you feel like it.
 
-TaskRPG is built for people who want the **story to mirror their real capacity**, not just decorate a checklist.
+**How is it different from Habitica or other gamified apps?**
 
-### Can I use this for team projects?
+| Typical gamified app         | TaskRPG                                                    |
+| ---------------------------- | ---------------------------------------------------------- |
+| Fixed rewards, quickly stale | Dice and narrator-built tables; entries retire and refresh |
+| Light RPG framing            | Characters who remember you, with layered memory           |
+| Separate app to maintain     | Lives in your vault; your tasks and notes stay yours       |
+| HP loss and streak guilt     | No death, no guilt: rest days, pause, recovery arcs        |
+| Rules hidden in the app      | Every number in one settings note, every rule tested       |
 
-It’s designed for solo builders. You could share a vault with a collaborator, but the GM, journal, and progression are tuned for one person’s capacity and story.
+**Is it a game or a productivity tool?** Both. The work is real; the game is the reward layer that makes showing up worth doing.
 
-### What if I miss a day?
+---
 
-Nothing breaks. Your journal just has a gap—and since the system uses a rolling Story So Far (not a rigid streak), missing a day doesn’t punish you. The next quest simply picks up from wherever your Story So Far left off.
+## Success looks like
 
-### How much time does this take daily?
+These are aspirations to aim at, not pass or fail:
 
-About 5–10 minutes total:
+- At least one Done press on 5 of 7 days, for 4 weeks.
+- One core habit reaches 20 on-time days out of 30 within 8 weeks.
+- More important tasks completed each week.
+- At week 4, a gut check: do you still want to open it?
 
-- **Morning**: 2 min (log MP/energy/plan, generate quest framing)
-- **Evening**: 3 min (mark complete, generate beat, update map)
-- **Weekly**: 10 min (review, prune, refresh summary)
+---
 
-If that feels like too much, start with just MP logging + evening beats—skip the morning framing until the habit forms.
+## Project documents
 
-### Can I use my own AI agent instead of the built-in GM?
-
-Yes. The system is modular: you can plug in Claude Code, Codex, opencode, or any custom agent via the `AGENTS.md` rules file and the `gm_bridge.py` script. The README includes a sample `AGENTS.md` you can customise.
-
-### Is this a game or a productivity tool?
-
-Both. The productivity is real (you complete actual tasks in your actual projects); the game is the **reward layer** that makes showing up feel meaningful. Think of it as “a campaign that meets you where you are,” not a game that distracts from work.
+| File              | What it is                                                      |
+| ----------------- | --------------------------------------------------------------- |
+| `PRD.md`          | The full product requirements (v2): every decision and default  |
+| `BUILD_PROMPT.md` | Step-by-step brief for the coding agent                         |
+| `PLUGINS.md`      | Plugin requirements, what to avoid, and checks before each step |
+| `gm_bridge.py`    | Optional terminal fallback for the narrator                     |
