@@ -1,33 +1,74 @@
+# PLUGINs.md: Plugin requirements for TaskRPG
 
-I opened the pages for about 20 of the 70 plugins, the ones that decide how the system works: tasks and timestamps, buttons and scripting, dice, gamification, maps, AI and startup speed. The rest I’ve sorted by name and purpose only, so treat those as first guesses.
+**Audience:** coding agents (Claude Code or similar) building and maintaining the TaskRPG vault.
+**Read with:** the TaskRPG PRD v2 and the TaskRPG build brief.
 
-**Findings that change the plan**
+## 1. How to use this file
 
-- **Buttons is out.** Meta Bind’s own docs call it the spiritual successor to the discontinued Buttons plugin. [moritzjung](https://www.moritzjung.dev/obsidian-meta-bind-plugin-docs)
-- **The gamification plugins don’t fit your rules.** Life RPG tracks habits, water, rewards, XP and a wallet. LifeQuest (also labelled “Life RPG”) runs quests, XP, levels and streaks. RPG Stat Tracker awards XP for time spent in the vault. Your HP deadlines, MP budget and skill tags are custom, so I’d build that logic ourselves. [vibe rpg +2](https://community.obsidian.md/plugins/vibe-rpg)
-- **Time-of-day stamps are a gap in the Tasks plugin.** An older forum thread says its done date is date-only, so it’s worth re-checking. TaskNotes stores completion as a full timestamp. Tasks custom date (not on your list) also writes completion times. [Task + Dateview. Timpestamp on task completed +2](https://forum.obsidian.md/t/task-dateview-timpestamp-on-task-completed/60804)
-- **Habitica Sync would duplicate your game.** It shows Habitica’s own HP, XP and coins, so I’d save it for the later sync phase. [obsidian](https://community.obsidian.md/plugins/obsidian-habitica-integration)
-- **Local REST API is optional.** It only serves while Obsidian is open. An agent can read the same Markdown straight from the vault folder. You’d only need it if the agent must trigger Obsidian commands. [mcp](https://mcp.directory/blog/obsidian-mcp-complete-guide-2026)[contextbolt](https://contextbolt.com/tools/mcp-server-directory/obsidian-rest/)**Suggested core stack (about 6 plugins)**
+- TaskRPG splits the work in three. **Plugins** provide the interface and plumbing (buttons, panels, tasks, dice tables, sync). The **engine script** (plain JavaScript, no dependencies, tested) holds every game rule. The **agent** (you) writes the story, characters and memory.
+- **Do not put game rules inside a plugin's settings or in a macro.** Macros only call the engine. Every tunable number lives in the settings note.
+- **Do not install a plugin that is not listed under "Required".** Each extra plugin adds startup time. Ask the user first.
+- A "Required" plugin is needed from the build step shown in its row. Confirm it is installed and working before that step starts (see section 7).
+- Anything marked **untested** has not been checked on the user's setup. Test it in the step named, and tell the user if it fails.
 
-|Plugin|Job|
-|---|---|
-|QuickAdd|The game engine. Macros chain commands and your own JavaScript. A macro can also run at Obsidian startup.|
-|Meta Bind|Buttons and display fields bound to frontmatter, such as HP/MP bars and “plan my day”. It makes buttons, input fields and view fields tied to properties.|
-|Dice Roller|2d6 plus modifiers. It has 271k downloads and can return random lines or blocks from your notes. Its API can be called from Templater or Meta Bind buttons.|
-|Templater|Daily note and persona templates (not re-checked).|
-|Bases (built in), plus Dataview only if needed|Dashboards. Dice Roller can read Dataview inline fields, which is the one reason to add Dataview.|
-|Lazy Plugin Loader|It delays plugin loading to get startup under a second. [quickadd.obsidian.guide +6](https://quickadd.obsidian.guide/docs/Choices/MacroChoice.md)|
+## 2. Required plugins
 
-**Add later, for immersion**
+| Plugin                 | Needed from | What it does in TaskRPG                                                                                                                                                                                                                              | What you do with it                                                                                                                                                                                              | Watch out for                                                                                                                                                                                                                           |
+| ---------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **QuickAdd**           | Step 0      | The glue. Runs macros and user scripts when the user presses a button. Every action goes through it: Done for a task or habit, plan my day, rest day, pause and resume, undo last, recalculate, the New task form and the morning briefing launcher. | Write each macro as a thin wrapper that reads the event log and settings note, calls the engine, then writes the new log line and updates the hero note. Keep scripts in a **visible** folder, not a hidden one. | QuickAdd user scripts can use the full Obsidian API, so keep them small. Mobile behaviour is **untested** (Step 2). Macros can also run at startup, which is useful for back-filling missed habit blocks.                               |
+| **Meta Bind**          | Step 2      | The panels and buttons the user sees. Shows HP, MP, skill XP and levels from the hero note. Shows the settings note as simple editable fields. Provides the buttons that trigger QuickAdd macros.                                                    | Bind input and view fields to frontmatter properties in the hero note and settings note. Place the Done buttons beside each habit and task.                                                                      | It replaces the older Buttons plugin, which is discontinued, so don't use Buttons. Mobile rendering is **untested**.                                                                                                                    |
+| **Dice Roller**        | Step 3      | Draws results from the random tables (one note per table, one weighted line per entry) and can roll dice.                                                                                                                                            | Use it for table draws. Its API can be called from other plugins' scripts.                                                                                                                                       | Keep the engine testable: the engine should accept dice results as input, taken from Dice Roller or from a seeded random function, so the same inputs always give the same outputs in tests.                                            |
+| **TaskNotes**          | Step 3      | The backlog. Each task is its own note, with frontmatter properties. It records completion as a timestamp.                                                                                                                                           | The New task form creates a TaskNotes task with extra properties: skill, size, urgent, important and project. The Done macro reads these.                                                                        | It needs the built-in **Bases** plugin switched on. Confirm in Step 3 that TaskNotes keeps your extra frontmatter properties when it edits a task.                                                                                      |
+| **Templater**          | Step 0      | Templates for the daily note, habit notes, persona notes and item notes.                                                                                                                                                                             | Write templates with the fields in the PRD. Keep logic out of templates.                                                                                                                                         | Not re-checked in this project. Verify it loads templates from the folder you set.                                                                                                                                                      |
+| **Lazy Plugin Loader** | Step 0      | Delays plugin loading to keep Obsidian's startup fast.                                                                                                                                                                                               | Set heavier plugins to load after startup.                                                                                                                                                                       | Plugins that watch for events or run timers can behave badly if they are loaded only on demand. Prefer "load shortly after startup" for QuickAdd, Meta Bind, Dice Roller and TaskNotes.                                                 |
+| **Fit**                | Step 2      | Syncs the vault between the user's phone and desktop through GitHub. Also acts as the backup that makes pruning safe.                                                                                                                                | Check that the event log, the hero note and the habit notes sync. Treat a `_fit` folder as a conflict to resolve by hand, then run recalculate.                                                                  | Safe changes merge automatically, and genuine conflicts are saved in a `_fit` folder. Plugin settings do not sync by default, so the QuickAdd macros and Meta Bind setup need to be opted in or recreated on the phone. Fit is in beta. |
 
-- **Storyteller Suite** covers party notes and maps in one plugin. It handles characters, locations, events and a Leaflet-based map system. [obsidianstats](https://www.obsidianstats.com/plugins/storyteller-suite)
-- **Atlas VTT** is for tactical battle maps. It has tokens, fog of war, grids and dice and is desktop-only. Its 3D dice use graphics memory. It’s overkill for a story-first game unless you want tactical combat. [community.obsidian.md +2](https://community.obsidian.md/users/clutterfox)
-- **Text Generator or Vault Operator** for a live “continue-story” button. Text Generator supports Anthropic. Vault Operator is an autonomous agent that can run commands and call other plugins’ APIs, but it needs Obsidian 1.13 or newer. I’d wait on both. [obsidian-textgenerator-plugin  by nhaouari +2](https://www.sourcepulse.org/projects/1228127)
-- **Polish and visuals:** Homepage, Style Settings, Pretty Properties, Banners and Heatmap Calendar (not opened).
+**Built-in feature needed:** **Bases** (a core Obsidian plugin). TaskNotes uses it for its views. Make sure it is switched on.
 
-**Skip for now**
+## 3. Not plugins, but required
 
-- **TTRPG prep tools:** RPG Manager, TTRPG Campaign Manager, World Builder, Town Forge, Fantasy Content Generator, Fantasy Statblocks, Initiative Tracker, TTRPG Tools – Controls, Moulinette. They’re built for a GM running a party at a table. Campaign Manager has under 1,000 downloads, and World Builder is similar. [obsidian](https://community.obsidian.md/plugins/ttrpg-campaign-manager)
-- **Checklist:** It consolidates checklists into a sidebar, and its author is looking for a maintainer. It adds no timestamps. [obsidian](https://community.obsidian.md/plugins/obsidian-checklist-plugin)
-- **Calendar and sync group:** Google Calendar, Sync Google Calendar, Google Tasks, GitHobs, GitHub Embeds, Zotero, Kanban, Reminder and Rollover Daily Todos. These are for the later sync phase, or not needed.
-- **General utilities:** Linter, Harper, Omnisearch and similar. Nothing in the game needs them, and each one adds startup load.
+- **Claude Code** runs the narrator, the companion characters, the quiz, the morning briefing, session summaries and memory compression. It reads and writes the vault folder directly. It does not need Obsidian to be open.
+- **The engine script** is one standalone JavaScript module. It is the only place game rules live. It must also run from the terminal (for example `node engine.js recalc`).
+
+## 4. Optional, later
+
+Add these only after the trial week, and only when the user asks.
+
+| Plugin                                                   | Possible use                                                                                                              |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **Dataview**                                             | Calculated inline values or queries if Bases is not enough.                                                               |
+| **Storyteller Suite**                                    | Character, location and event notes, plus a map. Covers the maps need without Atlas.                                      |
+| **Atlas VTT**                                            | Tactical battle maps with tokens and fog of war. Desktop only and graphics-heavy, so it is probably overkill.             |
+| **Text Generator** or **Vault Operator**                 | A live "continue-story" button inside Obsidian. Vault Operator is an autonomous agent, so review it carefully before use. |
+| **Heatmap Calendar**                                     | A visual of habit consistency.                                                                                            |
+| **Homepage, Style Settings, Pretty Properties, Banners** | Presentation polish.                                                                                                      |
+| **Google Calendar, Google Tasks, Habitica Sync**         | The later external sync phase. Habitica tracks its own HP and XP, so it would duplicate the game.                         |
+
+## 5. Do not use
+
+| Plugin                                                                                                                 | Why not                                                                                                          |
+| ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **Buttons**                                                                                                            | Discontinued. Meta Bind replaces it.                                                                             |
+| **Life RPG, LifeQuest, RPG Stat Tracker**                                                                              | They bring their own XP and habit rules, which would clash with the engine.                                      |
+| **Tasks (obsidian-tasks)**                                                                                             | Its done date is date-only in the sources checked. The game needs the time of day. TaskNotes stores a timestamp. |
+| **Checklist**                                                                                                          | A sidebar that gathers checklists. It adds no timestamps.                                                        |
+| **RPG Manager, TTRPG Campaign Manager, World Builder, Town Forge, Fantasy Statblocks, Initiative Tracker and similar** | Built for a game master running a party at a table. Not needed.                                                  |
+| **General utilities (Linter, Omnisearch, and similar)**                                                                | Nothing in the game needs them, and each one adds startup load.                                                  |
+
+## 6. Which step uses which plugin
+
+| Build step                     | Plugins involved                                                                |
+| ------------------------------ | ------------------------------------------------------------------------------- |
+| Step 0: Setup                  | QuickAdd, Templater, Lazy Plugin Loader (and checking the others are installed) |
+| Step 1: Engine and tests       | None. The engine has no plugin or Obsidian code                                 |
+| Step 2: Habit button           | QuickAdd, Meta Bind, Fit (phone test)                                           |
+| Step 3: Task button            | QuickAdd, TaskNotes (with Bases), Dice Roller, Meta Bind                        |
+| Step 4: Quiz, narrator, tables | Claude Code, Dice Roller, Templater                                             |
+| Step 5: Companion and briefing | Claude Code, QuickAdd (the briefing button)                                     |
+
+## 7. Checks before each step
+
+- **Step 0:** every Required plugin is installed and enabled, Bases is on, and a QuickAdd macro runs a "hello" script from the scripts folder.
+- **Step 2:** a Meta Bind button triggers a QuickAdd macro, and a Meta Bind field shows a value from the hero note. Test both on desktop and on the phone, and record the result.
+- **Step 3:** TaskNotes creates a task with the extra properties, Bases shows it, and Dice Roller draws from a table note.
+- **Every step:** Obsidian starts quickly. If startup slows noticeably, tell the user which plugin is the cause before adding anything else.
