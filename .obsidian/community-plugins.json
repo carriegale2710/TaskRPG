@@ -9,7 +9,6 @@
   "breadcrumbs",
   "homepage",
   "fit",
-  "harper",
   "tag-wrangler",
   "url-into-selection",
   "vault-operator",
@@ -17,9 +16,9 @@
   "obsidian-dice-roller",
   "obsidian-linter",
   "pretty-properties",
-  "obsidian-style-settings",
   "obsidian-meta-bind-plugin",
   "tasknotes",
   "quickadd",
-  "obsidian-reminder-plugin"
+  "obsidian-reminder-plugin",
+  "harper"
 ]

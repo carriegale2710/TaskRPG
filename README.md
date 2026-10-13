@@ -309,4 +309,5 @@ These are aspirations to aim at, not pass or fail:
 | `PRD.md`          | The full product requirements (v2): every decision and default  |
 | `BUILD_PROMPT.md` | Step-by-step brief for the coding agent                         |
 | `PLUGINS.md`      | Plugin requirements, what to avoid, and checks before each step |
+| `TESTING.md`      | How to run the engine tests, and a manual test inside Obsidian  |
 | `gm_bridge.py`    | Optional terminal fallback for the narrator                     |
