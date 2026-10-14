@@ -20,8 +20,12 @@
 - Obsidian is the interface. QuickAdd macros call one plain JavaScript engine with no dependencies; keep game rules in the engine and macros thin.
 - The event log is the source of truth. Recalculate derived HP, MP, XP, levels and results from it. Do not silently overwrite or discard history; undo is a correcting event.
 - Keep tunable values in the settings note and make rule changes prospective as specified in the PRD. Validate setting ranges and report invalid data clearly.
-- Vault Operator agents are for narration and character conversations, not building or testing code. They may write only to their designated Story, Campaigns, World and Characters areas, with approval where required. They must not write Engine-owned state, backlog task lines or user-authored journal content. These boundaries protect data integrity, not privacy.
-- Engine files (event log, derived hero state and habit records) are written by macros. The hero profile contains stable identity only. Journal notes are the user's journal plus the generated "Today's turns" view. Backlog tasks are managed by the user and TaskNotes.
+- **TaskNotes owns task creation, planning, statuses, and the task user fields (skill, size, urgent and important). TaskRPG owns only task resolution (`Task done`) and undo.**
+- `Task done` reads the open TaskNotes task and its scheduled date, rolls through the engine, appends to `Engine/Events.md`, applies XP and MP, shows the result, and updates only resolution-related completion fields.
+- `Undo last` appends a correcting engine event; it never deletes history or enables a re-roll.
+- TaskNotes Workflows may later invoke `/task-done` automatically on an In Progress → Done change. Treat that as optional phase 2 and do not assume it is implemented.
+- Vault Operator agents are for narration and character conversations, not building or testing code. They may write only to their designated Story, Campaigns, World and Characters areas, with approval where required. They must not write Engine-owned state, task records or user-authored journal content. These boundaries protect data integrity, not privacy.
+- Engine files (event log, derived hero state and habit records) are written by macros. The hero profile contains stable identity only. Journal notes are the user's journal plus the generated "Today's turns" view.
 - Shared hero progression belongs to the player and applies across campaigns. Each campaign keeps separate arcs, quests and story history; shared-world canon is updated only with approval.
 - Treat every vault file as potentially model-visible. Provide an agent only the context needed for its task, but do not store content in the vault that you would not consent to sending to the configured model provider. No file or folder is private by guarantee.
 
