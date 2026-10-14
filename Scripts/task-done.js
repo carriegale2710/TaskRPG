@@ -20,7 +20,6 @@ module.exports = async ({ app }) => {
     const original = await files.read(file.path);
     const task = utils.parseFrontmatter(original);
     if (task.type !== 'task' || !task.taskId) throw new Error('This note is not a TaskRPG task.');
-    if (task.status === 'completed' || task.status === 'done') throw new Error('This task is already completed.');
 
     const settings = engine.parseSettingsNote(await files.read(SETTINGS));
     if (!settings.skills.includes(task.skill)) throw new Error(`Unknown skill: ${task.skill}`);
@@ -28,6 +27,13 @@ module.exports = async ({ app }) => {
 
     const previous = await files.exists(LOG) ? await files.read(LOG) : '';
     const events = engine.parseEvents(previous);
+
+    // TaskNotes completion and RPG resolution are separate. Prevent a duplicate
+    // RPG resolution by checking for an existing unresolved task_done event.
+    if (hasUnresolvedTaskDone(events, task.taskId)) {
+      throw new Error('This task has already been resolved by TaskRPG. Use Undo last first.');
+    }
+
     const timestamp = engine.localStamp();
     const dice = engine.rollDice();
     const scheduled = utils.scheduledDate(task);
@@ -53,8 +59,9 @@ module.exports = async ({ app }) => {
     await files.write(LOG, `${previous.trimEnd()}${previous.trim() ? '\n' : ''}${lines}`);
     committed = true;
 
+    // Preserve the TaskNotes-owned status. Record only TaskRPG resolution metadata.
     await files.write(file.path, utils.updateTaskStatus(original, {
-      status: 'completed',
+      status: task.status || '',
       completedDate: timestamp,
     }));
 
@@ -79,6 +86,14 @@ module.exports = async ({ app }) => {
     );
   }
 };
+
+function hasUnresolvedTaskDone(events, taskId) {
+  const relevant = events.filter(
+    (event) => event.taskId === taskId && (event.type === 'task_done' || event.type === 'undo')
+  );
+  const last = relevant.at(-1);
+  return Boolean(last && last.type === 'task_done');
+}
 
 async function loadModule(files, path) {
   const module = { exports: {} };
