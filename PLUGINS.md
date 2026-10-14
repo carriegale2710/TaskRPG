@@ -1,79 +1,290 @@
-# PLUGINs.md: Plugin requirements for TaskRPG
+# TaskRPG: Plugins, integrations and development tools
 
-**Audience:** the coding agent that builds the vault (VS Code with GitHub Copilot) and the Vault Operator agents that run it.
-**Read with:** the TaskRPG PRD v2 and the TaskRPG build brief.
+Audience: coding agents building TaskRPG and Vault Operator agents running it.
 
-## 1. How to use this file
+Read with: AGENTS.md, PRD.md, BUILD_PROMPT.md and TESTING.md.
 
-- TaskRPG splits the work in three. **Plugins** provide the interface and plumbing (buttons, panels, tasks, dice tables, sync). The **engine script** (plain JavaScript, no dependencies, tested) holds every game rule. The **Vault Operator agents** (the narrator and the characters) write the story, characters and memory.
-- **Do not put game rules inside a plugin's settings or in a macro.** Macros only call the engine. Every tunable number lives in the settings note.
-- **Do not install a plugin that is not listed under "Required".** Each extra plugin adds startup time. Ask the user first.
-- A "Required" plugin is needed from the build step shown in its row. Confirm it is installed and working before that step starts (see section 7).
-- Anything marked **untested** has not been checked on the user's setup. Test it in the step named, and tell the user if it fails.
+## 1. Architecture and boundaries
 
-## 2. Required plugins
+TaskRPG separates responsibilities:
 
-| Plugin                 | Needed from | What it does in TaskRPG                                                                                                                                                                                                                              | What you do with it                                                                                                                                                                                                                                                             | Watch out for                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| ---------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **QuickAdd**           | Step 0      | The glue. Runs macros and user scripts when the user presses a button. Every action goes through it: Done for a task or habit, plan my day, rest day, pause and resume, undo last, recalculate, the New task form and the morning briefing launcher. | Write each macro as a thin wrapper that reads the event log and settings note, calls the engine, then writes the new log line and updates the hero note. Keep scripts in a **visible** folder, not a hidden one.                                                                | QuickAdd user scripts can use the full Obsidian API, so keep them small. Mobile behaviour is **untested** (Step 2). Macros can also run at startup, which is useful for back-filling missed habit blocks.                                                                                                                                                                                                                      |
-| **Meta Bind**          | Step 2      | The panels and buttons the user sees. Shows HP, MP, skill XP and levels from the hero note. Shows the settings note as simple editable fields. Provides the buttons that trigger QuickAdd macros.                                                    | Bind input and view fields to frontmatter properties in the hero note and settings note. Place the Done buttons beside each habit and task.                                                                                                                                     | It replaces the older Buttons plugin, which is discontinued, so don't use Buttons. Mobile rendering is **untested**.                                                                                                                                                                                                                                                                                                           |
-| **Dice Roller**        | Step 3      | Draws results from the random tables (one note per table, one weighted line per entry) and can roll dice.                                                                                                                                            | Use it for table draws. Its API can be called from other plugins' scripts.                                                                                                                                                                                                      | Keep the engine testable: the engine should accept dice results as input, taken from Dice Roller or from a seeded random function, so the same inputs always give the same outputs in tests.                                                                                                                                                                                                                                   |
-| **TaskNotes**          | Step 3      | The backlog. Each task is its own note, with frontmatter properties. It records completion as a timestamp.                                                                                                                                           | The New task form creates a TaskNotes task with extra properties: skill, size, urgent, important and project. The Done macro reads these.                                                                                                                                       | It needs the built-in **Bases** plugin switched on. Confirm in Step 3 that TaskNotes keeps your extra frontmatter properties when it edits a task.                                                                                                                                                                                                                                                                             |
-| **Vault Operator**     | Step 4      | Runs the narrator and every character as separate agents in Obsidian's sidebar. It reads selected vault context, writes summaries and story files, and runs the morning briefing. Desktop only. The model is Gemini or GitHub Copilot. | Set up one agent per character and one for the narrator, each with a persona file. Save the morning briefing as a skill. Limit writes to the designated Story, Campaigns, World and Characters areas; this protects data integrity, not privacy. Let QuickAdd start it through an Obsidian command. | It has no terminal, so it can't build or test the engine. Check that memory stays scoped to the selected character and campaign. Treat every vault file as potentially model-visible; never rely on ignore rules or folder permissions for confidentiality. Review provider data terms before use. Whether QuickAdd can start a chat with a prepared prompt is **untested**. |
-| **Templater**          | Step 0      | Templates for the daily note, habit notes, persona notes and item notes.                                                                                                                                                                             | Write templates with the fields in the PRD. Keep logic out of templates.                                                                                                                                                                                                        | Not re-checked in this project. Verify it loads templates from the folder you set.                                                                                                                                                                                                                                                                                                                                             |
-| **Lazy Plugin Loader** | Step 0      | Delays plugin loading to keep Obsidian's startup fast.                                                                                                                                                                                               | Set heavier plugins to load after startup.                                                                                                                                                                                                                                      | Plugins that watch for events or run timers can behave badly if they are loaded only on demand. Prefer "load shortly after startup" for QuickAdd, Meta Bind, Dice Roller and TaskNotes.                                                                                                                                                                                                                                        |
-| **Fit**                | Step 2      | Syncs the vault between the user's phone and desktop through GitHub. Also acts as the backup that makes pruning safe.                                                                                                                                | Check that the event log, the hero note and the habit notes sync. Treat a `_fit` folder as a conflict to resolve by hand, then run recalculate.                                                                                                                                 | Safe changes merge automatically, and genuine conflicts are saved in a `_fit` folder. Plugin settings do not sync by default, so the QuickAdd macros and Meta Bind setup need to be opted in or recreated on the phone. Fit is in beta.                                                                                                                                                                                        |
+| Layer               | Responsibility                                                 |
+| ------------------- | -------------------------------------------------------------- |
+| Engine              | Game rules, action results and state reconstructed from events |
+| Settings note       | Tunable values, skill definitions and configuration            |
+| QuickAdd wrappers   | Gather inputs, call the engine and persist results             |
+| Meta Bind           | Buttons, input fields and displays                             |
+| TaskNotes and Bases | Task records, backlog and task views                           |
+| Dice Roller         | Approved narrative-table draws                                 |
+| Vault Operator      | Narration, personas, story and scoped memory                   |
 
-**Built-in feature needed:** **Bases** (a core Obsidian plugin). TaskNotes uses it for its views. Make sure it is switched on.
+Rules:
 
-## 3. Not plugins, but required
+- Keep the engine a standalone, dependency-free JavaScript module.
+- Do not put game rules in templates, plugin settings or macros.
+- Keep QuickAdd scripts in a visible folder.
+- Reuse documented plugin capabilities before building custom UI.
+- Do not add plugins, APIs or agent platforms without user approval.
+- Do not assume a documented feature works with the installed version.
+- Record desktop and mobile integration results in TESTING.md.
+- Build one step at a time and stop for user validation.
+- Buttons, dice and stats must remain usable without AI.
 
-- **VS Code with the GitHub Copilot extension** builds the engine, its automated tests and the QuickAdd macros. It needs a terminal to run the tests. Check which coding agent features the user's Copilot plan includes before Step 1.
-- **The engine script** is one standalone JavaScript module. It is the only place game rules live. It must also run from the terminal (for example `node engine.js recalc`).
+## 2. Planned plugin stack
 
-## 4. Optional, later
+Confirm each plugin is installed, enabled and working before its build step.
 
-Add these only after the trial week, and only when the user asks.
+| Plugin             | Needed from | TaskRPG use                                                                    | Integration checks                                                                  |
+| ------------------ | ----------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| QuickAdd           | Step 0      | Thin action wrappers, forms, planning, undo, recalculation and briefing launch | Verify script loading, command invocation and phone behaviour                       |
+| Templater          | Step 0      | Scaffold daily notes, habits, personas and other starter notes                 | Verify template paths; keep game logic out of templates                             |
+| Lazy Plugin Loader | Step 0      | Startup optimisation where useful                                              | Do not delay dependencies in a way that breaks startup processing or buttons        |
+| Meta Bind          | Step 2      | Habit/task buttons, hero panels and settings inputs                            | Verify bindings, command actions and mobile rendering                               |
+| Fit                | Step 2      | Desktop/phone vault sync                                                       | Verify event-log and note sync, conflict handling and device-local configuration    |
+| TaskNotes          | Step 3      | One note per task, task properties and backlog views                           | Verify required fields, completion timestamps and preservation of custom properties |
+| Bases              | Step 3      | Core Obsidian feature used by TaskNotes views                                  | Enable it and verify the installed TaskNotes version's requirements                 |
+| Dice Roller        | Step 3      | Narrative outcomes from table notes                                            | Verify table syntax, weighting and the supported integration method                 |
+| Vault Operator     | Step 4      | Narrator, onboarding, character conversations, summaries and briefing          | Verify model connection, agent setup, memory scope and approval controls            |
 
-| Plugin                                                   | Possible use                                                                                                  |
-| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| **Dataview**                                             | Calculated inline values or queries if Bases is not enough.                                                   |
-| **Storyteller Suite**                                    | Character, location and event notes, plus a map. Covers the maps need without Atlas.                          |
-| **Atlas VTT**                                            | Tactical battle maps with tokens and fog of war. Desktop only and graphics-heavy, so it is probably overkill. |
-| **Heatmap Calendar**                                     | A visual of habit consistency.                                                                                |
-| **Homepage, Style Settings, Pretty Properties, Banners** | Presentation polish.                                                                                          |
-| **Google Calendar, Google Tasks, Habitica Sync**         | The later external sync phase. Habitica tracks its own HP and XP, so it would duplicate the game.             |
+The table describes the planned stack, not verified installation status.
 
-The live "continue-story" button needs no extra plugin: it is a QuickAdd macro that starts a Vault Operator agent.
+Do not install multiple plugins to perform the same role.
 
-## 5. Do not use
+## 3. Reusable implementation resources
 
-| Plugin                                                                                                                 | Why not                                                                                                          |
-| ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| **Buttons**                                                                                                            | Discontinued. Meta Bind replaces it.                                                                             |
-| **Life RPG, LifeQuest, RPG Stat Tracker**                                                                              | They bring their own XP and habit rules, which would clash with the engine.                                      |
-| **Tasks (obsidian-tasks)**                                                                                             | Its done date is date-only in the sources checked. The game needs the time of day. TaskNotes stores a timestamp. |
-| **Checklist**                                                                                                          | A sidebar that gathers checklists. It adds no timestamps.                                                        |
-| **RPG Manager, TTRPG Campaign Manager, World Builder, Town Forge, Fantasy Statblocks, Initiative Tracker and similar** | Built for a game master running a party at a table. Not needed.                                                  |
-| **Another AI plugin alongside Vault Operator (for example Text Generator)**                                            | Two agents writing to the same vault risks conflicting edits and mixed memories.                                 |
-| **General utilities (Linter, Omnisearch, and similar)**                                                                | Nothing in the game needs them, and each one adds startup load.                                                  |
+### QuickAdd
 
-## 6. Which step uses which plugin
+Resources:
 
-| Build step                     | Plugins involved                                                                |
-| ------------------------------ | ------------------------------------------------------------------------------- |
-| Step 0: Setup                  | QuickAdd, Templater, Lazy Plugin Loader (and checking the others are installed) |
-| Step 1: Engine and tests       | None. The engine has no plugin or Obsidian code. Built in VS Code               |
-| Step 2: Habit button           | QuickAdd, Meta Bind, Fit (phone test)                                           |
-| Step 3: Task button            | QuickAdd, TaskNotes (with Bases), Dice Roller, Meta Bind                        |
-| Step 4: Quiz, narrator, tables | Vault Operator, Dice Roller, Templater                                          |
-| Step 5: Companion and briefing | Vault Operator, QuickAdd (the briefing button)                                  |
+- Repository: https://github.com/chhoumann/quickadd
+- Examples: https://quickadd.obsidian.guide/docs/Examples/
 
-## 7. Checks before each step
+Reuse capture, template and JavaScript-macro examples.
 
-- **Step 0:** every Required plugin is installed and enabled, Bases is on, and a QuickAdd macro runs a "hello" script from the scripts folder.
-- **Step 2:** a Meta Bind button triggers a QuickAdd macro, and a Meta Bind field shows a value from the hero note. Test both on desktop and on the phone, and record the result.
-- **Step 3:** TaskNotes creates a task with the extra properties, Bases shows it, and Dice Roller draws from a table note.
-- **Step 4:** Vault Operator has a working model connection, its memory does not mix character or campaign context, and write approvals prevent changes outside the designated Story, Campaigns, World and Characters areas. These controls are not privacy guarantees; provide only content you consent to sending to the provider.
-- **Step 5:** a QuickAdd button starts Vault Operator with a prepared prompt (or the fallback in the build brief works).
-- **Every step:** Obsidian starts quickly. If startup slows noticeably, tell the user which plugin is the cause before adding anything else.
+Suggested wrappers:
+
+- habit-done
+- task-new
+- task-plan
+- task-done
+- undo-last
+- recalculate
+- morning-briefing
+
+Each action wrapper should:
+
+1. Gather and validate inputs.
+2. Read the required settings and event state.
+3. Call the engine.
+4. Persist the engine-produced event and derived state.
+5. Display the result.
+
+Do not independently recalculate XP, MP, HP or outcomes in a wrapper.
+
+### Meta Bind
+
+Repository: https://github.com/mProjectsCode/obsidian-meta-bind-plugin
+
+Reuse buttons, input fields and view fields for:
+
+- Habit and task actions.
+- HP, MP, skill XP and levels.
+- Settings controls.
+
+The hero note is a derived-state cache, not an independent source of truth.
+Do not use editable hero fields to bypass engine actions.
+
+### TaskNotes and Bases
+
+Resources:
+
+- Repository: https://github.com/callumalpass/tasknotes
+- Documentation: https://tasknotes.dev/obsidian/
+
+Reuse the documented task schema, templates and Bases views before
+implementing a custom backlog.
+
+TaskRPG needs task metadata for:
+
+- Skill.
+- Size.
+- Urgent and important flags.
+- Project association where applicable.
+- Planning and completion information required by the PRD.
+
+Verify actual property names and supported operations against the installed
+version. Do not invent an API or assume frontmatter fields are preserved.
+
+The New task form and deterministic action wrappers may update task records.
+Narrator and character agents must not edit task lines or task state.
+
+The HTTP API, CLI and MCP integration are optional. Do not enable them merely
+because they exist. If needed, verify authentication and availability
+requirements and keep credentials outside Git.
+
+### Dice Roller
+
+Repository: https://github.com/Obsidian-TTRPG-Community/dice-roller
+
+Prototype a small, approved table before building generated table workflows.
+
+- Use the plugin's supported Markdown table syntax.
+- Verify weighted-entry behaviour.
+- Require user approval before generated tables become active.
+- Preserve retired entries through the "Not for me" workflow.
+- Do not let a narrative-table draw alter the real task's XP or MP.
+
+For task rolls, record the actual dice values and supply them to the engine.
+Replay and undo must use recorded values rather than generate a new roll.
+
+Do not roll the same task action independently in both the engine and plugin.
+
+### Templater
+
+Resources:
+
+- Repository: https://github.com/SilentVoid13/Templater
+- Documentation: https://silentvoid13.github.io/Templater/
+
+Use templates for note structure and initial fields, not game calculations.
+
+Avoid implementing the same action in both Templater and QuickAdd.
+Review imported templates before execution; templates can run code.
+
+## 4. Optional development tools
+
+These run in the development environment, not inside the production engine.
+
+### fast-check
+
+Resources:
+
+- Repository: https://github.com/dubzzz/fast-check
+- Examples: https://github.com/dubzzz/fast-check-examples
+
+Purpose: generate varied inputs for engine invariant and regression tests.
+
+Add only if useful alongside the existing test runner. Keep it a development
+dependency; do not import it into runtime code.
+
+Candidate properties:
+
+- Identical recorded inputs produce identical reconstructed state.
+- Replay agrees with incremental action processing.
+- Task MP cost never falls below its configured minimum.
+- Undo appends a correction and cannot generate a new roll.
+- Settings changes do not modify outcomes before their effective date.
+- Rest, pause and day-boundary rules remain consistent across event sequences.
+
+Use reproducible seeds when investigating failures and preserve important
+counterexamples as regression tests.
+
+### Gitleaks
+
+Repository: https://github.com/gitleaks/gitleaks
+
+Purpose: detect accidentally committed credentials.
+
+Recommended uses:
+
+- A one-time scan of available Git history and branches.
+- A local pre-commit check.
+- A CLI-based CI check.
+
+Review findings without copying secret values into issues or documentation.
+Rotate exposed credentials before considering history cleanup.
+
+The CLI and the official GitHub Action have separate usage/licensing terms.
+Check the wrapper's requirements before adopting it; using the CLI directly
+is sufficient for the proposed workflow.
+
+## 5. Alternatives requiring approval
+
+### Randomness
+
+Repository: https://github.com/Obsidian-TTRPG-Community/Randomness
+
+Possible alternative to Dice Roller, with compatibility features and
+additional generator capabilities.
+
+Do not install it alongside Dice Roller or migrate automatically.
+
+Consider it only if a demonstrated table-generation requirement is difficult
+to support with the selected plugin. Test migration in a disposable vault,
+including table syntax, recorded rolls and script integration.
+
+### Other plugins
+
+Consider these only after the trial week and a demonstrated need:
+
+- Dataview if Bases cannot support a required view.
+- Calendar or heatmap tools for an approved habit-history view.
+- Mapping tools for an approved campaign feature.
+- Presentation plugins after functional validation.
+- External calendar/task sync after conflict behaviour is defined.
+
+Do not add another game-rules plugin or another autonomous AI writer.
+Do not replace the existing coding workflow solely to try a new agent tool.
+
+## 6. Agent and data safety
+
+Vault Operator is the narrative layer, not the game engine.
+
+- Narrator and character agents write only to their designated Story,
+  Campaigns, World and Characters areas.
+- They never edit task lines, Engine state or user-authored journal content.
+- Supply only the journal context needed for the current interaction.
+- Keep character and campaign memory separate.
+- Require approval before promoting campaign events into shared world canon.
+- Only the narrator or game system gives real-talk lines: at most one per day,
+  kind and neutral. Characters stay in fiction and advise only when asked.
+- Use the configured stronger model for chats and narration and a smaller
+  model for summaries where supported.
+- Verify approval controls rather than assuming prompts enforce isolation.
+- Treat selected vault content as potentially visible to the model provider.
+- "GM-only", hidden folders and ignore rules are not confidentiality controls.
+
+Keep real personal data and credentials out of development fixtures.
+
+Keep local plugin settings, tokens, telemetry and agent runtime state out of
+the repository. Preserve reviewed reusable skills separately.
+
+Gitignore does not untrack previously committed files.
+Sync is not a substitute for an independently recoverable backup.
+
+## 7. Build checks and issue dependencies
+
+| Step                   | Issue | Validate                                                                               |
+| ---------------------- | ----- | -------------------------------------------------------------------------------------- |
+| Habit button           | #2    | Button calls QuickAdd; event and hero state update; toast works; phone result recorded |
+| Task buttons           | #3    | Task creation, planning, result card and undo; custom properties preserved             |
+| Onboarding and tables  | #4    | Quiz resumes; personas are reviewed; approved tables integrate with task completion    |
+| Companion and briefing | #5    | Scoped memory, linked quests and briefing launch or documented fallback                |
+| Agent safeguards       | #8    | Write controls, minimal context, campaign isolation and AI-outage recovery             |
+| Trial week             | #6    | Minimal routine, feedback and continue/adjust/stop decision                            |
+| Expansion              | #7    | Explicit continue approval; add one feature at a time                                  |
+
+Order:
+
+#2 → #3 → #4 → #5 → #6 → #7
+
+#8 runs alongside #4–#5 and must be validated before #6.
+
+Prepare safeguard policies before agent use. Do not create a circular
+dependency by requiring #8 to close before the agents needed to test it exist.
+
+If prepared-prompt launch into Vault Operator is unsupported, use the
+build brief's fallback: paste the prompt into narrator chat or invoke the
+reviewed skill.
+
+## 8. Version and licence hygiene
+
+- Record tested plugin versions and device results in TESTING.md.
+- Test updates in a disposable vault before using real campaign data.
+- Prefer official documentation and repositories.
+- Review imported workflows and scripts before execution.
+- Check licences before copying or redistributing source code.
+- Check template, table, generator and artwork licences separately.
+- Do not assume a plugin's licence covers third-party content.
+- Free/open-source plugins do not imply free model inference or an
+  open-source host application.
