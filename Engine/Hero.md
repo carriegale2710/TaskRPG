@@ -2,17 +2,17 @@
 type: hero-state
 hp: 10
 maxHP: 10
-mp: 10
+mp: 0
 maxMP: 10
 xp_focus: 0
-xp_vitality: 0
+xp_vitality: 5
 xp_craft: 0
 xp_mind: 0
 xp_presence: 0
 ---
 # Hero state
 
-Derived from [[Events]]; do not edit these numbers by hand. The stable identity profile stays in `Campaign/00 Hero.md`.
+Derived from [[Events]]; do not edit these numbers by hand.
 
 HP: `VIEW[{hp}][text]` / `VIEW[{maxHP}][text]`  
 MP: `VIEW[{mp}][text]` / `VIEW[{maxMP}][text]`

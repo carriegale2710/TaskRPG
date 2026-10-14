@@ -8,6 +8,8 @@
 
 # Plugin setup folders
 /TaskNotes/
+/atlas-vtt/
+/_fit/
 
 # Credentials and environment files
 .env
