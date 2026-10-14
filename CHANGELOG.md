@@ -4,58 +4,44 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version numbers follow the build brief's steps: `0.1.0` is Step 1 (engine and tests) and `0.1.1` is Step 2 (habit Done button). Nothing is tagged yet, and `0.1.1` still lives on the `issue-2-habit-button` branch.
 
-## [UNRELEASED] — Step 3 (issue #3, draft PR #10)
+## [UNRELEASED] — Step 3 redesign (issue #3, draft PR #10)
 
-Step 3: Task Creation, Planning, Completion and Undo features
+### Changed
+
+- **TaskNotes now owns task creation, planning, statuses, and the task user fields** (`skill`, `size`, `urgent`, and `important`).
+- **TaskRPG now owns only task resolution and undo**: `Task done` resolves an open TaskNotes task through the engine; `Undo last` appends a correcting engine event.
+- `Task done` reads the TaskNotes scheduled date for the planned-day MP rule. A task scheduled for today avoids the unplanned MP surcharge.
+- `Undo last` restores the matching TaskNotes task’s open/planned state where possible and clears its completion date. It still appends a correcting event and never deletes history.
+- TaskNotes Workflows may later invoke `/task-done` automatically on an In Progress → Done change. This optional phase 2 is not implemented or validated.
+
+### Removed
+
+- `Scripts/new-task.js` and the `New task` QuickAdd flow.
+- `Scripts/plan-task.js` and the `Plan task` QuickAdd flow.
+- Task-note creation, slug generation, and size-suggestion helpers from `Scripts/task-utils.js`.
 
 ### Added
 
-#### Task utility scripts
+- `Scripts/task-utils.js` now provides a TaskNotes scheduled-date helper used by task resolution and undo.
+- `Scripts/task-utils.test.js` covers TaskNotes frontmatter parsing, scheduled-date mapping, outcome-table selection, result-card formatting, and completion-field updates.
+- `STEP3.md`, `TESTING.md`, `README.md`, `PLUGINS.md`, `AGENTS.md`, and `BUILD_PROMPT.md` describe the TaskNotes-wrapped ownership model and validation gate.
 
-| Script                | Purpose                    | Creates or updates                                                       | Limitation                                            |
-| --------------------- | -------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------- |
-| Scripts/new-task.js   | Create a backlog task      | TaskNotes note with name, skill, size, urgent, and important             | Labels the usual size but does not preselect it       |
-| Scripts/plan-task.js  | Plan a task for today      | Sets planned status and today’s date on the open task                    | No per-task button or today-list view                 |
-| Scripts/task-done.js  | Complete a task            | Engine event, completed status, 2d6 roll, XP/MP, result card             | Placeholder outcome table; no Dice Roller integration |
-| Scripts/undo-last.js  | Undo today’s latest action | Correcting engine event; restores matching task note                     | Does not enable a re-roll                             |
-| Scripts/task-utils.js | Shared task helpers        | Frontmatter, size suggestion, outcome table, result card, status updates | None                                                  |
+### Validation and limitations
 
-#### Test Coverage
-
-| Area                 | Status      | Details                                                                                                                                             |
-| -------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| New unit tests       | Added       | Scripts/task-utils.test.js contains six tests for the new shared task helpers.                                                                      |
-| Covered logic        | Tested      | Frontmatter parsing, backlog-note creation, size suggestions, placeholder outcome-table selection, result-card formatting, and task-status updates. |
-| QuickAdd scripts     | Not covered | The tests do not run new-task.js, plan-task.js, task-done.js, or undo-last.js end to end.                                                           |
-| Obsidian integration | Not covered | Modal display, TaskNotes compatibility, mobile behaviour, and Engine/Hero.md updates require manual validation.                                     |
-| Coverage report      | Not run     | No line, branch, or function percentages have been recorded for this branch.                                                                        |
-| Run coverage locally | Pending     | node --test --experimental-test-coverage Scripts/task-utils.test.js                                                                                 |
-| Acceptance criteria  | Pending     | Passing unit tests do not verify the Obsidian integration or issue #3 acceptance criteria.                                                          |
-
-#### Validation and limitations
-
-| Area                    | Status            | Details                                                                                               |
-| ----------------------- | ----------------- | ----------------------------------------------------------------------------------------------------- |
-| Automated tests         | Not run           | Step 3 tests have not been run in this environment. See TESTING.md and STEP3.md.                      |
-| Desktop Obsidian        | Unverified        | QuickAdd scripts and the result-card modal have not been tested on desktop.                           |
-| TaskNotes compatibility | Unverified        | Directly written task notes and fields have not been checked against the installed TaskNotes version. |
-| Mobile result card      | Unverified        | Phone result-card behaviour has not been tested.                                                      |
-| Engine/Hero.md          | Not updated       | Task Done and Undo last do not rewrite the derived hero note.                                         |
-| Habit undo              | Not cleaned up    | Undoing a habit does not remove its habit-note history.                                               |
-| Result modal            | Unverified        | QuickAdd access to obsidian.Modal has not been tested; a Notice is the fallback.                      |
-| Undo / re-roll          | Needs enforcement | Undo does not prevent a later Task Done press on the same task.                                       |
-| Outcome table           | Placeholder       | Uses the loot die rather than a separate recorded table draw.                                         |
-| Game rules              | Unchanged         | No new game rules were intentionally changed.                                                         |
-| Existing gaps           | Still apply       | The Step 2 event-log/Hero repair gap and engine CLI default to Engine/Events.jsonl remain.            |
-
-#### Documentation
-
-| File         | Update                                                                                                                                           |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| STEP3.md     | Accurate QuickAdd setup, current script behavior, test command, and the manual validation gate before issue #4                                   |
-| TESTING.md   | Added a Step 3 addendum, clarified the live Engine/Events.md log, and retained the existing Step 1 smoke-test guide                              |
-| CHANGELOG.md | Added an Unreleased — Step 3 entry that accurately describes what is implemented and what remains unverified                                     |
-| README.md    | Added a branch-specific status note, corrected the task-folder description, and distinguished the intended daily loop from the current prototype |
+| Area | Status | Details |
+| --- | --- | --- |
+| Automated tests | Not run on this branch | Run `node --test Scripts/engine.test.js Scripts/habit-done.test.js Scripts/task-utils.test.js` and record the result. |
+| TaskNotes field mapping | Unverified | Confirm the installed TaskNotes version preserves `taskId`, `skill`, `size`, `urgent`, `important`, status, and the scheduled-date field. |
+| Scheduled-date property | To confirm | The scripts read `scheduledDate`, falling back to `scheduled`; adjust the mapping if the installed TaskNotes version uses another property. |
+| Desktop Obsidian | Unverified | `Task done`, result-card modal, event log, and task-note updates have not been tested. |
+| Mobile result card | Unverified | Phone result-card behaviour has not been tested. |
+| Engine/Hero.md | Not updated | Task Done and Undo last do not rewrite the derived hero note. |
+| Habit undo | Not cleaned up | Undoing a habit does not remove its habit-note history. |
+| Result modal | Unverified | QuickAdd access to `obsidian.Modal` has not been tested; a Notice is the fallback. |
+| Undo / re-roll | Needs enforcement | Undo does not prevent a later Task done press on the same task. |
+| Outcome table | Placeholder | Uses the loot die rather than a separate recorded table draw. |
+| Automatic Workflows trigger | Not built | Phase 2 only; do not treat it as available. |
+| Existing gaps | Still apply | The Step 2 event-log/Hero repair gap and engine CLI default to `Engine/Events.jsonl` remain. |
 
 ---
 
@@ -151,18 +137,18 @@ Two tests drive the real macro against a fake vault (an in-memory file map and a
 
 #### Engine (`Scripts/engine.js`)
 
-A dependency-free game engine with no Obsidian code. It takes the event log and the settings note, and returns the new state and the result of an action. It loads without `fs`, `path` or `require`, so it can run on the phone.
+A dependency-free game engine with no Obsidian code. It takes an event log and settings note and returns the new state and the result of an action. It loads without `fs`, `path` or `require`, so it can run on the phone.
 
 The command `node Scripts/engine.js recalc` rebuilds state from the log and prints the same state on repeat runs. On bad usage it exits with code 1 and writes to stderr.
 
 | Game Feature         | Rules and Constraints                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Time**             | - The day rolls over at 4:00 AM.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | **MP**               | - Maximum 10, refilled each morning.<br>- Task cost by size: small 1, medium 3, large 5.<br>- Surcharges: +1 for an unplanned task, and +1 for every task while Wounded.<br>- Discounts: −1 at skill levels 5 and 10, in that skill only. A task never costs less than 1.<br>- Overdraft: a task is an overdraft when its cost exceeds the remaining MP. Overdraft halves XP (rounded up) and adds a −1 "Tired" roll penalty. HP is unaffected.<br>- Habit cost depends on the share of eligible days in the last 30 that were done on time:<br> - under ⅓: 2 MP<br> - ⅓ to under ⅔: 1 MP<br> - ⅔ or more: 0 MP<br> - A new habit starts at 2 MP.<br>- Eligible days are weekdays that are not rest or pause days. A weekend, rest or pause day counts only if the habit was done. |
-| **XP and levels**    | - Task XP equals its size, plus 50% if important, plus 50% if urgent, plus 25% for the weekly focus project. The bonuses add together, and the result is rounded up.<br>- Habit XP is 1 per press, including at 0 MP.<br>- Five skills, 10 levels each. The XP thresholds are placeholders in the settings note (level 2 at 10, up to level 10 at 320).<br>- Dice bonus of +1 at levels 2, 4, 6, 8 and 10.                                                                                                                                                                                                                                                                                                                                                                         |
-| **Roll**             | - 2d6 plus the skill's dice bonus, minus the HP penalty and the Tired penalty.<br>- Base thresholds: success at 9+, partial success at 6–8, setback at 5 or less.<br>- Each project has a threat level of +1 per finished arc, capped at +4, which raises every threshold. Tasks outside a project use T = 0.<br>- A success has a one-in-three chance of loot (a die roll where 5 or 6 drops). The engine only flags the drop; the narrator names it later.<br>- A roll never changes the XP or MP of the real task.                                                                                                                                                                                                                                                              |
-| **HP**               | - Maximum 10. An on-time core habit restores 1 HP. A late press earns XP but no HP and doesn't count as an on-time day.<br>- A missed block deadline costs 1 HP, capped at 2 HP lost per day. Rest days, pause and weekends are exempt.<br>- Dice penalty: 7–10 HP is 0, 4–6 is −1, 1–3 is −2, 0 is −3.<br>- At 0 HP you are Wounded: tasks cost +1 MP and boss challenges are blocked.<br>- Missed blocks are back-filled when the vault opens.                                                                                                                                                                                                                                                                                                                                   |
-| **Rest and pause**   | - Rest day: a one-day pass, 4 a month, with no HP loss and no plan needed.<br>- Pause: freezes the game with no HP loss. Paused days are left out of every habit's measure.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| **XP and levels**    | - Task XP equals its size, plus 50% if important, plus 50% if urgent, plus 25% if it's in the weekly focus project. The bonuses add together, and the result is rounded up.<br>- Habit XP is 1 per press, including at 0 MP.<br>- Five skills, 10 levels each. The XP thresholds are placeholders in the settings note (level 2 at 10, up to level 10 at 320).<br>- Dice bonus of +1 at levels 2, 4, 6, 8 and 10.                                                                                                                                                                                                                                                                                                                                                                         |
+| **Roll**             | - 2d6 plus the skill's dice bonus, minus the HP penalty and the Tired penalty.<br>- Base thresholds: success at 9+, partial success at 6–8, setback at 5 or less.<br>- Each project has a threat level of +1 per finished arc, capped at +4, which raises every threshold. Tasks outside a project use T = 0.<br>- A success has a one-in-three chance of loot (a die roll where 5 or 6 drops). The engine only flags the drop; the narrator names it later.<br>- A roll never changes the XP or MP of the real task.                                                                                                                                                                                                                                                                      |
+| **HP**               | - Maximum 10. An on-time core habit restores 1. A late press earns XP but no HP and doesn't count as an on-time day.<br>- A missed block deadline costs 1 HP, capped at 2 HP lost per day. Rest days, pause and weekends are exempt.<br>- Dice penalty: 7–10 HP is 0, 4–6 is −1, 1–3 is −2, 0 is −3.<br>- At 0 HP you are **Wounded**: tasks cost +1 MP, boss challenges are blocked.<br>- Missed blocks are back-filled when the vault opens.                                                                                                                                                                                                                                                                                                                                   |
+| **Rest and pause**   | - Rest day: a one-day pass, 4 a month, with no HP loss and no plan needed.<br>- Pause: freezes the game with no HP loss. Paused days are left out of every habit's measure.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | **Settings changes** | - Each change is logged with the time it was recorded. The engine uses the rules in force on each day and never rewrites the past. Editing the note without recording an action does not change the past.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | **Undo**             | - Adds a correcting line to the log; nothing is deleted.<br>- It only reverses the newest task or habit action from the same game day, and can't be used to re-roll.<br>- Pressing Done again after an undo gets a fresh roll, flagged `repeat`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 
@@ -187,7 +173,7 @@ The command `node Scripts/engine.js recalc` rebuilds state from the log and prin
 - **Test suite merged.** The original 30-test suite and a second 42-test suite are now one file of 43 tests, with no coverage lost.
   - The merged suite uses the second suite's frozen settings copy. When you change a default on purpose, update that copy.
   - Kept from the original suite: event log text parsing (including `line 2 is not valid JSON`), `localStamp`, and the check that the engine loads with no `fs`, `path` or `require`.
-  - Folded together: Wounded at 1 HP is now inside the task MP cost test, the own-skill MP discount is part of the skill level test, the rest-day monthly reset is part of the rest days test, and the two `rollDice` tests are now one.
+  - Folded together: Wounded at 1 HP is now inside the task MP cost test, the own-skill MP discount is part of the skill level test, the rest-day monthly reset is part of the rest days test, and the two `rollDice` tests are one.
   - Removed as duplicates: the extra `bonus(5)` dice check, the next-week focus lines in the XP test (the weekly-focus test covers them), and a repeated Wounded MP assertion.
   - The undo test now matches the full error message. Its two failing cases each break one rule, and both rules share one message, so the setup tells them apart (a comment in the test explains).
 - **Settings format:** the settings note is now a JSON block instead of the PRD's table with min and max beside each value. This follows the choice of JSON Lines for the event log and will need revisiting when Step 2 adds Meta Bind fields.
