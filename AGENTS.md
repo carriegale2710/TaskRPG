@@ -7,6 +7,22 @@
 - If these instructions and the PRD conflict, follow the PRD. Keep this file focused on working rules rather than duplicating the full specification.
 - Preserve existing behavior unless the PRD explicitly changes it. Make small, testable changes and verify the affected behavior.
 
+## Session skills
+
+Load both skills below at the start of every coding session, before the first code change or implementation plan. They live in `.agents/skills/`; load them by ID with the skill tool. If a skill cannot be loaded, say so rather than continuing silently without it.
+
+1. **`ponytail`** — pragmatic, minimalist engineering. Reuse over rebuild, root cause over symptom, no speculative scaffolding. It governs *how much* gets built, not what must be proven.
+2. **`caveman`** — compressed communication. Default level `full`; `/caveman lite|full|ultra|off` changes it mid-session.
+
+**A coding session** is any session that reads, writes, reviews or plans engine, script, macro, test or configuration code. It is **not** a coding session when the work is story, canon, character voice, narration, journal content, PRD or prose drafting, hand-made settings or vault-data edits, or pure research and Q&A. Do not load either skill for that work, and drop `caveman` if a coding session turns into it.
+
+Where these skills pull against the rules in this file, this file wins:
+
+- **Compression never overrides the reporting rules here.** The TDD *Report* step, the proven-versus-assumed distinction, failing-run output and the "state options clearly" contract in *Assumptions and risky decisions* stay in plain prose. The `caveman` skill's own Auto-Clarity rules already exempt security warnings, irreversible actions and multi-step sequences where compression risks misreading; treat a test-evidence report or a decision request as the same case.
+- **Everything written to the vault or the repo stays normal prose.** Code, comments, commit messages, `CHANGELOG.md` entries and documentation are never written in caveman style — the `caveman` skill requires this too.
+- **"Confirm before implementing" beats ponytail's "ship the lazy version and question it in the same response".** Cut unrequested scope freely, then ask; do not ship a design decision the docs do not settle.
+- **Ponytail does not license skipping proof.** Tests, doc sync and changelog updates stay required exactly as described below.
+
 ## Product principles
 
 - Build an immersive, character-driven RPG layer that makes real tasks and habits rewarding through novelty and visible progression.
