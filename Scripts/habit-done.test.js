@@ -42,7 +42,7 @@ test('on-time and late Done append events and refresh derived panels without dic
 });
 
 test('cancel and invalid active note do not write an event', async () => {
-  for (const h of [harness(undefined), harness(true, null)]) {
+  for (const h of [harness(null), harness(true, '')]) {
     await h.press();
     assert.equal(h.data.has('Engine/Events.md'), false);
   }
