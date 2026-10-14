@@ -31,16 +31,16 @@ module.exports = async ({ app }) => {
       const path = await findTaskPath(files, utils, target.taskId);
       if (path) {
         const text = await files.read(path);
-        const task = utils.parseFrontmatter(text);
-        const scheduled = utils.scheduledDate(task);
+        // TaskNotes owns task status. Undo only clears TaskRPG resolution metadata;
+        // it does not rewrite the TaskNotes status or guess a restored status.
         await files.write(path, utils.updateTaskStatus(text, {
-          status: scheduled === utils.today() ? 'planned' : 'backlog',
+          status: utils.parseFrontmatter(text).status || '',
           completedDate: '',
         }));
       }
     }
 
-    new Notice('Undid the last action. No re-roll.', 8000);
+    new Notice('Undid the last RPG action. TaskNotes status was not changed.', 8000);
   } catch (error) {
     new Notice(
       `TaskRPG: ${error.message}${committed ? ' Undo was saved; do not press again.' : ' Nothing was changed.'}`,
