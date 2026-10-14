@@ -211,12 +211,12 @@ export VAULT_PATH=~/MyVault
 ### Commands
 
 ```bash
-python gm_bridge.py status                      # what the script can see; changes nothing
-python gm_bridge.py briefing --dry-run          # print the prompt, no API call
-python gm_bridge.py briefing                    # write today's briefing and quests
-python gm_bridge.py briefing --force            # replace today's briefing
-python gm_bridge.py briefing --date 2026-10-13  # override the game day
-python gm_bridge.py story                       # refresh the Story So Far digest
+python Scripts/gm_bridge.py status                      # what the script can see; changes nothing
+python Scripts/gm_bridge.py briefing --dry-run          # print the prompt, no API call
+python Scripts/gm_bridge.py briefing                    # write today's briefing and quests
+python Scripts/gm_bridge.py briefing --force            # replace today's briefing
+python Scripts/gm_bridge.py briefing --date 2026-10-13  # override the game day
+python Scripts/gm_bridge.py story                       # refresh the Story So Far digest
 ```
 
 | Command    | Does                                                                                                                                                        | Model                          |
@@ -310,4 +310,4 @@ These are aspirations to aim at, not pass or fail:
 | `BUILD_PROMPT.md` | Step-by-step brief for the coding agent                         |
 | `PLUGINS.md`      | Plugin requirements, what to avoid, and checks before each step |
 | `TESTING.md`      | How to run the engine tests, and a manual test inside Obsidian  |
-| `gm_bridge.py`    | Optional terminal fallback for the narrator                     |
+| `Scripts/gm_bridge.py` | Optional terminal fallback for the narrator                     |

@@ -5,9 +5,13 @@
 /.vault-operator/
 /.copilot/
 /copilot/
+/.opencode/
+/outputs/
 
 # Plugin setup folders
 /TaskNotes/
+/atlas-vtt/
+/_fit/
 
 # Credentials and environment files
 .env
