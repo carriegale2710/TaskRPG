@@ -32,9 +32,9 @@ module.exports = async ({ app }) => {
       if (path) {
         const text = await files.read(path);
         const task = utils.parseFrontmatter(text);
+        const scheduled = utils.scheduledDate(task);
         await files.write(path, utils.updateTaskStatus(text, {
-          status: task.plannedDate === utils.today() ? 'planned' : 'backlog',
-          plannedDate: task.plannedDate || '',
+          status: scheduled === utils.today() ? 'planned' : 'backlog',
           completedDate: '',
         }));
       }
