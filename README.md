@@ -2,15 +2,15 @@
 
 > Your second brain, enchanted.
 
-TaskRPG is an immersive, character-driven RPG layer on an Obsidian vault. Pressing **Done** on a real task is a game turn: the dice roll, a random table answers, and a narrator and a cast of characters who remember you turn the day's results into a story. Boredom is the main reason projects and routines get dropped, so TaskRPG generates the novelty for you instead of asking you to supply it.
+TaskRPG is an immersive, character-driven RPG layer on an Obsidian vault. Resolving a real task is a game turn: the dice roll, a random table answers, and a narrator and a cast of characters who remember you turn the day's results into a story. Boredom is the main reason projects and routines get dropped, so TaskRPG generates the novelty for you instead of asking you to supply it.
 
-**Status on `feat/3-task-creation-planning-completion-undo`:** Steps 0–2 have code, and Step 3 has QuickAdd task scripts and helper tests in draft PR #10. Step 3 has **not** been verified in Obsidian on desktop or phone; Step 2's phone validation is also still recorded as pending. The current task flow is a prototype, not the complete daily loop below. See `STEP3.md`, `TESTING.md` and the unreleased entry in `CHANGELOG.md`. The PRD describes intended behavior, not proof that every plugin integration is working.
+**Status on `feat/3-task-creation-planning-completion-undo`:** Steps 0–2 have code, and Step 3 has TaskNotes-wrapped task resolution and undo in draft PR #10. TaskNotes owns task creation, planning, statuses, and task user fields; TaskRPG owns `Task done` and `Undo last`. Step 3 has **not** been verified in Obsidian on desktop or phone; Step 2's phone validation is also still recorded as pending. The current task flow is a prototype, not the complete daily loop below. See `STEP3.md`, `TESTING.md` and the unreleased entry in `CHANGELOG.md`. The PRD describes intended behavior, not proof that every plugin integration is working.
 
 ---
 
 ## The idea in one paragraph
 
-**Dice and tables decide _what_ happens. The AI narrates _how_.** Every number (HP, MP, XP, rolls, levels) comes from a small, tested JavaScript engine that reads an event log, so the randomness is real and the game works even when the AI is down. The narrator and characters run as agents inside Obsidian (Vault Operator), write only story files, and never touch your stats or your task lines.
+**Dice and tables decide _what_ happens. The AI narrates _how_.** Every number (HP, MP, XP, rolls, levels) comes from a small, tested JavaScript engine that reads an event log, so the randomness is real and the game works even when the AI is down. The narrator and characters run as agents inside Obsidian (Vault Operator), write only story files, and never touch your stats or your task records.
 
 ---
 
@@ -30,17 +30,18 @@ It is built for one person. Sharing the vault as a starter is a possible later s
 
 ## The daily loop
 
-The diagram below is the intended product loop, not a claim that every step is implemented. On this branch, use the QuickAdd commands in `STEP3.md` to try the task path; morning briefing, narrator and table-note integration are later steps.
+The diagram below is the intended product loop, not a claim that every step is implemented. On this branch, create and plan tasks in TaskNotes, then use the QuickAdd `Task done` and `Undo last` commands; morning briefing, narrator and table-note integration are later steps.
 
 ```
 MORNING
-  Press "plan my day" → add tasks from the backlog to today,
-  tick urgent / important. MP refills to 10.
+  Plan today in TaskNotes → add tasks, set dates and priorities.
+  MP refills to 10.
   Press "morning briefing" → the narrator recaps yesterday and
   frames today's planned tasks as quests.
 
 THROUGH THE DAY
-  Done on a task  → MP is spent, 2d6 roll, a table result, a result card.
+  Mark a task Done in TaskNotes, then run Task done
+    → MP is spent, 2d6 roll, a table result, a result card.
   Done on a habit → one-line status (+HP, +XP, −MP). No roll, no story beat.
   Talk to a character any time. It costs no MP.
 
@@ -55,13 +56,14 @@ Skipping a briefing costs nothing. The next one just covers more days.
 
 ## How it works
 
-TaskRPG splits the work in three, and each part has one job:
+TaskRPG splits the work into clear layers, and each part has one job:
 
 | Layer                                        | Does                                                         | Never does                           |
 | -------------------------------------------- | ------------------------------------------------------------ | ------------------------------------ |
-| **Plugins** (QuickAdd, Meta Bind, and so on) | Buttons, panels, tasks, dice tables, sync                    | Hold game rules                      |
+| **TaskNotes**                                | Creates, plans and displays tasks; owns statuses and task user fields | Rolls dice or holds game rules |
+| **Plugins** (QuickAdd, Meta Bind, and so on) | Buttons, panels, dice tables, sync                    | Hold game rules                      |
 | **Engine** (one plain JavaScript module)     | Every rule and number. Reads the event log and settings note | Depend on Obsidian or any plugin     |
-| **Agents** (the narrator and each character) | Write story, characters and memory, in their own folders     | Change HP, MP, XP or edit task lines |
+| **Agents** (the narrator and each character) | Write story, characters and memory, in their own folders     | Change HP, MP, XP or edit task records |
 
 The **event log** is the source of truth: one plain-text line per action. The live log is `Engine/Events.md`. `Engine/Hero.md` is a derived display rewritten by the habit macro; Step 3 task Done and Undo do **not** refresh it yet, so its HP/MP/XP fields can be stale even though the log is authoritative. QuickAdd scripts call the standalone engine, and tunable game numbers live in `Engine/Settings.md`.
 
@@ -111,7 +113,7 @@ A success has a one-in-three chance of **loot**. A roll only changes the story, 
 
 ### Undo
 
-**Undo last** adds a correcting line to the log (nothing is deleted). It works for same-day tasks and habits only, newest first. The intended rule forbids re-rolling; the current Step 3 wrapper does not yet prevent a subsequent Done press after undo, so do not use it to seek another roll.
+**Undo last** adds a correcting line to the log (nothing is deleted). It works for same-day tasks and habits only, newest first. The intended rule forbids re-rolling; the current Step 3 wrapper does not yet prevent a subsequent Task done press after undo, so do not use it to seek another roll.
 
 ---
 
@@ -142,8 +144,7 @@ The vault is organised by ownership and by which story data is shared across cam
 | **Campaigns**  | Separate story log, arcs, quests and outcomes per campaign      | The narrator, with approval                  |
 | **Characters** | Stable hero/companion profiles and character-scoped memories    | User and character agents, with approval     |
 | **Journal**    | Daily notes and a generated "Today's turns" view                | You and macros (only this folder is pruned)  |
-| **Backlog**    | Reserved folder; the current New task macro writes `TaskNotes/` | You and TaskNotes/QuickAdd                   |
-| **TaskNotes**  | Step 3 task notes and starter views                              | You, TaskNotes and QuickAdd scripts          |
+| **TaskNotes**  | Task records, planning, statuses, task fields and starter views | You and TaskNotes                            |
 
 The existing `Campaign/` folder is the current campaign's legacy location until a separately approved migration. The hero profile there contains stable identity only; live stats and inventory belong to `Engine/`. Shared hero progression applies across campaigns; each campaign's narrative history stays separate.
 
@@ -159,16 +160,16 @@ Add only what's listed. Every extra plugin slows startup. Full detail is in `PLU
 
 | Plugin                 | Used for                                                                 | From   |
 | ---------------------- | ------------------------------------------------------------------------ | ------ |
-| **QuickAdd**           | The glue: every button runs a macro that calls the engine                | Step 0 |
+| **QuickAdd**           | The glue: action buttons run macros that call the engine                | Step 0 |
 | **Templater**          | Templates for daily, habit, persona and item notes                       | Step 0 |
 | **Lazy Plugin Loader** | Keeps startup fast                                                       | Step 0 |
 | **Meta Bind**          | The panels (HP, MP, XP) and buttons. Replaces the discontinued Buttons   | Step 2 |
 | **Fit**                | Phone ↔ desktop sync through GitHub; doubles as backup                   | Step 2 |
 | **Dice Roller**        | Draws from the random tables                                             | Step 3 |
-| **TaskNotes**          | The backlog. Each task is a note. Needs the built-in **Bases** plugin on | Step 3 |
+| **TaskNotes**          | The task layer: creates, plans and displays tasks; owns task fields      | Step 3 |
 | **Vault Operator**     | Runs the narrator and every character as agents. Desktop only            | Step 4 |
 
-Step 3 currently uses the standalone engine's dice and an in-code placeholder outcome table. Dice Roller integration with generated table notes is planned for Step 4 and has not been verified; TaskNotes recognition of the directly written notes also needs testing.
+Step 3 currently uses the standalone engine's dice and an in-code placeholder outcome table. Dice Roller integration with generated table notes is planned for Step 4 and has not been verified. TaskNotes field mapping, scheduled dates, and completion behaviour also need testing.
 
 You also need **VS Code with GitHub Copilot** to build and test the engine (Vault Operator has no terminal).
 
@@ -191,11 +192,11 @@ Build one step at a time and try each before the next. Each step ends with somet
 | 0    | Folders, stub settings note, plugin check                                         | A QuickAdd macro runs a "hello" script                                                   |
 | 1    | The engine and its automated tests (VS Code)                                      | All tests pass, and `node engine.js recalc` works in a terminal                          |
 | 2    | Habit **Done** button, hero note, Meta Bind panels                                | You press Done and see the toast, the log line and the HP change. **Test on your phone** |
-| 3    | **New task** form, add-to-today button, task **Done**, result card, **undo last** | You add, plan, finish and undo a task                                                    |
+| 3    | TaskNotes task fields, task **Done**, result card, **undo last**                  | You create and schedule a task in TaskNotes, resolve it, and undo it                     |
 | 4    | Quiz, narrator, hero persona, about 5 starter random tables                       | Quiz finished, hero edited, Dice Roller draws from the tables                            |
 | 5    | One companion and the morning briefing button                                     | You plan a day, get the quests and a remembered conversation                             |
 
-On this branch, Step 3 is coded but its acceptance test is pending; `STEP3.md` distinguishes implemented commands from the missing per-task button and today view. Do not advance to Step 4 until it is validated.
+On this branch, Step 3 is coded but its acceptance test is pending; `STEP3.md` distinguishes implemented commands from the optional Workflows trigger. Do not advance to Step 4 until it is validated.
 
 ### The trial week
 
@@ -236,7 +237,7 @@ Override models with `GM_MODEL_STRONG` and `GM_MODEL_SMALL`.
 ### Output and safety
 
 - **Writes:** the legacy bridge writes `Story/Briefings/<date>.md`, `Story/Today's quests.md` (each quest links to its real task), and the Story So Far timeline.
-- **Enforced in code:** it can write only to Story and Characters. It never computes or changes HP, MP, XP or rolls, never edits task lines, and never touches the journal or the Engine folder.
+- **Enforced in code:** it can write only to Story and Characters. It never computes or changes HP, MP, XP or rolls, never edits task records, and never touches the journal or the Engine folder.
 - **Scope:** this bridge predates the multi-campaign layout and is not campaign-aware. Do not use it for multiple campaigns until it is updated to select and isolate a campaign.
 - **If the API fails:** it says so and exits without changing anything. The next briefing covers the missed days.
 - It won't overwrite an existing briefing without `--force`, so it doesn't clobber one the narrator already wrote. Don't run it while a Vault Operator session is writing the same files.
@@ -258,7 +259,7 @@ Edit the config block at the top of the script if your vault differs.
 
 ## Devices, sync and privacy
 
-- **Phone for quick taps, desktop for everything else.** Done presses, habit presses and the New task form are meant to work on the phone. Planning, engine changes and character chats stay on desktop. Mobile support for the macros, TaskNotes and pop-ups is _untested_ and is checked in Steps 2 and 3.
+- **Phone for quick taps, desktop for everything else.** Done presses, habit presses and task resolution are meant to work on the phone. Planning and character chats stay on desktop. Mobile support for the macros, TaskNotes and pop-ups is _untested_ and is checked in Steps 2 and 3.
 - **Fit** syncs the vault. Genuine conflicts land in a `_fit` folder: merge by hand, then press **recalculate**. Plugin settings don't sync by default, so QuickAdd macros and Meta Bind setup need opting in or recreating on the phone.
 - **Reminders** are 3 to 5 recurring phone alarms, one per habit block. They aren't linked to the game.
 - **Model visibility:** treat every vault file as potentially model-visible. Agents should receive only the context needed for a task, but folders, ignore files and plugin permissions are not confidentiality guarantees. Do not store content in the vault that you would not consent to sending to the configured provider. Review that provider's data terms before sending content; `gm_bridge.py` sends selected prompt context to Anthropic's API.
@@ -317,5 +318,5 @@ These are aspirations to aim at, not pass or fail:
 | `BUILD_PROMPT.md` | Step-by-step brief for the coding agent                         |
 | `PLUGINS.md`      | Plugin requirements, what to avoid, and checks before each step |
 | `TESTING.md`      | How to run the engine tests, and a manual test inside Obsidian  |
-| `STEP3.md`        | Step 3 QuickAdd setup, current limitations and validation gate  |
+| `STEP3.md`        | TaskNotes-wrapped task resolution, current limitations and validation gate |
 | `Scripts/gm_bridge.py` | Optional terminal fallback for the narrator                     |
