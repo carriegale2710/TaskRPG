@@ -1,9 +1,6 @@
-# All Tasks
-
 filters:
   and:
     - file.hasTag("task")
-
 formulas:
   priorityWeight: if(priority=="none",0,if(priority=="low",1,if(priority=="normal",2,if(priority=="high",3,999))))
   daysUntilDue: if((due.isEmpty() == false), ((number(date(due)) - number(today())) / 86400000).floor(), null)
@@ -45,31 +42,12 @@ formulas:
   urgencyScore: if(due.isEmpty() && scheduled.isEmpty(), formula.priorityWeight, formula.priorityWeight + max(0, 10 - if(formula.daysUntilNext, formula.daysUntilNext, 0)) + (1 - ((number(date(formula.nextDate)) - number(date(date(formula.nextDate).format("YYYY-MM-DD")))) / 86400000)))
   timeTrackedFormatted: if(timeEntries, if(list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) >= 60, (list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) / 60).floor() + "h " + (list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) % 60).round() + "m", list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round() + "m"), "0m")
   dueDateDisplay: if(due.isEmpty(), "", if(date(due).format("YYYY-MM-DD") == today().format("YYYY-MM-DD"), "Today", if(date(due).format("YYYY-MM-DD") == (today() + "1 day").format("YYYY-MM-DD"), "Tomorrow", if(date(due).format("YYYY-MM-DD") == (today() - "1 day").format("YYYY-MM-DD"), "Yesterday", if(date(due) < today(), formula.daysUntilDue * -1 + "d ago", if(date(due).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD"), date(due).format("ddd"), date(due).format("MMM D")))))))
-
 views:
   - type: tasknotesTaskList
-    name: "Manual Order"
-    order:
-      - status
-      - priority
-      - due
-      - scheduled
-      - projects
-      - contexts
-      - file.tags
-      - blockedBy
-      - file.name
-      - recurrence
-      - complete_instances
-      - file.tasks
-    sort:
-      - column: tasknotes_manual_order
-        direction: DESC
+    name: Manual Order
     groupBy:
       property: status
       direction: ASC
-  - type: tasknotesTaskList
-    name: "All Tasks"
     order:
       - status
       - priority
@@ -84,28 +62,40 @@ views:
       - complete_instances
       - file.tasks
     sort:
-      - column: due
+      - property: tasknotes_manual_order
+        direction: DESC
+  - type: tasknotesTaskList
+    name: All Tasks
+    order:
+      - status
+      - priority
+      - due
+      - scheduled
+      - projects
+      - contexts
+      - file.tags
+      - blockedBy
+      - file.name
+      - recurrence
+      - complete_instances
+      - file.tasks
+    sort:
+      - property: due
         direction: ASC
   - type: tasknotesTaskList
-    name: "Not Blocked"
+    name: Not Blocked
     filters:
       and:
-        # Incomplete tasks
         - or:
-          # Non-recurring task that's not in any completed status
-          - and:
-            - recurrence.isEmpty()
-            - status != "done"
-          # Recurring task where today is not in complete_instances
-          - and:
-            - recurrence.isEmpty() == false
-            - complete_instances.map(date(value).format("YYYY-MM-DD")).contains(today().format("YYYY-MM-DD")) != true
-        # Not blocked by any incomplete tasks
+            - and:
+                - recurrence.isEmpty()
+                - status != "done"
+            - and:
+                - recurrence.isEmpty() == false
+                - complete_instances.map(date(value).format("YYYY-MM-DD")).contains(today().format("YYYY-MM-DD")) != true
         - or:
-          # No blocking dependencies at all
-          - blockedBy.isEmpty()
-          # All blocking tasks are completed (filter returns only incomplete, then check if empty)
-          - "list(blockedBy).filter(file(if(value.isType(\"object\"), value.uid, value)).properties.status != \"done\").isEmpty()"
+            - blockedBy.isEmpty()
+            - list(blockedBy).filter(file(if(value.isType("object"), value.uid, value)).properties.status != "done").isEmpty()
     order:
       - status
       - priority
@@ -120,30 +110,26 @@ views:
       - complete_instances
       - file.tasks
     sort:
-      - column: formula.urgencyScore
+      - property: formula.urgencyScore
         direction: DESC
   - type: tasknotesTaskList
-    name: "Today"
+    name: Today
     filters:
       and:
-        # Incomplete tasks (handles both recurring and non-recurring)
         - or:
-          # Non-recurring task that's not in any completed status
-          - and:
-            - recurrence.isEmpty()
-            - status != "done"
-          # Recurring task where today is not in complete_instances
-          - and:
-            - recurrence.isEmpty() == false
-            - complete_instances.map(date(value).format("YYYY-MM-DD")).contains(today().format("YYYY-MM-DD")) != true
-        # Due or scheduled today
+            - and:
+                - recurrence.isEmpty()
+                - status != "done"
+            - and:
+                - recurrence.isEmpty() == false
+                - complete_instances.map(date(value).format("YYYY-MM-DD")).contains(today().format("YYYY-MM-DD")) != true
         - or:
-          - and:
-            - due.isEmpty() == false
-            - date(due).format("YYYY-MM-DD") == today().format("YYYY-MM-DD")
-          - and:
-            - scheduled.isEmpty() == false
-            - date(scheduled).format("YYYY-MM-DD") == today().format("YYYY-MM-DD")
+            - and:
+                - due.isEmpty() == false
+                - date(due).format("YYYY-MM-DD") == today().format("YYYY-MM-DD")
+            - and:
+                - scheduled.isEmpty() == false
+                - date(scheduled).format("YYYY-MM-DD") == today().format("YYYY-MM-DD")
     order:
       - status
       - priority
@@ -158,30 +144,26 @@ views:
       - complete_instances
       - file.tasks
     sort:
-      - column: formula.urgencyScore
+      - property: formula.urgencyScore
         direction: DESC
   - type: tasknotesTaskList
-    name: "Overdue"
+    name: Overdue
     filters:
       and:
-        # Incomplete tasks
         - or:
-          # Non-recurring task that's not in any completed status
-          - and:
-            - recurrence.isEmpty()
-            - status != "done"
-          # Recurring task where today is not in complete_instances
-          - and:
-            - recurrence.isEmpty() == false
-            - complete_instances.map(date(value).format("YYYY-MM-DD")).contains(today().format("YYYY-MM-DD")) != true
-        # Due or scheduled in the past
+            - and:
+                - recurrence.isEmpty()
+                - status != "done"
+            - and:
+                - recurrence.isEmpty() == false
+                - complete_instances.map(date(value).format("YYYY-MM-DD")).contains(today().format("YYYY-MM-DD")) != true
         - or:
-          - and:
-            - due.isEmpty() == false
-            - date(due) < today()
-          - and:
-            - scheduled.isEmpty() == false
-            - date(scheduled) < today()
+            - and:
+                - due.isEmpty() == false
+                - date(due) < today()
+            - and:
+                - scheduled.isEmpty() == false
+                - date(scheduled) < today()
     order:
       - status
       - priority
@@ -196,32 +178,28 @@ views:
       - complete_instances
       - file.tasks
     sort:
-      - column: formula.urgencyScore
+      - property: formula.urgencyScore
         direction: DESC
   - type: tasknotesTaskList
-    name: "This Week"
+    name: This Week
     filters:
       and:
-        # Incomplete tasks
         - or:
-          # Non-recurring task that's not in any completed status
-          - and:
-            - recurrence.isEmpty()
-            - status != "done"
-          # Recurring task where today is not in complete_instances
-          - and:
-            - recurrence.isEmpty() == false
-            - complete_instances.map(date(value).format("YYYY-MM-DD")).contains(today().format("YYYY-MM-DD")) != true
-        # Due or scheduled this week
+            - and:
+                - recurrence.isEmpty()
+                - status != "done"
+            - and:
+                - recurrence.isEmpty() == false
+                - complete_instances.map(date(value).format("YYYY-MM-DD")).contains(today().format("YYYY-MM-DD")) != true
         - or:
-          - and:
-            - due.isEmpty() == false
-            - date(due).format("YYYY-MM-DD") >= today().format("YYYY-MM-DD")
-            - date(due).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD")
-          - and:
-            - scheduled.isEmpty() == false
-            - date(scheduled).format("YYYY-MM-DD") >= today().format("YYYY-MM-DD")
-            - date(scheduled).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD")
+            - and:
+                - due.isEmpty() == false
+                - date(due).format("YYYY-MM-DD") >= today().format("YYYY-MM-DD")
+                - date(due).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD")
+            - and:
+                - scheduled.isEmpty() == false
+                - date(scheduled).format("YYYY-MM-DD") >= today().format("YYYY-MM-DD")
+                - date(scheduled).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD")
     order:
       - status
       - priority
@@ -236,23 +214,19 @@ views:
       - complete_instances
       - file.tasks
     sort:
-      - column: formula.urgencyScore
+      - property: formula.urgencyScore
         direction: DESC
   - type: tasknotesTaskList
-    name: "Unscheduled"
+    name: Unscheduled
     filters:
       and:
-        # Incomplete tasks
         - or:
-          # Non-recurring task that's not in any completed status
-          - and:
-            - recurrence.isEmpty()
-            - status != "done"
-          # Recurring task where today is not in complete_instances
-          - and:
-            - recurrence.isEmpty() == false
-            - complete_instances.map(date(value).format("YYYY-MM-DD")).contains(today().format("YYYY-MM-DD")) != true
-        # No due date and no scheduled date
+            - and:
+                - recurrence.isEmpty()
+                - status != "done"
+            - and:
+                - recurrence.isEmpty() == false
+                - complete_instances.map(date(value).format("YYYY-MM-DD")).contains(today().format("YYYY-MM-DD")) != true
         - date(due).isEmpty()
         - date(scheduled).isEmpty()
     order:
@@ -269,5 +243,5 @@ views:
       - complete_instances
       - file.tasks
     sort:
-      - column: status
+      - property: status
         direction: ASC
