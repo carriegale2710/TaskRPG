@@ -33,7 +33,7 @@ A good run ends with `# fail 0`. Pass a directory to `--test` and Node 22 fails 
 | To do this                   | Run                                                                                            |
 | ---------------------------- | ---------------------------------------------------------------------------------------------- |
 | Run one test by name         | `node --test --test-name-pattern="undo" Scripts/engine.test.js`                                |
-| Re-run on every file change  | `node --test --watch Scripts/engine.test.js`                                                    |
+| Re-run on every file change  | `node --test --watch "Scripts/**/*.test.js"`                                                   |
 | Rebuild the saved hero state | `node Scripts/engine.js recalc`                                                                |
 | Use other files              | `node Scripts/engine.js recalc <events file> <settings note> <state file>`                     |
 | See MP as of a given moment  | add `--now=2026-10-14T09:00:00+11:00` (MP refills at 4:00 AM, so this shows the next day's MP) |
@@ -65,6 +65,21 @@ A good run ends with `# fail 0`. Pass a directory to `--test` and Node 22 fails 
 
 Tests use fixed dates and fixed dice, so they give the same result on any machine and time zone. When you change a rule, change its test in the same edit. When you add a rule, add a test.
 
+### Write the test first
+
+The working rule is the "Test-driven development workflow" section in `AGENTS.md`. In practice, for this vault:
+
+1. Add the test to the matching `Scripts/*.test.js`, or a new `*.test.js` for a new module, using fixed dates and fixed dice.
+2. Run it and read the output: it must fail on the assertion you intended, not on a typo, a wrong path or a missing import. The test is the written acceptance criterion for the rule.
+3. Change `Scripts/engine.js` (or the script under test) to make it pass. Do not delete, skip or loosen the assertion to get green.
+4. Re-run the file and read the whole run. A change that was never seen failing is not yet evidence.
+5. Prove the test bites: break the implementation on purpose (flip a boundary, move a threshold), confirm the test fails, then restore it. A test that survives a broken implementation is a vanity test.
+6. For a bug, reproduce it as a failing test first, then fix the cause.
+
+Failing tests for a feature that is not built yet are fine and useful — they are the to-do list, and they document what "done" means before any code exists. The one hard line is the merge to `main`: a PR doesn't merge while the tests for the feature it delivers are failing. **Never** convert a red test to a skip just to get a green run.
+
+The same idea applies to the manual checks below: write the steps and the expected notice, log line and file change before building the slice, then run it and record the real result.
+
 ### If a test fails
 
 The runner prints `expected` and `actual`. Decide which is wrong. If the rule changed on purpose, update the test. If it didn't, fix `Scripts/engine.js`.
@@ -77,16 +92,16 @@ This checks that QuickAdd can run the engine and that it behaves in the real app
 
 ### Before you start
 
-| Plugin                 | Check                                                                                                        | Needed for this test     |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------ |
-| **QuickAdd**           | Enabled. The Step 0 "hello" macro still shows its notice                                                     | Yes                      |
-| **Templater**          | Enabled                                                                                                      | No                       |
-| **Lazy Plugin Loader** | Enabled, and Obsidian still starts quickly                                                                   | No                       |
+| Plugin                 | Check                                                                                                        | Needed for this test                       |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------ |
+| **QuickAdd**           | Enabled. The Step 0 "hello" macro still shows its notice                                                     | Yes                                        |
+| **Templater**          | Enabled                                                                                                      | No                                         |
+| **Lazy Plugin Loader** | Enabled, and Obsidian still starts quickly                                                                   | No                                         |
 | **Dice Roller**        | In a scratch note, type `` `dice: 2d6` `` and view it in Reading view: it shows a roll that changes on click | No (needed in Step 4 for generated tables) |
-| **Meta Bind**          | Enabled                                                                                                      | No (needed in Step 2)    |
-| **TaskNotes**          | Enabled, and the built-in **Bases** core plugin is on (Settings → Core plugins)                              | Yes for Step 3           |
-| **Fit**                | Enabled, and it syncs your phone                                                                             | Only for the phone check |
-| **Vault Operator**     | Enabled (desktop)                                                                                            | No (needed in Step 4)    |
+| **Meta Bind**          | Enabled                                                                                                      | No (needed in Step 2)                      |
+| **TaskNotes**          | Enabled, and the built-in **Bases** core plugin is on (Settings → Core plugins)                              | Yes for Step 3                             |
+| **Fit**                | Enabled, and it syncs your phone                                                                             | Only for the phone check                   |
+| **Vault Operator**     | Enabled (desktop)                                                                                            | No (needed in Step 4)                      |
 
 Step 1 itself only uses QuickAdd. The other rows are a quick "is it installed and enabled" pass.
 

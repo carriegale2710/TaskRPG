@@ -12,6 +12,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - `Scripts/task-utils.test.js` covers TaskNotes frontmatter parsing, scheduled-date mapping, outcome-table selection, result-card formatting, and completion-field updates.
 - `STEP3.md`, `TESTING.md`, `README.md`, `PLUGINS.md`, `AGENTS.md`, and `BUILD_PROMPT.md` describe the TaskNotes-wrapped ownership model and validation gate.
 - Documentation: Added commit-time changelog and doc-sync rules to `AGENTS.md` and `BUILD_PROMPT.md`, plus a requirement to confirm risky assumptions/design decisions with the user before implementing (not already answered by docs/comments).
+- Documentation: Added a **test-driven development workflow** section to `AGENTS.md` — test-first order as the way to write acceptance criteria and confirm design before implementation; a **"No vanity tests"** rule set (assert behaviour over current output, prove a test bites by breaking the implementation, cover boundaries, no tautologies, independent fixtures); **failing tests as the to-do list** (allowed on a branch, never skipped to fake a green run, and the merge to `main` as the one hard line); rules against weakening tests; test layout and run commands; and the manual-check substitute for plugin/mobile work. A matching ground rule was added to `BUILD_PROMPT.md`, and a pointer plus the practical order of operations to `TESTING.md`. Process guidance only; no engine, rule or runtime behavior changed.
 
 ### Changed
 
