@@ -5,7 +5,7 @@ maxHP: 10
 mp: 0
 maxMP: 10
 xp_focus: 0
-xp_vitality: 5
+xp_vitality: 6
 xp_craft: 0
 xp_mind: 0
 xp_presence: 0
