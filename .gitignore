@@ -6,6 +6,8 @@
 /.copilot/
 /copilot/
 
+# Plugin setup folders
+/TaskNotes/
 
 # Credentials and environment files
 .env
