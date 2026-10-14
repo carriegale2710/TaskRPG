@@ -18,10 +18,10 @@ Load both skills below at the start of every coding session, before the first co
 
 Where these skills pull against the rules in this file, this file wins:
 
-- **Compression never overrides the reporting rules here.** The TDD *Report* step, the proven-versus-assumed distinction, failing-run output and the "state options clearly" contract in *Assumptions and risky decisions* stay in plain prose. The `caveman` skill's own Auto-Clarity rules already exempt security warnings, irreversible actions and multi-step sequences where compression risks misreading; treat a test-evidence report or a decision request as the same case.
+- **Compression never overrides the reporting rules here.** The `tdd` skill's *Report* step, the proven-versus-assumed distinction, failing-run output and the "state options clearly" contract in *Assumptions and risky decisions* stay in plain prose. The `caveman` skill's own Auto-Clarity rules already exempt security warnings, irreversible actions and multi-step sequences where compression risks misreading; treat a test-evidence report or a decision request as the same case.
 - **Everything written to the vault or the repo stays normal prose.** Code, comments, commit messages, `CHANGELOG.md` entries and documentation are never written in caveman style — the `caveman` skill requires this too.
 - **"Confirm before implementing" beats ponytail's "ship the lazy version and question it in the same response".** Cut unrequested scope freely, then ask; do not ship a design decision the docs do not settle.
-- **Ponytail does not license skipping proof.** Tests, doc sync and changelog updates stay required exactly as described below.
+- **Ponytail does not license skipping proof.** Tests, doc sync and changelog updates stay required exactly as described in *Build and test* and *Test-driven development* below.
 
 ## Product principles
 
@@ -61,96 +61,26 @@ Where these skills pull against the rules in this file, this file wins:
 - Keep engine behavior runnable from the terminal without Obsidian. Add or update automated tests for each engine rule changed, including relevant settings, event replay and undo behavior.
 - Test macros and Obsidian/mobile integration at the relevant slice; treat untested plugin behavior as an assumption to verify, not a guaranteed capability.
 - Keep changes scoped. Update directly related documentation, preserve readable vault data and formatting, and report validation results and unresolved limitations.
-
-## Test-driven development workflow
-
-Default to test-driven development for anything with engine behavior. The order is the point: write the check first, watch it fail for the right reason, then make it pass. This section is the working rule; `TESTING.md` is the how-to.
-
-TDD earns its place here for three reasons, in order of value:
-
-1. **It writes the acceptance criterion down.** The test is the rule in executable form, so "done" has a definition before any code exists. A rule you cannot state as a test is a rule you have not finished deciding.
-2. **It checks the design before you build it.** Writing the test first forces the interface, the data and the edge cases to be chosen early, and surfaces a wrong design while it is still cheap. If the test is awkward to write, that is information about the design, not a reason to skip the test.
-3. **It keeps the rule fixed afterwards.** The test catches the later change that quietly breaks something.
-
-Test quality matters far more than commit shape. Failing tests are not a problem to hide: a failing test is the clearest to-do item you can leave yourself.
-
-### The loop
-
-1. **Red.** Write the smallest test that states the rule, bug or requirement. Run it and read the output.
-2. **Confirm the failure.** It must fail on the assertion you intended, not on a typo, a wrong path, a missing import or a syntax error. A test that has never failed has not been shown to test anything.
-3. **Green.** Write the least code that makes it pass. Do not add behavior the test does not cover.
-4. **Reprove.** Confirm the test fails again if the implementation breaks (see "No vanity tests").
-5. **Refactor.** With the test green, tidy the code and keep the test green. Do not refactor and change behavior in one step.
-6. **Report.** In your reply, state the failing result you saw, the command you ran, and the passing result.
-
-If writing the test exposes an ambiguity, or a design decision the PRD and the rest of the docs do not answer, stop and confirm with the user before implementing rather than baking a guess into the test.
-
-### Tests and commits
-
-Commit shape is not the goal, and history is not the artefact — the tests are. Where it is cheap and honest, land the test as its own `test:` commit before the implementation, then the `feat:`, `fix:` or `refactor:` commit that makes it pass. That ordering removes any doubt about whether a test was shaped to fit finished code. When the split is awkward, commit them together; ceremony serves nobody. Squash the branch before merge if that is your habit.
-
-Two things do still matter:
-
-- **A commit holding failing tests must say so.** If a commit contains tests for a feature that is not built yet, the commit message and the `CHANGELOG.md` line describe the tests as pending. Never let a commit message claim behaviour that does not exist.
-- **Do not settle a disagreement by editing the assertion.** If a test is wrong, say what is wrong with it and why, then change it. Reaching for the expected value to end a red run is the failure mode this whole workflow exists to prevent.
-
-### No vanity tests
-
-A test earns its place only if it can fail for the right reason. A suite of tests that would pass against a broken engine is worse than no suite, because it buys false confidence.
-
-- **Assert behaviour, not current output.** Expected values come from the PRD rule or from a worked example you can compute by hand — never from whatever the code happens to print today. Copying actual output into `expected` locks in the bug.
-- **Prove the test bites.** Once it passes, break the implementation deliberately: flip the boundary, move a threshold by one, change a constant, return early. Confirm the test fails, then restore the code. A test that survives a broken implementation is a vanity test. Do this for every new rule, every new test file, and any test whose subject you cannot reason about confidently.
-- **Name the rule, and keep one behaviour per test.** The name should tell a reader which PRD rule is being protected. `task MP cost` protects a rule; `works correctly` protects nothing.
-- **Cover the boundaries, not the middle.** The rules live at the edges: success at 9 versus 8, the level 5 and 10 MP discount, the minimum cost of 1, the HP cap of 2 lost per day, the empty log, the invalid setting, the day boundary at 4:00 AM. A happy-path test alone rarely catches a real regression.
-- **Assert the outcome, not the implementation.** Test what the engine returns and logs, not the private helper it happens to call. A test that breaks when you rename an internal function is testing the wrong thing.
-- **No tautologies.** Do not assert a value against itself, re-implement the rule inside the test to compute the expectation, or assert a constant the test itself just defined.
-- **Keep fixtures independent.** No order dependence, no shared mutable state between tests, no state leaking from one test into the next. Fixed dates and fixed dice, so the result is identical on any machine and time zone.
-- **Make failures legible.** A failure should show the rule, the input and the expectation without needing a debugger. Prefer asserting a whole result object or explicit fields over a bare truthiness check.
-- **Treat an instantly-passing test with suspicion.** Either it covers behaviour that already works — fine, but say so — or it is not testing what you meant. Work out which before moving on.
-- **Coverage is not the target.** Catching a real break is. One boundary test that bites beats ten that assert the code equals itself.
-
-### Failing tests are the to-do list
-
-Unfinished work should be visible in the suite rather than in your head.
-
-- **Failing tests for unbuilt or half-built features are welcome on a feature branch.** They document the acceptance criteria, confirm the intended design, and list what is left. Keep them clear enough that the failure message alone tells you what to build.
-- **The one hard line is the merge to `main`.** A PR to `main` does not merge with failing tests for the feature it delivers. Either the tests pass, or the unfinished ones are moved out — into the backlog or an issue — with the reason recorded. Failing tests elsewhere on the branch are fine.
-- **Do not silence a red test to make a run green.** Converting a failing test to `skip` or `todo` deletes the reminder and hides the gap. If a test genuinely must stand down (flaky, blocked by an unverified plugin), skip it with a comment naming the reason and the follow-up, and record it in `TESTING.md`. A skipped test with no reason is a deleted test.
-- **When you work a red test, satisfy it.** Make the implementation meet the test, or openly record that the expectation was wrong and why. Never quietly rewrite the test to match the code.
-- **Keep the list readable from outside the code.** `TESTING.md` and the relevant `STEP*.md` say what is failing, what it is for and what remains. When you add a test for a rule, add its row to the rule-to-test table in `TESTING.md` so the acceptance criteria stay in one place.
-
-### Rules that keep it honest
-
-- **Do not weaken a test to get a pass.** No deleting, skipping, loosening or inverting assertions, and no widening tolerances to match current output. If the expected value is genuinely wrong, say so and why before changing it.
-- **A rule change starts with the test.** When the PRD or the user changes a rule, change the test first, then the implementation, and record the change in `CHANGELOG.md`.
-- **Read the whole failing run.** Fix the cause, not the symptom. If a change breaks an unrelated test, chase it before moving on.
-- **Bugs get a failing regression test first.** Reproduce the reported behaviour as a test that fails, then fix it. Do not fix from a description alone when the behavior is reachable from the engine.
-- **Keep tests deterministic.** Fixed dates and fixed dice, following the existing test files, so results are identical on any machine and time zone.
-- **Keep tests out of the way of live data.** Tests use frozen settings and fixture logs; they never write to `Engine/Events.md` or other live records.
-- **Report honestly what is proven.** Separate "automated test passes" from "verified inside Obsidian" from "assumed". Do not let a green unit test stand in as proof of plugin or mobile behavior.
-
-### Where to put tests and how to run them
-
 - Engine and script tests live beside the code as `Scripts/*.test.js` and use Node's built-in test runner with no dependencies. Add to the matching file, or add a new `*.test.js` for a new module.
 - Run one file at a time: `node --test Scripts/engine.test.js`. On Node 22, passing a directory fails with "Cannot find module".
-- Add the new file to the command lists in `TESTING.md` so a fresh reader runs the same suite.
+- Add a new test file to the command lists in `TESTING.md`, and a row for a new rule to its rule-to-test table, so the acceptance criteria stay in one place.
+- The rules that need a boundary test here are the edges: success at 9 versus 8, the level 5 and 10 MP discount, the minimum cost of 1, the HP cap of 2 lost per day, the empty log, the invalid setting, and the 4:00 AM day boundary.
+- `Scripts/engine-smoke.js` and the throwaway test log (`Engine/Test Events.md`) exist for first integration checks and manual tests. Never point one at the live log or an important real task.
 
-### Where TDD cannot reach
+## Test-driven development
 
-QuickAdd, Meta Bind, TaskNotes, Vault Operator, Dice Roller and the phone cannot be unit tested here. The equivalent of a test-first step is still available: write the acceptance criteria down before building, then check against them.
+Default to test-driven development for anything with engine behavior: write the check first, watch it fail for the right reason, then make it pass. **Load the `tdd` skill before the first test or engine change in a coding session.** It holds the loop, the commit guidance, what makes a test worth keeping, the failing-test policy, and the manual-check substitute for work that cannot be unit tested. `TESTING.md` is this project's how-to: the practical order of operations, the run commands, the rule-to-test table and the manual checks.
 
-1. Before coding, write the steps, the exact command or button, and the expected notice, log line and file change into `TESTING.md` or the relevant `STEP*.md`. This is the acceptance criterion; it is what makes the slice "done".
-2. Build the slice, then run that manual check and record the real result, including the exact error when it fails.
-3. Until it is run, describe the integration as unverified. A described manual check is not evidence.
-4. Humility applies more here, not less: this is the part you cannot prove with a test, so report it as assumed rather than letting a green unit-test run imply that the integration works.
+These hold whether or not the skill is loaded:
 
-`Scripts/engine-smoke.js` and the throwaway test log (`Engine/Test Events.md`) exist for this kind of check; never point a first integration test at the live log or an important real task.
+- **Never weaken a test to get a pass.** No deleting, skipping, loosening or inverting assertions, and no editing or widening the expected value to end a red run. If the expectation is genuinely wrong, say what is wrong and why before changing it.
+- **A commit holding failing tests must say so** in its message and its `CHANGELOG.md` line. Never let a commit message claim behaviour that does not exist.
+- **Failing tests are the to-do list on a branch; `main` is the hard line.** A PR to `main` does not merge with failing tests for the feature it delivers. Move unfinished ones to the backlog with the reason recorded.
+- **Report honestly what is proven.** "Automated test passes", "verified inside Obsidian" and "assumed" are different claims. Do not let a green unit test stand in as proof of plugin, mobile or vault integration.
+- **Bug reports get a failing regression test first** when the behaviour is reachable from the engine.
+- Where the `tdd` skill and this file disagree, this file wins and the skill is corrected.
 
-### When not to test first
-
-- Prose, story, canon and documentation changes, and settings edits the user makes by hand. Nothing to assert; get the docs in sync instead.
-- Exploratory spikes where you genuinely do not know the shape of the answer yet. Spike, throw the spike away, then write the test and the real implementation. Say that you are spiking rather than quietly skipping the test.
-- One-line mechanical edits with a directly related existing test that already covers them. No new test is needed; the existing test is the check.
+Not for prose, story, canon, documentation or hand-made settings edits — nothing to assert; get the docs in sync instead.
 
 ## Documentation, changelog and doc drift
 
