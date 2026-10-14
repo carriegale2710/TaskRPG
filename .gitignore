@@ -5,6 +5,8 @@
 /.vault-operator/
 /.copilot/
 /copilot/
+/.opencode/
+/outputs/
 
 # Plugin setup folders
 /TaskNotes/

@@ -71,13 +71,13 @@ The engine takes the event log plus the settings note and returns the new state 
 
 - [x] **Done when:** all tests pass, and the same inputs give the same results when run from the terminal, for example `node engine.js recalc`.
 
-## 4. Step 2: The habit button
+## 4. ~~Step 2: The habit button~~
 
-- [ ] Build a QuickAdd macro for "Done" on a habit, with one note per habit, the hero note and Meta Bind panels showing HP, MP and skill XP.
-- [ ] Pressing Done stamps the time, adds a line to the event log and the habit's note, and shows a one-line toast, for example: "Morning routine complete! +1 HP, +1 XP, −2 MP (MP 8/10)".
-- [ ] Habits get no dice roll and no story beat.
+- [x] Build a QuickAdd macro for "Done" on a habit, with one note per habit, the hero note and Meta Bind panels showing HP, MP and skill XP.
+- [x] Pressing Done stamps the time, adds a line to the event log and the habit's note, and shows a one-line toast, for example: "Morning routine complete! +1 HP, +1 XP, −2 MP (MP 8/10)".
+- [x] Habits get no dice roll and no story beat.
 
-- [ ] **Done when:** you press Done on a habit and see the toast, the log line and the changed HP. Test the same press **on the phone** and record the result. If it fails, log on desktop and use a catch-up button instead, and tell the user.
+- [x] **Done when:** you press Done on a habit and see the toast, the log line and the changed HP. Test the same press **on the phone** and record the result. If it fails, log on desktop and use a catch-up button instead, and tell the user.
 
 ## 5. Step 3: The task button
 
