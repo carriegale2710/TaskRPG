@@ -1,7 +1,11 @@
 ---
 name: define-scope
-description: This skill should be used when the user asks to "define scope", "what's in scope", "what's out of scope", or needs to clarify boundaries for a project, feature, or sprint.
+description: This skill should be used when the user asks to "define scope",
+  "what's in scope", "what's out of scope", or needs to clarify boundaries for a
+  project, feature, or sprint.
 user-invocable: true
+metadata:
+  copilot-enabled-agents: codex,opencode,claude
 ---
 
 # Define-Scope Skill

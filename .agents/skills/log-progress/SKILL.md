@@ -1,7 +1,11 @@
 ---
 name: log-progress
-description: This skill should be used when the user asks to "log this", "keep a record", "document what we did", or needs to create an auditable record of work and decisions.
+description: This skill should be used when the user asks to "log this", "keep a
+  record", "document what we did", or needs to create an auditable record of
+  work and decisions.
 user-invocable: true
+metadata:
+  copilot-enabled-agents: codex,opencode,claude
 ---
 
 # Log-Progress Skill

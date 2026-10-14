@@ -1,7 +1,10 @@
 ---
 name: improve-codebase-architecture
-description: Scan a codebase for deepening opportunities, present them as a visual HTML report, then grill through whichever one you pick.
+description: Scan a codebase for deepening opportunities, present them as a
+  visual HTML report, then grill through whichever one you pick.
 disable-model-invocation: true
+metadata:
+  copilot-enabled-agents: codex,opencode,claude
 ---
 
 # Improve Codebase Architecture

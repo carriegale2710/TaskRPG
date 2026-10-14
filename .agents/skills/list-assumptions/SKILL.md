@@ -1,7 +1,11 @@
 ---
 name: list-assumptions
-description: This skill should be used when the user asks to "list assumptions", "what are we assuming", "surface assumptions", or needs to explicitly state assumptions before proceeding with analysis, planning, or implementation.
+description: This skill should be used when the user asks to "list assumptions",
+  "what are we assuming", "surface assumptions", or needs to explicitly state
+  assumptions before proceeding with analysis, planning, or implementation.
 user-invocable: true
+metadata:
+  copilot-enabled-agents: codex,opencode,claude
 ---
 
 # List-Assumptions Skill

@@ -1,6 +1,14 @@
 ---
 name: software-architect
-description: Use when the user is deciding, reviewing, or second-guessing a software architecture or tech-stack choice — monolith vs microservices vs serverless vs event-driven, backend language, database type, caching, CQRS/event sourcing, polyglot, or a migration like Strangler Fig. Triggers on "should I use microservices", "which database", "tech stack for", "system design", or "architecture review". For how to deploy, operate, and scale that design (CI/CD, cloud, Kubernetes, IaC), use devops.
+description: Use when the user is deciding, reviewing, or second-guessing a
+  software architecture or tech-stack choice — monolith vs microservices vs
+  serverless vs event-driven, backend language, database type, caching,
+  CQRS/event sourcing, polyglot, or a migration like Strangler Fig. Triggers on
+  "should I use microservices", "which database", "tech stack for", "system
+  design", or "architecture review". For how to deploy, operate, and scale that
+  design (CI/CD, cloud, Kubernetes, IaC), use devops.
+metadata:
+  copilot-enabled-agents: codex,opencode,claude
 ---
 
 # Software Architect

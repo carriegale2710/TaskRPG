@@ -1,7 +1,11 @@
 ---
 name: log-decision
-description: This skill should be used when the user asks to "write a log-decision", "document this decision", "create a proposal", or needs to capture decisions and rationale for asynchronous review.
+description: This skill should be used when the user asks to "write a
+  log-decision", "document this decision", "create a proposal", or needs to
+  capture decisions and rationale for asynchronous review.
 user-invocable: true
+metadata:
+  copilot-enabled-agents: codex,opencode,claude
 ---
 
 # Log-Decision Skill

@@ -2,6 +2,8 @@
 name: design-advisor
 description: |
   Use when a non-designer needs to audit a UI, generate a design spec (spacing, type scale, color tokens, grids), or build brand foundations (logo systems, palette and type pairing, brand guidelines). Covers the visual layer, UX/perceptual critique, and brand identity. For implementing the design in code (React/HTML/CSS), use frontend-design.
+metadata:
+  copilot-enabled-agents: codex,opencode,claude
 ---
 
 # Design Advisor

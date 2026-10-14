@@ -1,6 +1,9 @@
 ---
 name: write-a-plan
-description: Use when you have a spec or requirements for a multi-step task, before touching code
+description: Use when you have a spec or requirements for a multi-step task,
+  before touching code
+metadata:
+  copilot-enabled-agents: codex,opencode,claude
 ---
 
 # Writing Plans

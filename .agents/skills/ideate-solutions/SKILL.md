@@ -1,7 +1,11 @@
 ---
 name: ideate-solutions
-description: This skill should be used when the user asks to "brainstorm ideas", "generate options", "what are our choices", or needs to explore the solution space creatively.
+description: This skill should be used when the user asks to "brainstorm ideas",
+  "generate options", "what are our choices", or needs to explore the solution
+  space creatively.
 user-invocable: true
+metadata:
+  copilot-enabled-agents: codex,opencode,claude
 ---
 
 # Ideate-Solutions Skill

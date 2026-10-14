@@ -3,6 +3,8 @@ name: loop
 description: Grill me about specs for the workflows I want to build, within this workspace.
 disable-model-invocation: true
 argument-hint: A workflow to design, or nothing to go find one
+metadata:
+  copilot-enabled-agents: codex,opencode,claude
 ---
 
 Run a stateful `/grill` session whose only output is **workflow** specs. Use the grill discipline (relentless, a round of questions at a time, a recommended answer attached to each) aimed at the vocabulary and goal below. Create, edit, and delete specs as the grill resolves things.

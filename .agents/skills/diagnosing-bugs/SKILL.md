@@ -1,6 +1,11 @@
 ---
 name: diagnosing-bugs
-description: Systematically diagnose a bug by forming hypotheses, running experiments, and converging on the root cause. Use when the user has a bug they can't explain, mentions unexpected behavior, or asks why something isn't working.
+description: Systematically diagnose a bug by forming hypotheses, running
+  experiments, and converging on the root cause. Use when the user has a bug
+  they can't explain, mentions unexpected behavior, or asks why something isn't
+  working.
+metadata:
+  copilot-enabled-agents: codex,opencode,claude
 ---
 
 # Diagnosing Bugs

@@ -1,7 +1,11 @@
 ---
 name: gather-requirements
-description: This skill should be used when the user asks to "gather requirements", "what are the requirements", "define requirements", or needs to understand and capture what a feature or project must accomplish.
+description: This skill should be used when the user asks to "gather
+  requirements", "what are the requirements", "define requirements", or needs to
+  understand and capture what a feature or project must accomplish.
 user-invocable: true
+metadata:
+  copilot-enabled-agents: codex,opencode,claude
 ---
 
 # Gather-Requirements Skill

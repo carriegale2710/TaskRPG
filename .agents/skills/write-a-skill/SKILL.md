@@ -1,6 +1,10 @@
 ---
 name: write-a-skill
-description: Creates a new agent skill file right now. Use when the user says "create a skill", "write a skill", or "make a skill for X". For skill-writing methodology and TDD philosophy, see /writing-skills instead.
+description: Creates a new agent skill file right now. Use when the user says
+  "create a skill", "write a skill", or "make a skill for X". For skill-writing
+  methodology and TDD philosophy, see /writing-skills instead.
+metadata:
+  copilot-enabled-agents: codex,opencode,claude
 ---
 
 # Write a Skill

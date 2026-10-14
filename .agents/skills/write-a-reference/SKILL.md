@@ -1,7 +1,13 @@
 ---
 name: write-a-reference
-description: Creates a supporting agent reference document. Use when the user asks to "write a reference", "create reference guidance", or move detailed definitions, rules, criteria, patterns, or examples out of a skill; use the consuming skill or a decision/memo skill instead when the request is primarily procedural or records an accepted decision.
+description: Creates a supporting agent reference document. Use when the user
+  asks to "write a reference", "create reference guidance", or move detailed
+  definitions, rules, criteria, patterns, or examples out of a skill; use the
+  consuming skill or a decision/memo skill instead when the request is primarily
+  procedural or records an accepted decision.
 disable-model-invocation: true
+metadata:
+  copilot-enabled-agents: codex,opencode,claude
 ---
 
 # Write a Reference

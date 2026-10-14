@@ -1,7 +1,11 @@
 ---
 name: simplify
-description: This skill should be used when the user asks to "keep it simple", "simplify this", "avoid over-engineering", or notices complexity creeping in and wants to choose the simplest viable approach.
+description: This skill should be used when the user asks to "keep it simple",
+  "simplify this", "avoid over-engineering", or notices complexity creeping in
+  and wants to choose the simplest viable approach.
 user-invocable: true
+metadata:
+  copilot-enabled-agents: codex,opencode,claude
 ---
 
 # Simplify Skill

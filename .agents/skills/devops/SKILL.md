@@ -1,6 +1,15 @@
 ---
 name: devops
-description: Use when the user needs to deploy, operate, secure, or scale running infrastructure — cloud architecture (multi-region, VPC, FinOps), CI/CD and deployment strategies, secrets/IAM/supply-chain security, observability and SLO alerting, SRE and incident response, Kubernetes vs ECS and autoscaling, Terraform/Pulumi/CDK, or platform engineering and DORA metrics. Also for generating runbooks, pipeline configs, Terraform modules, or Kubernetes manifests. For choosing the system's architecture or stack before it runs (monolith vs microservices, which database), use software-architect.
+description: Use when the user needs to deploy, operate, secure, or scale
+  running infrastructure — cloud architecture (multi-region, VPC, FinOps), CI/CD
+  and deployment strategies, secrets/IAM/supply-chain security, observability
+  and SLO alerting, SRE and incident response, Kubernetes vs ECS and
+  autoscaling, Terraform/Pulumi/CDK, or platform engineering and DORA metrics.
+  Also for generating runbooks, pipeline configs, Terraform modules, or
+  Kubernetes manifests. For choosing the system's architecture or stack before
+  it runs (monolith vs microservices, which database), use software-architect.
+metadata:
+  copilot-enabled-agents: codex,opencode,claude
 ---
 
 # DevOps & Infrastructure Best Practices

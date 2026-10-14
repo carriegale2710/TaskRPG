@@ -1,7 +1,11 @@
 ---
 name: help-me-decide
-description: This skill should be used when the user asks to "help me decide", "which should I choose", "make a decision", or needs to systematically evaluate options and make a call.
+description: This skill should be used when the user asks to "help me decide",
+  "which should I choose", "make a decision", or needs to systematically
+  evaluate options and make a call.
 user-invocable: true
+metadata:
+  copilot-enabled-agents: codex,opencode,claude
 ---
 
 # Help-Me-Decide Skill
