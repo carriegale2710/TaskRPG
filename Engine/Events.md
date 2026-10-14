@@ -4,3 +4,4 @@
 {"id":"habit-1791971341944-k6p5f4hna2","type":"habit_done","timestamp":"2026-10-14T20:49:01+11:00","habitId":"morning-routine","skill":"vitality","onTime":true,"xp":1,"mp":2}
 {"id":"habit-1791971709930-lomy9736cc","type":"habit_done","timestamp":"2026-10-14T20:55:09+11:00","habitId":"morning-routine","skill":"vitality","onTime":false,"xp":1,"mp":2}
 {"id":"habit-1791971734011-fpbr56irpyl","type":"habit_done","timestamp":"2026-10-14T20:55:34+11:00","habitId":"morning-routine","skill":"vitality","onTime":true,"xp":1,"mp":2}
+{"id":"habit-1791976906344-7dd2pb7fwwn","type":"habit_done","timestamp":"2026-10-14T22:21:46+11:00","habitId":"morning-routine","skill":"vitality","onTime":true,"xp":1,"mp":2}
