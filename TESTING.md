@@ -4,7 +4,9 @@ Two ways to check the engine: automated tests in a terminal (every rule), and a 
 
 ## Step 3 addendum — pending validation
 
-Issue #3's implementation is on `feat/3-task-creation-planning-completion-undo` in draft PR #10. No automated run on this branch and no Obsidian desktop or phone result has been recorded here. The Step 1 smoke test below uses `Engine/Test Events.md`; the Step 3 QuickAdd scripts instead write the live `Engine/Events.md`, so **do not** use an important task or concurrent synced devices for the first integration check.
+Issue #3 is now **TaskNotes-wrapped task resolution and undo**. TaskNotes owns task creation, planning, statuses, and the skill, size, urgent and important user fields. TaskRPG owns only `Task done` and `Undo last`. The old `New task` and `Plan task` macros have been removed.
+
+The implementation is on `feat/3-task-creation-planning-completion-undo` in draft PR #10. No automated run on this branch and no Obsidian desktop or phone result has been recorded here. The Step 1 smoke test below uses `Engine/Test Events.md`; the Step 3 QuickAdd scripts write the live `Engine/Events.md`, so **do not** use an important task or concurrent synced devices for the first integration check.
 
 Run from the vault root with Node.js 22 or newer:
 
@@ -12,9 +14,9 @@ Run from the vault root with Node.js 22 or newer:
 node --test Scripts/engine.test.js Scripts/habit-done.test.js Scripts/task-utils.test.js
 ```
 
-The new `task-utils.test.js` tests only pure helpers. It is not evidence that the four QuickAdd scripts work inside Obsidian or that TaskNotes recognises the note schema. Follow `STEP3.md` for the manual create → plan → complete → inspect result → undo flow and phone card check. First confirm the Step 2 validation gate described in `STEP2.md`.
+`task-utils.test.js` tests only pure helpers, including the TaskNotes scheduled-date mapping. It is not evidence that the QuickAdd scripts work inside Obsidian or that TaskNotes preserves the required fields. Follow `STEP3.md` for the manual TaskNotes create/schedule → mark Done → `Task done` → inspect result → `Undo last` flow and phone card check. First confirm the Step 2 validation gate described in `STEP2.md`.
 
-Record results here when tested: desktop and phone model/OS, Obsidian and plugin versions, commands used, TaskNotes view behavior, event/task-note/hero-state changes, card versus Notice fallback, any exact error, and whether the issue #3 acceptance criteria are met. Current limitations to verify include no per-task Meta Bind button or today-list view, no derived hero-note update on task Done/undo, no proven modal integration, and no guard against Done after undo. Do not mark these as validated without a real test.
+Record results here when tested: desktop and phone model/OS, Obsidian and plugin versions, commands used, TaskNotes field mapping and view behaviour, event/task-note/hero-state changes, card versus Notice fallback, any exact error, and whether the issue #3 acceptance criteria are met. Current limitations to verify include no automatic Workflows trigger, no derived hero-note update on task Done/undo, no proven modal integration, and no guard against Done after undo. Do not mark these as validated without a real test.
 
 ## 1. Automated tests
 
@@ -31,7 +33,7 @@ A good run ends with `# fail 0`. Pass a directory to `--test` and Node 22 fails 
 | To do this                   | Run                                                                                            |
 | ---------------------------- | ---------------------------------------------------------------------------------------------- |
 | Run one test by name         | `node --test --test-name-pattern="undo" Scripts/engine.test.js`                                |
-| Re-run on every file change  | `node --test --watch Scripts/engine.test.js`                                                   |
+| Re-run on every file change  | `node --test --watch Scripts/engine.test.js`                                                    |
 | Rebuild the saved hero state | `node Scripts/engine.js recalc`                                                                |
 | Use other files              | `node Scripts/engine.js recalc <events file> <settings note> <state file>`                     |
 | See MP as of a given moment  | add `--now=2026-10-14T09:00:00+11:00` (MP refills at 4:00 AM, so this shows the next day's MP) |
@@ -82,7 +84,7 @@ This checks that QuickAdd can run the engine and that it behaves in the real app
 | **Lazy Plugin Loader** | Enabled, and Obsidian still starts quickly                                                                   | No                       |
 | **Dice Roller**        | In a scratch note, type `` `dice: 2d6` `` and view it in Reading view: it shows a roll that changes on click | No (needed in Step 4 for generated tables) |
 | **Meta Bind**          | Enabled                                                                                                      | No (needed in Step 2)    |
-| **TaskNotes**          | Enabled, and the built-in **Bases** core plugin is on (Settings → Core plugins)                              | No (needed in Step 3)    |
+| **TaskNotes**          | Enabled, and the built-in **Bases** core plugin is on (Settings → Core plugins)                              | Yes for Step 3           |
 | **Fit**                | Enabled, and it syncs your phone                                                                             | Only for the phone check |
 | **Vault Operator**     | Enabled (desktop)                                                                                            | No (needed in Step 4)    |
 

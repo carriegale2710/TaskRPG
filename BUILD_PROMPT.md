@@ -57,7 +57,7 @@ The engine takes the event log plus the settings note and returns the new state 
 
 **Rest and pause**
 
-- [x] Rest day: a one-day pass, 4 a month, no HP loss and no plan needed.
+- [x] Rest day: a one-day pass, 4 a month, no HP loss, no plan needed.
 - [x] Pause: freezes the game, with no HP loss. Paused days are left out of every habit's measure.
 
 **Settings changes and undo**
@@ -79,14 +79,17 @@ The engine takes the event log plus the settings note and returns the new state 
 
 - [x] **Done when:** you press Done on a habit and see the toast, the log line and the changed HP. Test the same press **on the phone** and record the result. If it fails, log on desktop and use a catch-up button instead, and tell the user.
 
-## 5. Step 3: The task button
+## 5. Step 3: TaskNotes-wrapped task resolution and undo
 
-- [ ] A **New task** form asks for the name, skill, size and flags (urgent and important), then creates the TaskNotes task. The form suggests the size used most often for that skill, with medium as the start.
-- [ ] A button beside each backlog task adds it to today's list. This is the plan-my-day step.
-- [ ] **Done for a task** deducts MP, rolls 2d6, picks a result from a placeholder table, applies XP and shows the result card (the roll, the outcome, the table result, XP and MP changes, and any loot). The user taps to dismiss it.
-- [ ] An **undo last** button.
+**TaskNotes owns task creation, planning, statuses, and the skill, size, urgent and important user fields. TaskRPG owns only task resolution and undo.**
 
-- [ ] **Done when:** you add a task, add it to today, press Done and get the card, and then undo it. Check the card on the phone and use a short notice if pop-ups misbehave.
+- [ ] Configure TaskNotes task fields: `taskId`, `skill`, `size`, `urgent`, `important`, status, and a scheduled date. Verify the installed TaskNotes version preserves these fields.
+- [ ] **Task done** (`Scripts/task-done.js`): with a TaskNotes task open, read its mapped fields and scheduled date, deduct MP, roll 2d6, pick a result from a placeholder table, apply XP, write the engine event to `Engine/Events.md`, and show the result card (roll, outcome, table result, XP and MP changes, and any loot). The user taps to dismiss it.
+- [ ] A task scheduled for today avoids the unplanned MP surcharge; a task without today’s scheduled date receives it.
+- [ ] **Undo last** (`Scripts/undo-last.js`): append a correcting engine event for the newest same-game-day task or habit action. Restore the matching TaskNotes task’s open/planned state where possible. Never delete history or enable a re-roll.
+- [ ] Optional phase 2, later: TaskNotes Workflows fires `/task-done` automatically when a task moves from In Progress to Done. Do not build or claim this until it is separately approved and validated.
+
+- [ ] **Done when:** you create and schedule a task in TaskNotes, mark it Done there, run **Task done**, get the result card, and then undo it. Check the card on the phone and use a short notice if pop-ups misbehave. Record TaskNotes field mapping and any limitations.
 
 ## 6. Step 4: The quiz, the narrator and the tables
 
@@ -102,7 +105,7 @@ Set up these in Vault Operator, as agents and skills:
 ## 7. Step 5: One companion and the morning briefing
 
 - [ ] One **companion** as a Vault Operator agent that you open in the sidebar, for example "talk to Elara". It loads her persona, relevant character-scoped memory and the selected campaign's story log. At the end of a session it writes a summary and the extracted changes. The core facts note stays under about a page. Check that Vault Operator keeps character and campaign context separate, and that its write approvals limit writes to the Story, Campaigns, World and Characters areas.
-- [ ] A **morning briefing** button in Obsidian that starts Vault Operator through a QuickAdd macro and an Obsidian command. It writes a briefing note and a "Today's quests" note, with each quest linked to its real task. If the button can't start Vault Operator with a prepared prompt, the fallback is pasting the prompt into the narrator chat, or saving it as a Vault Operator skill.
+- [ ] A **morning briefing** button in Obsidian that starts Vault Operator through a QuickAdd macro and an Obsidian command. It writes a briefing note and a "Today's quests" note, with each quest linked to its real task. If the button can't start Vault Operator with a prepared prompt, the fallback is pasting the prompt into narrator chat or saving it as a Vault Operator skill.
 
 - [ ] **Done when:** you plan a day, press the briefing button, get the quests and have a first conversation that is remembered in the next one.
 
@@ -118,10 +121,10 @@ Set up these in Vault Operator, as agents and skills:
 
 ## 10. Rules for the agent characters
 
-- [ ] The narrator and characters write only to their designated Story, Campaigns, World and Characters areas. They never edit task lines, Engine state or user-authored journal content.
+- [ ] The narrator and characters write only to their designated Story, Campaigns, World and Characters areas. They never edit task records, Engine state or user-authored journal content.
 - [ ] They receive only the journal context needed for the current interaction, not the whole journal by default.
 - [ ] Treat every vault file as potentially model-visible. Do not create or rely on a Private folder, ignore file or plugin permission for confidentiality; do not store content in the vault that you would not consent to sending to the configured provider.
-- [ ] Multiple campaigns may share one world's canon and the hero's game progression, but each campaign keeps its own story log, arcs and quest board. A campaign-specific event becomes shared canon only with approval.
+- [ ] Multiple campaigns may share one world's canon and the hero's game progression, but each campaign keeps its own story log, arcs, quests and quest board. A campaign-specific event becomes shared canon only with approval.
 - [ ] Only the narrator or game system gives real-talk lines (at most one a day, kind and neutral). Characters stay in the fiction and give advice only when asked.
-- [ ] Use a stronger model for chats, the narrator and the briefing, and a smaller one for summaries and housekeeping.
+- [ ] Use a stronger model for chats, the narrator and the briefing, and a smaller model for summaries and housekeeping.
 - [ ] The game must work without the AI. If Vault Operator or the model provider is unavailable, the buttons, dice and stats still run, and the narrator catches up later.

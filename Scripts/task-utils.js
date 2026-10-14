@@ -1,7 +1,5 @@
 'use strict';
 
-const SIZES = ['small', 'medium', 'large'];
-
 const OUTCOME_TABLE = {
   success: [
     'A clean victory—the way forward opens.',
@@ -40,60 +38,13 @@ function parseFrontmatter(text) {
   return fields;
 }
 
-function slugify(value) {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'task';
-}
-
 function today(date = new Date()) {
   const pad = (n) => String(n).padStart(2, '0');
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
-function buildTaskNote({ name, skill, size, urgent, important, taskId, created }) {
-  const safeName = name.replace(/"/g, '\\"');
-  return [
-    '---',
-    'type: task',
-    `taskId: ${taskId}`,
-    `name: "${safeName}"`,
-    `skill: ${skill}`,
-    `size: ${size}`,
-    `urgent: ${urgent}`,
-    `important: ${important}`,
-    'status: backlog',
-    'plannedDate: ""',
-    'completedDate: ""',
-    `created: ${created}`,
-    '---',
-    '',
-    `# ${name}`,
-    '',
-    '## Details',
-    '',
-    `- Skill: ${skill}`,
-    `- Size: ${size}`,
-    `- Urgent: ${urgent ? 'yes' : 'no'}`,
-    `- Important: ${important ? 'yes' : 'no'}`,
-    '',
-    '## Notes',
-    '',
-  ].join('\n');
-}
-
-function suggestSize(tasks, skill) {
-  const counts = { small: 0, medium: 0, large: 0 };
-  for (const task of tasks) {
-    if (task.skill === skill && SIZES.includes(task.size)) counts[task.size] += 1;
-  }
-  let best = 'medium';
-  let bestCount = 0;
-  for (const size of SIZES) {
-    if (counts[size] > bestCount) {
-      best = size;
-      bestCount = counts[size];
-    }
-  }
-  return best;
+function scheduledDate(task) {
+  return task.scheduledDate || task.scheduled || '';
 }
 
 function pickTableResult(outcome, roll) {
@@ -120,22 +71,18 @@ function formatResultCard({ name, roll, total, outcome, tableResult, xp, mpCost,
   return lines.join('\n');
 }
 
-function updateTaskStatus(text, { status, plannedDate, completedDate }) {
+function updateTaskStatus(text, { status, completedDate }) {
   return text
     .replace(/^status:.*$/m, `status: ${status}`)
-    .replace(/^plannedDate:.*$/m, `plannedDate: "${plannedDate ?? ''}"`)
     .replace(/^completedDate:.*$/m, `completedDate: "${completedDate ?? ''}"`);
 }
 
 module.exports = {
   OUTCOME_TABLE,
-  SIZES,
-  buildTaskNote,
   formatResultCard,
   parseFrontmatter,
   pickTableResult,
-  slugify,
-  suggestSize,
+  scheduledDate,
   today,
   updateTaskStatus,
 };

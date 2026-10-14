@@ -1,6 +1,6 @@
 'use strict';
 
-// QuickAdd user script: completes the active TaskRPG task through the engine.
+// QuickAdd user script: resolves the active TaskNotes task through the TaskRPG engine.
 const LOG = 'Engine/Events.md';
 const SETTINGS = 'Engine/Settings.md';
 const ENGINE = 'Scripts/engine.js';
@@ -20,7 +20,7 @@ module.exports = async ({ app }) => {
     const original = await files.read(file.path);
     const task = utils.parseFrontmatter(original);
     if (task.type !== 'task' || !task.taskId) throw new Error('This note is not a TaskRPG task.');
-    if (task.status === 'completed') throw new Error('This task is already completed.');
+    if (task.status === 'completed' || task.status === 'done') throw new Error('This task is already completed.');
 
     const settings = engine.parseSettingsNote(await files.read(SETTINGS));
     if (!settings.skills.includes(task.skill)) throw new Error(`Unknown skill: ${task.skill}`);
@@ -30,7 +30,8 @@ module.exports = async ({ app }) => {
     const events = engine.parseEvents(previous);
     const timestamp = engine.localStamp();
     const dice = engine.rollDice();
-    const planned = task.status === 'planned' && task.plannedDate === utils.today();
+    const scheduled = utils.scheduledDate(task);
+    const planned = scheduled === utils.today();
 
     const action = {
       id: `task-${Date.now()}-${Math.random().toString(36).slice(2)}`,
@@ -54,7 +55,6 @@ module.exports = async ({ app }) => {
 
     await files.write(file.path, utils.updateTaskStatus(original, {
       status: 'completed',
-      plannedDate: task.plannedDate || '',
       completedDate: timestamp,
     }));
 
