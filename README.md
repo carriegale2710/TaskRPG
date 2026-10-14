@@ -4,7 +4,7 @@
 
 TaskRPG is an immersive, character-driven RPG layer on an Obsidian vault. Pressing **Done** on a real task is a game turn: the dice roll, a random table answers, and a narrator and a cast of characters who remember you turn the day's results into a story. Boredom is the main reason projects and routines get dropped, so TaskRPG generates the novelty for you instead of asking you to supply it.
 
-**Status:** the design (PRD v2) is complete and ready to build. The build follows `BUILD_PROMPT.md` one step at a time. Anything marked _untested_ below has not been checked on a real setup yet and is verified during the build.
+**Status on `feat/3-task-creation-planning-completion-undo`:** Steps 0–2 have code, and Step 3 has QuickAdd task scripts and helper tests in draft PR #10. Step 3 has **not** been verified in Obsidian on desktop or phone; Step 2's phone validation is also still recorded as pending. The current task flow is a prototype, not the complete daily loop below. See `STEP3.md`, `TESTING.md` and the unreleased entry in `CHANGELOG.md`. The PRD describes intended behavior, not proof that every plugin integration is working.
 
 ---
 
@@ -29,6 +29,8 @@ It is built for one person. Sharing the vault as a starter is a possible later s
 ---
 
 ## The daily loop
+
+The diagram below is the intended product loop, not a claim that every step is implemented. On this branch, use the QuickAdd commands in `STEP3.md` to try the task path; morning briefing, narrator and table-note integration are later steps.
 
 ```
 MORNING
@@ -61,7 +63,7 @@ TaskRPG splits the work in three, and each part has one job:
 | **Engine** (one plain JavaScript module)     | Every rule and number. Reads the event log and settings note | Depend on Obsidian or any plugin     |
 | **Agents** (the narrator and each character) | Write story, characters and memory, in their own folders     | Change HP, MP, XP or edit task lines |
 
-The **event log** is the source of truth: one plain-text line per action. The hero note is a saved copy that a **recalculate** button can rebuild from the log at any time. QuickAdd macros are thin wrappers that call the engine, and every tunable number lives in one **settings note**.
+The **event log** is the source of truth: one plain-text line per action. The live log is `Engine/Events.md`. `Engine/Hero.md` is a derived display rewritten by the habit macro; Step 3 task Done and Undo do **not** refresh it yet, so its HP/MP/XP fields can be stale even though the log is authoritative. QuickAdd scripts call the standalone engine, and tunable game numbers live in `Engine/Settings.md`.
 
 ---
 
@@ -109,7 +111,7 @@ A success has a one-in-three chance of **loot**. A roll only changes the story, 
 
 ### Undo
 
-**Undo last** adds a correcting line to the log (nothing is deleted). It works for same-day tasks and habits only, newest first, and can't be used to re-roll.
+**Undo last** adds a correcting line to the log (nothing is deleted). It works for same-day tasks and habits only, newest first. The intended rule forbids re-rolling; the current Step 3 wrapper does not yet prevent a subsequent Done press after undo, so do not use it to seek another roll.
 
 ---
 
@@ -140,7 +142,8 @@ The vault is organised by ownership and by which story data is shared across cam
 | **Campaigns**  | Separate story log, arcs, quests and outcomes per campaign      | The narrator, with approval                  |
 | **Characters** | Stable hero/companion profiles and character-scoped memories    | User and character agents, with approval     |
 | **Journal**    | Daily notes and a generated "Today's turns" view                | You and macros (only this folder is pruned)  |
-| **Backlog**    | TaskNotes tasks, optionally linked to a campaign                | You and TaskNotes                            |
+| **Backlog**    | Reserved folder; the current New task macro writes `TaskNotes/` | You and TaskNotes/QuickAdd                   |
+| **TaskNotes**  | Step 3 task notes and starter views                              | You, TaskNotes and QuickAdd scripts          |
 
 The existing `Campaign/` folder is the current campaign's legacy location until a separately approved migration. The hero profile there contains stable identity only; live stats and inventory belong to `Engine/`. Shared hero progression applies across campaigns; each campaign's narrative history stays separate.
 
@@ -164,6 +167,8 @@ Add only what's listed. Every extra plugin slows startup. Full detail is in `PLU
 | **Dice Roller**        | Draws from the random tables                                             | Step 3 |
 | **TaskNotes**          | The backlog. Each task is a note. Needs the built-in **Bases** plugin on | Step 3 |
 | **Vault Operator**     | Runs the narrator and every character as agents. Desktop only            | Step 4 |
+
+Step 3 currently uses the standalone engine's dice and an in-code placeholder outcome table. Dice Roller integration with generated table notes is planned for Step 4 and has not been verified; TaskNotes recognition of the directly written notes also needs testing.
 
 You also need **VS Code with GitHub Copilot** to build and test the engine (Vault Operator has no terminal).
 
@@ -189,6 +194,8 @@ Build one step at a time and try each before the next. Each step ends with somet
 | 3    | **New task** form, add-to-today button, task **Done**, result card, **undo last** | You add, plan, finish and undo a task                                                    |
 | 4    | Quiz, narrator, hero persona, about 5 starter random tables                       | Quiz finished, hero edited, Dice Roller draws from the tables                            |
 | 5    | One companion and the morning briefing button                                     | You plan a day, get the quests and a remembered conversation                             |
+
+On this branch, Step 3 is coded but its acceptance test is pending; `STEP3.md` distinguishes implemented commands from the missing per-task button and today view. Do not advance to Step 4 until it is validated.
 
 ### The trial week
 
@@ -310,4 +317,5 @@ These are aspirations to aim at, not pass or fail:
 | `BUILD_PROMPT.md` | Step-by-step brief for the coding agent                         |
 | `PLUGINS.md`      | Plugin requirements, what to avoid, and checks before each step |
 | `TESTING.md`      | How to run the engine tests, and a manual test inside Obsidian  |
+| `STEP3.md`        | Step 3 QuickAdd setup, current limitations and validation gate  |
 | `Scripts/gm_bridge.py` | Optional terminal fallback for the narrator                     |

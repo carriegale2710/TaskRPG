@@ -2,6 +2,20 @@
 
 Two ways to check the engine: automated tests in a terminal (every rule), and a short manual run inside Obsidian (the engine loading and working in the real app, including your phone).
 
+## Step 3 addendum — pending validation
+
+Issue #3's implementation is on `feat/3-task-creation-planning-completion-undo` in draft PR #10. No automated run on this branch and no Obsidian desktop or phone result has been recorded here. The Step 1 smoke test below uses `Engine/Test Events.md`; the Step 3 QuickAdd scripts instead write the live `Engine/Events.md`, so **do not** use an important task or concurrent synced devices for the first integration check.
+
+Run from the vault root with Node.js 22 or newer:
+
+```sh
+node --test Scripts/engine.test.js Scripts/habit-done.test.js Scripts/task-utils.test.js
+```
+
+The new `task-utils.test.js` tests only pure helpers. It is not evidence that the four QuickAdd scripts work inside Obsidian or that TaskNotes recognises the note schema. Follow `STEP3.md` for the manual create → plan → complete → inspect result → undo flow and phone card check. First confirm the Step 2 validation gate described in `STEP2.md`.
+
+Record results here when tested: desktop and phone model/OS, Obsidian and plugin versions, commands used, TaskNotes view behavior, event/task-note/hero-state changes, card versus Notice fallback, any exact error, and whether the issue #3 acceptance criteria are met. Current limitations to verify include no per-task Meta Bind button or today-list view, no derived hero-note update on task Done/undo, no proven modal integration, and no guard against Done after undo. Do not mark these as validated without a real test.
+
 ## 1. Automated tests
 
 You need [Node.js](https://nodejs.org) 22 or newer. There is nothing to install: the tests use Node's built-in test runner.
@@ -22,7 +36,7 @@ A good run ends with `# fail 0`. Pass a directory to `--test` and Node 22 fails 
 | Use other files              | `node Scripts/engine.js recalc <events file> <settings note> <state file>`                     |
 | See MP as of a given moment  | add `--now=2026-10-14T09:00:00+11:00` (MP refills at 4:00 AM, so this shows the next day's MP) |
 
-`recalc` reads `Engine/Events.jsonl` (no file means a fresh hero) and `Engine/Settings.md`, then writes `Engine/State.json` and prints it. The same inputs always give the same output.
+`recalc` reads `Engine/Events.jsonl` (no file means a fresh hero) and `Engine/Settings.md`, then writes `Engine/State.json` and prints it. The same inputs always give the same output. Since Step 2 the live log is `Engine/Events.md`, so pass it explicitly when checking live data: `node Scripts/engine.js recalc Engine/Events.md Engine/Settings.md Engine/State.json`. This still does not rebuild the Meta Bind `Engine/Hero.md` note.
 
 ### What the tests cover
 
@@ -57,7 +71,7 @@ The rule tests run against a frozen copy of the starting settings at the top of 
 
 ## 2. Manual test inside Obsidian
 
-This checks that QuickAdd can run the engine and that it behaves in the real app. It uses a **test log** (`Engine/Test Events.md`), never your real log. Step 2 builds the real buttons; until then `Scripts/engine-smoke.js` is a throwaway stand-in.
+This checks that QuickAdd can run the engine and that it behaves in the real app. It uses a **test log** (`Engine/Test Events.md`), never your real log. This is the Step 1 smoke test, not the Step 3 workflow. Step 2 has a real habit button; `Scripts/engine-smoke.js` remains an isolated engine check.
 
 ### Before you start
 
@@ -66,7 +80,7 @@ This checks that QuickAdd can run the engine and that it behaves in the real app
 | **QuickAdd**           | Enabled. The Step 0 "hello" macro still shows its notice                                                     | Yes                      |
 | **Templater**          | Enabled                                                                                                      | No                       |
 | **Lazy Plugin Loader** | Enabled, and Obsidian still starts quickly                                                                   | No                       |
-| **Dice Roller**        | In a scratch note, type `` `dice: 2d6` `` and view it in Reading view: it shows a roll that changes on click | No (needed in Step 3)    |
+| **Dice Roller**        | In a scratch note, type `` `dice: 2d6` `` and view it in Reading view: it shows a roll that changes on click | No (needed in Step 4 for generated tables) |
 | **Meta Bind**          | Enabled                                                                                                      | No (needed in Step 2)    |
 | **TaskNotes**          | Enabled, and the built-in **Bases** core plugin is on (Settings → Core plugins)                              | No (needed in Step 3)    |
 | **Fit**                | Enabled, and it syncs your phone                                                                             | Only for the phone check |
@@ -120,6 +134,6 @@ Delete `Engine/Test Events.md`, `Engine/Test State.md` and any `Engine/Test Stat
 
 ### Known limits of this test
 
-- `.jsonl` files don't show in Obsidian's file list, which is why the test log is a `.md` note. The engine accepts either. Decide the real log's extension in Step 2.
+- `.jsonl` files don't show in Obsidian's file list, which is why the test log is a `.md` note. The engine accepts either. The live log selected in Step 2 is `Engine/Events.md`.
 - The first log line is long because it saves a full copy of the settings. That is how a later settings change keeps old days on old rules.
-- Back-filling missed habit blocks, rest days, pause, the weekly focus project and project threat aren't exposed in this test script. They're covered by the automated tests and get buttons in Steps 2 and 3.
+- Back-filling missed habit blocks, rest days, pause, the weekly focus project and project threat aren't exposed in this test script. They're covered by the automated tests; no vault UI for these actions is verified here.

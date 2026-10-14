@@ -4,6 +4,24 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version numbers follow the build brief's steps: `0.1.0` is Step 1 (engine and tests) and `0.1.1` is Step 2 (habit Done button). Nothing is tagged yet, and `0.1.1` still lives on the `issue-2-habit-button` branch.
 
+## Unreleased — Step 3 (issue #3, draft PR #10)
+
+This entry records code committed to `feat/3-task-creation-planning-completion-undo`, not a validated or released Obsidian workflow.
+
+### Added
+
+- `Scripts/new-task.js` prompts for name, a settings-defined skill and size, urgent and important; creates a Markdown note under `TaskNotes/` with backlog status. It labels the most common existing size for the skill as `(usual)` or `medium` when no size exists, but does not preselect it.
+- `Scripts/plan-task.js` updates an open `TaskNotes/*.md` note with today's calendar date and `planned` status. There is no per-task button or today-list view in this commit.
+- `Scripts/task-done.js` logs a settings-driven `task_done` event in `Engine/Events.md`, marks the note completed and attempts a dismissible result modal with a Notice fallback. Outcome descriptions come from a six-entry-per-outcome placeholder table in `Scripts/task-utils.js`, not from Dice Roller.
+- `Scripts/undo-last.js` appends a correcting event for the newest task or habit action on the current game day, and restores a matching task note when found. `Scripts/task-utils.test.js` tests shared helpers; `STEP3.md` lists setup and manual checks.
+
+### Validation and limitations
+
+- Automated Step 3 tests have not been run in this environment; desktop Obsidian, installed TaskNotes compatibility and mobile result-card behavior are unverified. See `TESTING.md` and `STEP3.md`.
+- Task Done and Undo last do not rewrite the derived `Engine/Hero.md` note; undo of a habit does not clean up its history. The task modal's access to `obsidian.Modal` from QuickAdd is unverified.
+- Undo does not prevent a later Task done press on the same task, so the PRD's prohibition on using undo to re-roll needs enforcement before acceptance. The task outcome placeholder uses the loot die rather than a separate recorded table draw.
+- No new game rules were intentionally changed. The Step 2 event-log/Hero repair gap and engine CLI default to `Engine/Events.jsonl` still apply.
+
 ## [0.1.1] - 2026-10-14
 
 ### Added—Step 2: the habit Done button
