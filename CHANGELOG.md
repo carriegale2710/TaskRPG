@@ -4,7 +4,14 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version numbers follow the build brief's steps: `0.1.0` is Step 1 (engine and tests) and `0.1.1` is Step 2 (habit Done button). Nothing is tagged yet, and `0.1.1` still lives on the `issue-2-habit-button` branch.
 
-## [UNRELEASED] — Step 3 redesign (issue #3, draft PR #10)
+## [UNRELEASED]—Step 3 redesign (issue #3, draft PR #10)
+
+### Added
+
+- `Scripts/task-utils.js` now provides a TaskNotes scheduled-date helper used by task resolution and undo.
+- `Scripts/task-utils.test.js` covers TaskNotes frontmatter parsing, scheduled-date mapping, outcome-table selection, result-card formatting, and completion-field updates.
+- `STEP3.md`, `TESTING.md`, `README.md`, `PLUGINS.md`, `AGENTS.md`, and `BUILD_PROMPT.md` describe the TaskNotes-wrapped ownership model and validation gate.
+- Documentation: Added commit-time changelog and doc-sync rules to `AGENTS.md` and `BUILD_PROMPT.md`, plus a requirement to confirm risky assumptions/design decisions with the user before implementing (not already answered by docs/comments).
 
 ### Changed
 
@@ -19,12 +26,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - `Scripts/new-task.js` and the `New task` QuickAdd flow.
 - `Scripts/plan-task.js` and the `Plan task` QuickAdd flow.
 - Task-note creation, slug generation, and size-suggestion helpers from `Scripts/task-utils.js`.
-
-### Added
-
-- `Scripts/task-utils.js` now provides a TaskNotes scheduled-date helper used by task resolution and undo.
-- `Scripts/task-utils.test.js` covers TaskNotes frontmatter parsing, scheduled-date mapping, outcome-table selection, result-card formatting, and completion-field updates.
-- `STEP3.md`, `TESTING.md`, `README.md`, `PLUGINS.md`, `AGENTS.md`, and `BUILD_PROMPT.md` describe the TaskNotes-wrapped ownership model and validation gate.
 
 ### Documentation Consistency
 
@@ -62,10 +63,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 - [x] Remove task-done.js rejection of TaskNotes done/completed statuses (implemented, not integration-tested).
 - [ ] Correct the duplicate guard to match undo.targetEventId to task_done.id; add regression tests before claiming post-undo behaviour works.
-
 - [x] Remove hard-coded planned/backlog restoration from undo-last.js (implemented, not integration-tested).
 - [ ] Verify completedDate ownership and preserve TaskNotes status/frontmatter without rewriting plugin-owned completion data.
-
 - [ ] STEP3.md, TESTING.md, README.md, BUILD_PROMPT.md: update wording after the code fix so the documented flow matches implementation.
 
 ## [0.1.1] - 2026-10-14

@@ -46,8 +46,22 @@
 - Test macros and Obsidian/mobile integration at the relevant slice; treat untested plugin behavior as an assumption to verify, not a guaranteed capability.
 - Keep changes scoped. Update directly related documentation, preserve readable vault data and formatting, and report validation results and unresolved limitations.
 
+## Documentation, changelog and doc drift
+
+- **Update on every commit.** Every time you make a commit, update `CHANGELOG.md` to record what changed, why, files affected, and any behavioral or breaking changes. Follow the existing Keep a Changelog style.
+- **Keep docs in sync.** Update any other relevant documentation files affected by the change (`README.md`, `PRD.md`, `BUILD_PROMPT.md`, `AGENTS.md`, `TESTING.md`, `STEP*.md`, `PLUGINS.md`, etc.). Remove or correct outdated claims rather than leaving contradictory information.
+- **Document decisions and limitations.** If you change a documented rule, behavior, architecture, public API, or plugin mapping, explicitly record it in docs. Note known limitations, validation status, and any follow-ups.
+- **No silent drift.** If you're unsure whether a doc needs updating, update it or call it out in the commit/PR notes.
+
 ## Safety and care
 
 - Ask before deleting or moving many files, pruning records, or making broad vault restructures.
 - Do not delete or rewrite event history to correct an action; use the engine's undo/correction mechanism.
 - Never expose API keys or credentials. Do not imply that any vault content is private from an AI provider.
+
+## Assumptions and risky decisions
+
+- **Confirm before implementing.** If you need to make any risky assumption or design/implementation decision that is not already answered by the repo's documentation (PRD, AGENTS, README, TESTING, etc.) or inline comments, stop and confirm with the user before implementing.
+- **State options clearly.** When asking, include context, the assumption/decision, alternatives considered, tradeoffs, and your recommended approach.
+- **Don't guess silently.** If the documentation is ambiguous or missing, ask rather than inventing behavior. Preserve existing behavior unless the PRD explicitly changes it.
+- **Verify untested integrations.** Treat untested plugin behavior (QuickAdd, Meta Bind, TaskNotes, Vault Operator, Dice Roller, Templater) as assumptions to verify, not guarantees.
