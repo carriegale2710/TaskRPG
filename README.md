@@ -4,8 +4,6 @@
 
 TaskRPG is an immersive, character-driven RPG layer on an Obsidian vault. Resolving a real task is a game turn: the dice roll, a random table answers, and a narrator and a cast of characters who remember you turn the day's results into a story. Boredom is the main reason projects and routines get dropped, so TaskRPG generates the novelty for you instead of asking you to supply it.
 
-**Status on `feat/3-task-creation-planning-completion-undo`:** Steps 0–2 have code, and Step 3 has TaskNotes-wrapped task resolution and undo in draft PR #10. TaskNotes owns task creation, planning, statuses, and task user fields; TaskRPG owns `Task done` and `Undo last`. The automated tests pass, including undo-linked duplicate-resolution coverage. Step 3 has **not** been verified in Obsidian on desktop or phone; Step 2's phone validation is also still recorded as pending. The current task flow is a prototype, not the complete daily loop below. See `STEP3.md`, `TESTING.md` and the unreleased entry in `CHANGELOG.md`. The PRD describes intended behavior, not proof that every plugin integration is working.
-
 ---
 
 ## The idea in one paragraph
