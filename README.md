@@ -4,7 +4,7 @@
 
 TaskRPG is an immersive, character-driven RPG layer on an Obsidian vault. Resolving a real task is a game turn: the dice roll, a random table answers, and a narrator and a cast of characters who remember you turn the day's results into a story. Boredom is the main reason projects and routines get dropped, so TaskRPG generates the novelty for you instead of asking you to supply it.
 
-**Status on `feat/3-task-creation-planning-completion-undo`:** Steps 0–2 have code, and Step 3 has TaskNotes-wrapped task resolution and undo in draft PR #10. TaskNotes owns task creation, planning, statuses, and task user fields; TaskRPG owns `Task done` and `Undo last`. Step 3 has **not** been verified in Obsidian on desktop or phone; Step 2's phone validation is also still recorded as pending. The current task flow is a prototype, not the complete daily loop below. See `STEP3.md`, `TESTING.md` and the unreleased entry in `CHANGELOG.md`. The PRD describes intended behavior, not proof that every plugin integration is working.
+**Status on `feat/3-task-creation-planning-completion-undo`:** Steps 0–2 have code, and Step 3 has TaskNotes-wrapped task resolution and undo in draft PR #10. TaskNotes owns task creation, planning, statuses, and task user fields; TaskRPG owns `Task done` and `Undo last`. The automated tests pass, including undo-linked duplicate-resolution coverage. Step 3 has **not** been verified in Obsidian on desktop or phone; Step 2's phone validation is also still recorded as pending. The current task flow is a prototype, not the complete daily loop below. See `STEP3.md`, `TESTING.md` and the unreleased entry in `CHANGELOG.md`. The PRD describes intended behavior, not proof that every plugin integration is working.
 
 ---
 
@@ -15,7 +15,6 @@ TaskRPG is an immersive, character-driven RPG layer on an Obsidian vault. Resolv
 ---
 
 ## Who it's for
-
 You'll like TaskRPG if you:
 
 - Have an **AuDHD or novelty-driven brain** and drop things when they get boring.
@@ -113,7 +112,9 @@ A success has a one-in-three chance of **loot**. A roll only changes the story, 
 
 ### Undo
 
-**Undo last** adds a correcting line to the log (nothing is deleted). It works for same-day tasks and habits only, newest first. The intended rule forbids re-rolling; the current Step 3 wrapper does not yet prevent a subsequent Task done press after undo, so do not use it to seek another roll.
+**Undo last** adds a correcting line to the log (nothing is deleted). It works for same-day tasks and habits only, newest first.
+
+For tasks, the duplicate-resolution guard follows `undo.targetEventId` to the original `task_done` event. After a valid undo, **Task done** can run again and the engine records the fresh resolution as a repeat. An undo for another task does not release this task’s guard. Do not use undo to seek a better roll.
 
 ---
 
@@ -140,8 +141,8 @@ The vault is organised by ownership and by which story data is shared across cam
 | **Engine**     | Shared event log, derived hero state, habit notes, settings     | The QuickAdd macros only                     |
 | **Scripts**    | Standalone engine and QuickAdd scripts                          | The coding agent                             |
 | **World**      | Shared world canon: rules, regions, factions and reusable NPCs  | User and narrator, with approval             |
-| **Story**      | Cross-campaign canon log, tables, narrator preferences, index   | The narrator, with approval                  |
-| **Campaigns**  | Separate story log, arcs, quests and outcomes per campaign      | The narrator, with approval                  |
+| **Story**      | Cross-campaign canon log, tables, narrator preferences and index   | Narrator, with approval                      |
+| **Campaigns**  | Separate story log, arcs, quests and outcomes per campaign      | Narrator, with approval                      |
 | **Characters** | Stable hero/companion profiles and character-scoped memories    | User and character agents, with approval     |
 | **Journal**    | Daily notes and a generated "Today's turns" view                | You and macros (only this folder is pruned)  |
 | **TaskNotes**  | Task records, planning, statuses, task fields and starter views | You and TaskNotes                            |
@@ -196,7 +197,7 @@ Build one step at a time and try each before the next. Each step ends with somet
 | 4    | Quiz, narrator, hero persona, about 5 starter random tables                       | Quiz finished, hero edited, Dice Roller draws from the tables                            |
 | 5    | One companion and the morning briefing button                                     | You plan a day, get the quests and a remembered conversation                             |
 
-On this branch, Step 3 is coded but its acceptance test is pending; `STEP3.md` distinguishes implemented commands from the optional Workflows trigger. Do not advance to Step 4 until it is validated.
+On this branch, Step 3 is coded and its automated tests pass; its Obsidian acceptance test is pending. `STEP3.md` distinguishes implemented commands from the optional Workflows trigger. Do not advance to Step 4 until it is validated.
 
 ### The trial week
 
@@ -230,7 +231,7 @@ python Scripts/gm_bridge.py story                       # refresh the Story So F
 | Command    | Does                                                                                                                                                        | Model                          |
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
 | `briefing` | Recaps every day since the last briefing (max 7), frames today's planned tasks as quests, adds the Sunday weekly recap, and at most one kind real-talk line | Stronger (`claude-sonnet-5-5`) |
-| `story`    | Rewrites the Story So Far from recent briefings. Keeps the timeline table and any line marked 📌 untouched                                                  | Smaller (`claude-haiku-5-5`)   |
+| `story` | Rewrites the Story So Far from recent briefings. Keeps the timeline table and any line marked 📌 untouched                                                  | Smaller (`claude-haiku-5-5`)   |
 
 Override models with `GM_MODEL_STRONG` and `GM_MODEL_SMALL`.
 
@@ -262,7 +263,7 @@ Edit the config block at the top of the script if your vault differs.
 - **Phone for quick taps, desktop for everything else.** Done presses, habit presses and task resolution are meant to work on the phone. Planning and character chats stay on desktop. Mobile support for the macros, TaskNotes and pop-ups is _untested_ and is checked in Steps 2 and 3.
 - **Fit** syncs the vault. Genuine conflicts land in a `_fit` folder: merge by hand, then press **recalculate**. Plugin settings don't sync by default, so QuickAdd macros and Meta Bind setup need opting in or recreating on the phone.
 - **Reminders** are 3 to 5 recurring phone alarms, one per habit block. They aren't linked to the game.
-- **Model visibility:** treat every vault file as potentially model-visible. Agents should receive only the context needed for a task, but folders, ignore files and plugin permissions are not confidentiality guarantees. Do not store content in the vault that you would not consent to sending to the configured provider. Review that provider's data terms before sending content; `gm_bridge.py` sends selected prompt context to Anthropic's API.
+- **Model visibility:** treat every vault file as potentially model-visible. Agents should receive only the context needed for a file. Folders, ignore files and plugin permissions are not confidentiality guarantees. Do not store content in the vault that you would not consent to sending to the configured provider. Review that provider's data terms before sending anything; `gm_bridge.py` sends selected prompt context to Anthropic's API.
 - **Cost:** not estimated. Measure real usage and rate limits during the trial week.
 
 ---
@@ -295,7 +296,7 @@ Edit the config block at the top of the script if your vault differs.
 | HP loss and streak guilt     | No death, no guilt: rest days, pause, recovery arcs        |
 | Rules hidden in the app      | Every number in one settings note, every rule tested       |
 
-**Is it a game or a productivity tool?** Both. The work is real; the game is the reward layer that makes showing up worth doing.
+**Is it a game or a productivity tool?** Both. The work is real; the game is the reward layer that makes showing up worth it.
 
 ---
 

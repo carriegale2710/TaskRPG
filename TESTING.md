@@ -2,21 +2,32 @@
 
 Two ways to check the engine: automated tests in a terminal (every rule), and a short manual run inside Obsidian (the engine loading and working in the real app, including your phone).
 
-## Step 3 addendum — pending validation
+## Step 3 addendum — automated tests pass; Obsidian validation pending
 
 Issue #3 is now **TaskNotes-wrapped task resolution and undo**. TaskNotes owns task creation, planning, statuses, and the skill, size, urgent and important user fields. TaskRPG owns only `Task done` and `Undo last`. The old `New task` and `Plan task` macros have been removed.
 
-The implementation is on `feat/3-task-creation-planning-completion-undo` in draft PR #10. No automated run on this branch and no Obsidian desktop or phone result has been recorded here. The Step 1 smoke test below uses `Engine/Test Events.md`; the Step 3 QuickAdd scripts write the live `Engine/Events.md`, so **do not** use an important task or concurrent synced devices for the first integration check.
+The implementation is on `feat/3-task-creation-planning-completion-undo` in draft PR #10. The automated suite passes, including `Scripts/task-undo-resolution.test.js`. No Obsidian desktop or phone result has been recorded here. The Step 1 smoke test below uses `Engine/Test Events.md`; the Step 3 QuickAdd scripts write the live `Engine/Events.md`, so **do not** use an important task or concurrent synced devices for the first integration check.
 
 Run from the vault root with Node.js 22 or newer:
 
 ```sh
-node --test Scripts/engine.test.js Scripts/habit-done.test.js Scripts/task-utils.test.js
+node --test Scripts/engine.test.js Scripts/habit-done.test.js Scripts/task-utils.test.js Scripts/task-undo-resolution.test.js
 ```
 
-`task-utils.test.js` tests only pure helpers, including the TaskNotes scheduled-date mapping. It is not evidence that the QuickAdd scripts work inside Obsidian or that TaskNotes preserves the required fields. Follow `STEP3.md` for the manual TaskNotes create/schedule → mark Done → `Task done` → inspect result → `Undo last` flow and phone card check. First confirm the Step 2 validation gate described in `STEP2.md`.
+`task-utils.test.js` tests pure helpers, including the TaskNotes scheduled-date mapping.
 
-Record results here when tested: desktop and phone model/OS, Obsidian and plugin versions, commands used, TaskNotes field mapping and view behaviour, event/task-note/hero-state changes, card versus Notice fallback, any exact error, and whether the issue #3 acceptance criteria are met. Current limitations to verify include no automatic Workflows trigger, no derived hero-note update on task Done/undo, no proven modal integration, and no guard against Done after undo. Do not mark these as validated without a real test.
+`task-undo-resolution.test.js` tests the shared duplicate-resolution guard:
+
+- A task with no RPG resolution can be resolved.
+- A second resolution is blocked while the latest relevant event is an unresolved `task_done`.
+- An `undo` event releases the guard by following `targetEventId` to the original `task_done` event.
+- An undo targeting another task does not release this task’s guard.
+- Resolve → undo → resolve produces a fresh resolution marked `repeat` by the engine.
+- The original `task_done` event remains in the log; undo appends a correction.
+
+These tests import `hasUnresolvedTaskDone` from `Scripts/task-utils.js`, the same implementation used by `Scripts/task-done.js`. They are not evidence that the QuickAdd scripts work inside Obsidian or that TaskNotes preserves the required fields. Follow `STEP3.md` for the manual TaskNotes create/schedule → mark Done → `Task done` → inspect result → `Undo last` flow and phone card check. First confirm the Step 2 validation gate described in `STEP2.md`.
+
+Record results here when tested: desktop and phone model/OS, Obsidian and plugin versions, commands used, TaskNotes field mapping and view behaviour, event/task-note/hero-state changes, card versus Notice fallback, any exact error, and whether the issue #3 acceptance criteria are met. Current limitations to verify include no automatic Workflows trigger, no derived hero-note update on task Done/undo, and no proven modal integration. Do not mark these as validated without a real test.
 
 ## 1. Automated tests
 
@@ -58,6 +69,7 @@ A good run ends with `# fail 0`. Pass a directory to `--test` and Node 22 fails 
 | Rest days and pause                         | `rest days`, `pause and resume`, `missed deadlines are exempt`                        |
 | Settings changes (prospective, validated)   | `settings change`, `settings are validated`, `lowering max`, `the live Settings.md`   |
 | Undo                                        | `undo`, `pressing Done again`                                                         |
+| Undo-linked task resolution guard           | `task resolution`, `undo is linked`, `duplicate resolution guard`                     |
 | Back-filling missed blocks                  | `back-fill`                                                                           |
 | Bad logs, bad actions, log text, dice       | `bad logs`, `bad actions`, `event log text`, `localStamp`, `rollDice`, `an empty log` |
 | Terminal gives identical results            | `recalc from the terminal`                                                            |
