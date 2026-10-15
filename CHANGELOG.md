@@ -4,75 +4,17 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version numbers follow the build brief's steps: `0.1.0` is Step 1 (engine and tests) and `0.1.1` is Step 2 (habit Done button). Nothing is tagged yet, and `0.1.1` still lives on the `issue-2-habit-button` branch.
 
-## [UNRELEASED]—Step 3 redesign (issue #3, draft PR #10)
+## [UNRELEASED]—Step 3 (issue #3, draft PR #10)
 
-### Summary
+### Step 3 redesign
+
+#### Summary
 
 - Fixed the task duplicate-resolution guard to follow `undo.targetEventId`, so a valid undo allows the same task to be resolved again.
 - Added `Scripts/task-undo-resolution.test.js`, covering guard behaviour, undo linkage, repeat resolution, and preservation of the original `task_done` event.
 - Moved `hasUnresolvedTaskDone` into `Scripts/task-utils.js`; `task-done.js` now uses the shared implementation.
 - Updated `STEP3.md`, `TESTING.md`, and `README.md` for the corrected undo flow and expanded automated test command.
 - Automated tests pass; Obsidian desktop/phone integration remains unvalidated.
-
-### Added
-
-- `Scripts/task-utils.js` now provides a TaskNotes scheduled-date helper used by task resolution and undo.
-- `Scripts/task-utils.test.js` covers TaskNotes frontmatter parsing, scheduled-date mapping, outcome-table selection, result-card formatting, and completion-field updates.
-- `Scripts/task-undo-resolution.test.js` covers the shared duplicate-resolution guard, `targetEventId` undo linkage, repeat resolution after undo, and preservation of the original `task_done` event.
-- `STEP3.md`, `TESTING.md`, `README.md`, `PLUGINS.md`, `AGENTS.md`, and `BUILD_PROMPT.md` describe the TaskNotes-wrapped ownership model and validation gate.
-- Documentation: Added commit-time changelog and doc-sync rules to `AGENTS.md` and `BUILD_PROMPT.md`, plus a requirement to confirm risky assumptions/design decisions with the user before implementing (not already answered by docs/comments).
-- Documentation: Added a **test-driven development workflow** section to `AGENTS.md` — test-first order as the way to write acceptance criteria and confirm design before implementation; a **"No vanity tests"** rule set (assert behaviour over current output, prove a test bites by breaking the implementation, cover boundaries, no tautologies, independent fixtures); **failing tests as the to-do list** (allowed on a branch, never skipped to fake a green run, and the merge to `main` as the one hard line); rules against weakening tests; test layout and run commands; and the manual-check substitute for plugin/mobile work. A matching ground rule was added to `BUILD_PROMPT.md`, and a pointer plus the practical order of operations to `TESTING.md`. Process guidance only; no engine, rule or runtime behavior changed.
-- Documentation: Added a **Session skills** section to `AGENTS.md` requiring the `ponytail` and `caveman` skills to be loaded at the start of every coding session and not for non-coding work (story, canon, narration, prose, hand-made settings edits, research), with explicit precedence so compression never overrides this file's TDD reporting, doc-sync or confirm-before-implementing rules. A matching ground rule was added to `BUILD_PROMPT.md`. Process guidance only; no engine, rule or runtime behavior changed.
-- Documentation: Added a general, repo-agnostic **`tdd`** skill at `.agents/skills/tdd/SKILL.md`, holding the test-driven working rules: the red-green loop and vertical slicing, testing at seams, the "No vanity tests" rules, the failing-test policy and the merge-to-`main` line, the rules that keep a suite honest, commit guidance, where tests go and how to run them, the manual-check substitute for what cannot be unit tested, and when not to test first. It folds in the unique content of `.agents/skills/write-tests/references/tdd-rules.md`, an orphaned reference file that never loaded because its folder has no `SKILL.md`. That now-redundant folder is left in place and still needs a decision. Process guidance only; no engine, rule or runtime behavior changed.
-
-### Changed
-
-- **TaskNotes now owns task creation, planning, statuses, and the task user fields** (`skill`, `size`, `urgent`, and `important`).
-- **TaskRPG now owns only task resolution and undo**: `Task done` resolves an open TaskNotes task through the engine; `Undo last` appends a correcting engine event.
-- `Task done` reads the TaskNotes scheduled date for the planned-day MP rule. A task scheduled for today avoids the unplanned MP surcharge.
-- `Undo last` appends a correcting RPG event and clears `completedDate` on a matching task note while preserving its status. The ownership of `completedDate` still needs verification; it is not proven to be TaskRPG-only metadata.
-- `hasUnresolvedTaskDone` moved to `Scripts/task-utils.js` and is now used by `Scripts/task-done.js`; it follows `undo.targetEventId` to the original `task_done` event.
-- After a valid undo, a later `Task done` resolution is allowed and the engine marks it as a repeat.
-- TaskNotes Workflows may later invoke `/task-done` automatically on an In Progress → Done change. This optional phase 2 is not implemented or validated.
-- Documentation: Replaced the 89-line **Test-driven development workflow** section in `AGENTS.md` (1,824 words) with a short section that keeps the test-first default, the trigger to load the `tdd` skill, the invariants that hold whether or not it is loaded, and the TaskRPG-specific material (test file layout and run commands, the boundary cases to cover, and the throwaway-log note). `AGENTS.md` drops from 3,340 to about 1,980 words. Documentation points at the skill now: `TESTING.md` and `BUILD_PROMPT.md` no longer reference the removed heading, and the `caveman` precedence rule in `AGENTS.md` names the skill's *Report* step instead.
-
-### Removed
-
-- `Scripts/new-task.js` and the `New task` QuickAdd flow.
-- `Scripts/plan-task.js` and the `Plan task` QuickAdd flow.
-- Task-note creation, slug generation, and size-suggestion helpers from `Scripts/task-utils.js`.
-
-### Documentation Consistency
-
-| File            | Status                     | Findings                                                                                                                                                  |
-| --------------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| STEP3.md        | Updated                    | Documents preserved TaskNotes status after RPG undo, the `targetEventId` duplicate guard, repeat resolution after undo, and the expanded test command.     |
-| CHANGELOG.md    | Updated                    | Records the guard fix, regression tests, shared helper, documentation sync, and remaining integration-validation gaps.                                     |
-| TESTING.md      | Updated                    | Records passing automated tests, adds `task-undo-resolution.test.js`, and retains the Obsidian desktop/phone validation gate.                              |
-| README.md       | Updated                    | Distinguishes RPG undo from reopening a TaskNotes task; documents `targetEventId` linkage and repeat resolution; keeps integration status unverified.       |
-| PLUGINS.md      | Consistent                 | Correctly assigns task creation, planning, statuses, and fields to TaskNotes, and resolution/undo to TaskRPG.                                             |
-| AGENTS.md       | Consistent                 | Correctly separates TaskNotes task ownership from TaskRPG resolution/undo.                                                                                |
-| BUILD_PROMPT.md | Needs sync                 | Remove task-status restoration from Step 3 requirements; retain regression checks for resolution and undo.                                                |
-| PRD.md          | Verify branch versus draft | An uploaded revised draft exists; compare it with current branch content before replacing the specification.                                              |
-
-### Known issues and validation limitations
-
-| Area                                 | Status                                   | Details                                                                                                                                                                                                                                                    |
-| ------------------------------------ | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| TaskNotes Done versus RPG resolution | Guard fixed; integration untested         | The duplicate guard follows `undo.targetEventId` to the original `task_done` event. End-to-end validation is still pending.                                                                                                                                  |
-| TaskNotes status restoration         | Hard-coded restoration removed; untested | Commit `60d00b9` preserves the existing status value instead of assigning planned/backlog. The helper still rewrites the status line and clears completedDate; field preservation requires testing.                                                        |
-| Automated tests                      | Pass on this branch                       | `node --test Scripts/engine.test.js Scripts/habit-done.test.js Scripts/task-utils.test.js Scripts/task-undo-resolution.test.js` passes.                                                                                                                     |
-| TaskNotes field mapping              | Unverified                               | Confirm the installed TaskNotes version preserves `taskId`, `skill`, `size`, `urgent`, `important`, status, and the scheduled-date field.                                                                                                                  |
-| Scheduled-date property              | To confirm                               | The scripts read `scheduledDate`, falling back to `scheduled`; adjust the mapping if the installed TaskNotes version uses another property.                                                                                                                |
-| Desktop Obsidian                     | Unverified                               | `Task done`, result-card modal, event log, and task-note updates have not been tested.                                                                                                                                                                     |
-| Mobile result card                   | Unverified                               | Phone result-card behaviour has not been tested.                                                                                                                                                                                                           |
-| Engine/Hero.md                       | Not updated                              | Task Done and Undo last do not rewrite the derived hero note.                                                                                                                                                                                              |
-| Habit undo                           | Not cleaned up                           | Undoing a habit does not remove its habit-note history.                                                                                                                                                                                                    |
-| Result modal                         | Unverified                               | QuickAdd access to `obsidian.Modal` has not been tested; a Notice is the fallback.                                                                                                                                                                         |
-| Undo / re-roll                       | Guard fixed; no-re-roll policy unchanged  | A valid undo releases the duplicate-resolution guard through `targetEventId`; a later Task done is a fresh, repeat-marked resolution. Do not use undo to seek a better roll.                                                                                  |
-| Outcome table                        | Placeholder                              | Uses the loot die rather than a separate recorded table draw.                                                                                                                                                                                              |
-| Automatic Workflows trigger          | Not built                                | Phase 2 only; do not treat it as available.                                                                                                                                                                                                                |
-| Existing gaps                        | Still apply                              | The Step 2 event-log/Hero repair gap and engine CLI default to `Engine/Events.jsonl` remain.                                                                                                                                                               |
 
 #### Required follow-up fixes
 
@@ -81,6 +23,88 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - [x] Remove hard-coded planned/backlog restoration from undo-last.js (implemented, not integration-tested).
 - [x] STEP3.md, TESTING.md, README.md, BUILD_PROMPT.md: update wording after the code fix so the documented flow matches implementation.
 - [ ] Verify completedDate ownership and preserve TaskNotes status/frontmatter without rewriting plugin-owned completion data.
+
+---
+
+#### Added
+
+- `Scripts/task-utils.js` now provides a TaskNotes scheduled-date helper used by task resolution and undo.
+- `Scripts/task-utils.test.js` covers TaskNotes frontmatter parsing, scheduled-date mapping, outcome-table selection, result-card formatting, and completion-field updates.
+- `Scripts/task-undo-resolution.test.js` covers the shared duplicate-resolution guard, `targetEventId` undo linkage, repeat resolution after undo, and preservation of the original `task_done` event.
+- `STEP3.md`, `TESTING.md`, `README.md`, `PLUGINS.md`, `AGENTS.md`, and `BUILD_PROMPT.md` describe the TaskNotes-wrapped ownership model and validation gate.
+
+#### Changed
+
+- **TaskNotes now owns task creation, planning, statuses, and the task user fields** (`skill`, `size`, `urgent`, and `important`).
+- **TaskRPG now owns only task resolution and undo**: `Task done` resolves an open TaskNotes task through the engine; `Undo last` appends a correcting engine event.
+- `Task done` reads the TaskNotes scheduled date for the planned-day MP rule. A task scheduled for today avoids the unplanned MP surcharge.
+- `Undo last` appends a correcting RPG event and clears `completedDate` on a matching task note while preserving its status. The ownership of `completedDate` still needs verification; it is not proven to be TaskRPG-only metadata.
+- `hasUnresolvedTaskDone` moved to `Scripts/task-utils.js` and is now used by `Scripts/task-done.js`; it follows `undo.targetEventId` to the original `task_done` event.
+- After a valid undo, a later `Task done` resolution is allowed and the engine marks it as a repeat.
+- TaskNotes Workflows may later invoke `/task-done` automatically on an In Progress → Done change. This optional phase 2 is not implemented or validated.
+
+#### Removed
+
+- `Scripts/new-task.js` and the `New task` QuickAdd flow.
+- `Scripts/plan-task.js` and the `Plan task` QuickAdd flow.
+- Task-note creation, slug generation, and size-suggestion helpers from `Scripts/task-utils.js`.
+
+---
+
+#### Known issues and validation limitations
+
+| Area                                 | Status                                   | Details                                                                                                                                                                                             |
+| ------------------------------------ | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TaskNotes Done versus RPG resolution | Guard fixed; integration untested        | The duplicate guard follows `undo.targetEventId` to the original `task_done` event. End-to-end validation is still pending.                                                                         |
+| TaskNotes status restoration         | Hard-coded restoration removed; untested | Commit `60d00b9` preserves the existing status value instead of assigning planned/backlog. The helper still rewrites the status line and clears completedDate; field preservation requires testing. |
+| Automated tests                      | Pass on this branch                      | `node --test Scripts/engine.test.js Scripts/habit-done.test.js Scripts/task-utils.test.js Scripts/task-undo-resolution.test.js` passes.                                                             |
+| TaskNotes field mapping              | Unverified                               | Confirm the installed TaskNotes version preserves `taskId`, `skill`, `size`, `urgent`, `important`, status, and the scheduled-date field.                                                           |
+| Scheduled-date property              | To confirm                               | The scripts read `scheduledDate`, falling back to `scheduled`; adjust the mapping if the installed TaskNotes version uses another property.                                                         |
+| Desktop Obsidian                     | Unverified                               | `Task done`, result-card modal, event log, and task-note updates have not been tested.                                                                                                              |
+| Mobile result card                   | Unverified                               | Phone result-card behaviour has not been tested.                                                                                                                                                    |
+| Engine/Hero.md                       | Not updated                              | Task Done and Undo last do not rewrite the derived hero note.                                                                                                                                       |
+| Habit undo                           | Not cleaned up                           | Undoing a habit does not remove its habit-note history.                                                                                                                                             |
+| Result modal                         | Unverified                               | QuickAdd access to `obsidian.Modal` has not been tested; a Notice is the fallback.                                                                                                                  |
+| Undo / re-roll                       | Guard fixed; no-re-roll policy unchanged | A valid undo releases the duplicate-resolution guard through `targetEventId`; a later Task done is a fresh, repeat-marked resolution. Do not use undo to seek a better roll.                        |
+| Outcome table                        | Placeholder                              | Uses the loot die rather than a separate recorded table draw.                                                                                                                                       |
+| Automatic Workflows trigger          | Not built                                | Phase 2 only; do not treat it as available.                                                                                                                                                         |
+| Existing gaps                        | Still apply                              | The Step 2 event-log/Hero repair gap and engine CLI default to `Engine/Events.jsonl` remain.                                                                                                        |
+
+---
+
+### Documentation Consistency
+
+| File            | Status                     | Findings                                                                                                                                                                                                                                               |
+| --------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| STEP3.md        | Updated                    | Documents preserved TaskNotes status after RPG undo, the `targetEventId` duplicate guard, repeat resolution after undo, the expanded test command, and the urgent/important-as-tags decision (recorded as **not yet implemented**).                    |
+| CHANGELOG.md    | Updated                    | Records the guard fix, regression tests, shared helper, documentation sync, the urgent/important-as-tags decision, and remaining integration-validation gaps.                                                                                          |
+| STILL TO SYNC   | —                          | `PLUGINS.md` (line 112), `TESTING.md` (line 7), `BUILD_PROMPT.md` (lines 84, 86) and `PRD.md` still describe `urgent`/`important` as TaskNotes user fields. Update them the same way as STEP3.md, or state that the tag change is decided-but-unbuilt. |
+| TESTING.md      | Updated                    | Records passing automated tests, adds `task-undo-resolution.test.js`, and retains the Obsidian desktop/phone validation gate.                                                                                                                          |
+| README.md       | Updated                    | Distinguishes RPG undo from reopening a TaskNotes task; documents `targetEventId` linkage and repeat resolution; keeps integration status unverified.                                                                                                  |
+| PLUGINS.md      | Consistent                 | Correctly assigns task creation, planning, statuses, and fields to TaskNotes, and resolution/undo to TaskRPG.                                                                                                                                          |
+| AGENTS.md       | Consistent                 | Correctly separates TaskNotes task ownership from TaskRPG resolution/undo.                                                                                                                                                                             |
+| BUILD_PROMPT.md | Updated                    | Step 3 undo no longer requires restoring the task's open/planned status; it preserves status and clears completion metadata, and a regression-test bullet for resolution/undo was added.                                                               |
+| PRD.md          | Verify branch versus draft | An uploaded revised draft exists; compare it with current branch content before replacing the specification.                                                                                                                                           |
+
+---
+
+### Other updates: agent setup
+
+Process and documentation only—no engine, rule or runtime behaviour changed.
+
+#### Added
+
+- **TDD rules in `AGENTS.md`**—test-first default, "no vanity tests", failing tests as the to-do list, never weaken a test, test layout and run commands, manual checks for plugin/mobile work. Matching ground rule in `BUILD_PROMPT.md`; pointer and order of operations in `TESTING.md`.
+- **Session skills**—`AGENTS.md` requires loading `ponytail` (minimal engineering) and `caveman` (compressed comms) at the start of coding sessions, and not for story/canon/prose/settings/research work. Compression never overrides TDD reporting, doc sync or confirm-before-implementing. Matching ground rule in `BUILD_PROMPT.md`.
+- **`tdd` skill**—new repo-agnostic skill at `.agents/skills/tdd/SKILL.md`: red-green loop, testing at seams, no vanity tests, failing-test policy and the merge-to-`main` line, where tests go and how to run them, when not to test first. Absorbs the orphaned `.agents/skills/write-tests/references/tdd-rules.md` (its folder has no `SKILL.md`, so it never loaded); the redundant folder still needs a decision.
+- **Commit hygiene**—changelog-at-commit and doc-sync rules for `AGENTS.md` and `BUILD_PROMPT.md`, plus confirm risky assumptions and design decisions with the user before implementing.
+
+#### Changed
+
+- `AGENTS.md` **TDD section cut** from 89 lines / 1,824 words to a short section keeping the test-first default, the `tdd` skill trigger, the invariants and the TaskRPG specifics (test layout, run commands, boundary cases, throwaway-log note). File drops ~3,340 → ~1,980 words.
+- Docs now point at the skill: `TESTING.md` and `BUILD_PROMPT.md` drop the removed heading reference, and the `caveman` precedence rule names the skill's _Report_ step.
+
+---
 
 ## [0.1.1] - 2026-10-14
 
@@ -185,12 +209,12 @@ The command `node Scripts/engine.js recalc` rebuilds state from the log and prin
 | **XP and levels**    | - Task XP equals its size, plus 50% if important, plus 50% if urgent, plus 25% if it's in the weekly focus project. The bonuses add together, and the result is rounded up.<br>- Habit XP is 1 per press, including at 0 MP.<br>- Five skills, 10 levels each. The XP thresholds are placeholders in the settings note (level 2 at 10, up to level 10 at 320).<br>- Dice bonus of +1 at levels 2, 4, 6, 8 and 10.                                                                                                                                                                                                                                                                                                                                                                  |
 | **Roll**             | - 2d6 plus the skill's dice bonus, minus the HP penalty and the Tired penalty.<br>- Base thresholds: success at 9+, partial success at 6–8, setback at 5 or less.<br>- Each project has a threat level of +1 per finished arc, capped at +4, which raises every threshold. Tasks outside a project use T = 0.<br>- A success has a one-in-three chance of loot (a die roll where 5 or 6 drops). The engine only flags the drop; the narrator names it later.<br>- A roll never changes the XP or MP of the real task.                                                                                                                                                                                                                                                              |
 | **HP**               | - Maximum 10. An on-time core habit restores 1. A late press earns XP but no HP and doesn't count as an on-time day.<br>- A missed block deadline costs 1 HP, capped at 2 HP lost per day. Rest days, pause and weekends are exempt.<br>- Dice penalty: 7–10 HP is 0, 4–6 is −1, 1–3 is −2, 0 is −3.<br>- At 0 HP you are **Wounded**: tasks cost +1 MP, boss challenges are blocked.<br>- Missed blocks are back-filled when the vault opens.                                                                                                                                                                                                                                                                                                                                     |
-| **Rest and pause**   | - Rest day: a one-day pass, 4 a month, with no HP loss, no plan needed.<br>- Pause: freezes the game with no HP loss. Paused days are left out of every habit's measure.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| **Rest and pause**   | - Rest day: a one-day pass, 4 a month, with no HP loss, no plan needed.<br>- Pause: freezes the game with no HP loss. Paused days are left out of every habit's measure.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | **Settings changes** | - Each change is logged with the time it was recorded. The engine uses the rules in force on each day and never rewrites the past. Editing the note without recording an action does not change the past.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| **Undo**             | - Adds a correcting line to the log; nothing is deleted.<br>- It only reverses the newest task or habit action from the same game day, and can't be used to re-roll.<br>- Pressing Done again after an undo gets a fresh roll, flagged `repeat`.                                                                                                                                                                                                                                                                                                                                                                                        |
-| **Event log**        | - One shared, append-only JSON Lines file with one line per action: date, time, type, skill, size, roll, outcome, XP, MP.<br>- Events replay in timestamp order, so a back-filled missed deadline is appended rather than inserted.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| **Settings note**    | - `EngineSettings.md` holds every tunable number in a JSON block.<br>- The engine rejects out-of-range values and names the setting that is wrong.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| **State file**       | - `EngineState.json` is written by `recalc`.<br>- It is the saved copy that the Step 2 hero note and Meta Bind panels will read.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| **Undo**             | - Adds a correcting line to the log; nothing is deleted.<br>- It only reverses the newest task or habit action from the same game day, and can't be used to re-roll.<br>- Pressing Done again after an undo gets a fresh roll, flagged `repeat`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| **Event log**        | - One shared, append-only JSON Lines file with one line per action: date, time, type, skill, size, roll, outcome, XP, MP.<br>- Events replay in timestamp order, so a back-filled missed deadline is appended rather than inserted.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| **Settings note**    | - `EngineSettings.md` holds every tunable number in a JSON block.<br>- The engine rejects out-of-range values and names the setting that is wrong.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| **State file**       | - `EngineState.json` is written by `recalc`.<br>- It is the saved copy that the Step 2 hero note and Meta Bind panels will read.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 
 #### Tests (`Scripts/engine.test.js`)
 
