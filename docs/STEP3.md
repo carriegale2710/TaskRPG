@@ -6,15 +6,15 @@ This documentation describes the current code. The automated regression suite pa
 
 ## Ownership
 
-| Concern | Owner |
-| --- | --- |
-| Create a task | TaskNotes |
-| Plan or schedule a task | TaskNotes |
-| Task status | TaskNotes, with TaskRPG writing only its resolution-related status change |
-| Skill, size, urgent, important | TaskNotes user fields |
-| Dice, XP, MP, event log, result card | TaskRPG engine and `Scripts/task-done.js` |
-| Undo the RPG event | TaskRPG engine and `Scripts/undo-last.js` |
-| Automatic resolution on status change | Optional phase 2: TaskNotes Workflows |
+| Concern                               | Owner                                                                     |
+| ------------------------------------- | ------------------------------------------------------------------------- |
+| Create a task                         | TaskNotes                                                                 |
+| Plan or schedule a task               | TaskNotes                                                                 |
+| Task status                           | TaskNotes, with TaskRPG writing only its resolution-related status change |
+| Skill, size, urgent, important        | TaskNotes user fields                                                     |
+| Dice, XP, MP, event log, result card  | TaskRPG engine and `Scripts/task-done.js`                                 |
+| Undo the RPG event                    | TaskRPG engine and `Scripts/undo-last.js`                                 |
+| Automatic resolution on status change | Optional phase 2: TaskNotes Workflows                                     |
 
 ## TaskNotes setup
 
@@ -33,10 +33,10 @@ The scripts currently read the scheduled date from `scheduledDate`, falling back
 
 Configure two QuickAdd **Macro** choices, each with one **User Script** action. Enable their lightning-bolt commands. QuickAdd configuration is device-local unless explicitly synced.
 
-| QuickAdd choice | Script | Action |
-| --- | --- | --- |
-| Task done | `Scripts/task-done.js` | With a TaskNotes task open, records an engine `task_done` event, rolls 2d6 and a loot die, applies XP/MP, marks the note completed, and shows the result |
-| Undo last | `Scripts/undo-last.js` | Appends a correcting engine event for today’s newest task or habit action and restores a matching task note if found |
+| QuickAdd choice | Script                 | Action                                                                                                                                                   |
+| --------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Task done       | `Scripts/task-done.js` | With a TaskNotes task open, records an engine `task_done` event, rolls 2d6 and a loot die, applies XP/MP, marks the note completed, and shows the result |
+| Undo last       | `Scripts/undo-last.js` | Appends a correcting engine event for today’s newest task or habit action and restores a matching task note if found                                     |
 
 ## Phase 1 trigger
 

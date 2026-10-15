@@ -79,7 +79,7 @@ Tests use fixed dates and fixed dice, so they give the same result on any machin
 
 ### Write the test first
 
-The working rule is the `tdd` skill — load it before the first test or engine change. The repo-specific default, the invariants that hold whether or not it is loaded, and the file layout and run commands below are in `AGENTS.md` (*Build and test* and *Test-driven development*). In practice, for this vault:
+The working rule is the `tdd` skill — load it before the first test or engine change. The repo-specific default, the invariants that hold whether or not it is loaded, and the file layout and run commands below are in `AGENTS.md` (_Build and test_ and _Test-driven development_). In practice, for this vault:
 
 1. Add the test to the matching `Scripts/*.test.js`, or a new `*.test.js` for a new module, using fixed dates and fixed dice.
 2. Run it and read the output: it must fail on the assertion you intended, not on a typo, a wrong path or a missing import. The test is the written acceptance criterion for the rule.
