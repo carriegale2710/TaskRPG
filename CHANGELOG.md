@@ -6,10 +6,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [UNRELEASED]—Step 3 redesign (issue #3, draft PR #10)
 
+### Summary
+
+- Fixed the task duplicate-resolution guard to follow `undo.targetEventId`, so a valid undo allows the same task to be resolved again.
+- Added `Scripts/task-undo-resolution.test.js`, covering guard behaviour, undo linkage, repeat resolution, and preservation of the original `task_done` event.
+- Moved `hasUnresolvedTaskDone` into `Scripts/task-utils.js`; `task-done.js` now uses the shared implementation.
+- Updated `STEP3.md`, `TESTING.md`, and `README.md` for the corrected undo flow and expanded automated test command.
+- Automated tests pass; Obsidian desktop/phone integration remains unvalidated.
+
 ### Added
 
 - `Scripts/task-utils.js` now provides a TaskNotes scheduled-date helper used by task resolution and undo.
 - `Scripts/task-utils.test.js` covers TaskNotes frontmatter parsing, scheduled-date mapping, outcome-table selection, result-card formatting, and completion-field updates.
+- `Scripts/task-undo-resolution.test.js` covers the shared duplicate-resolution guard, `targetEventId` undo linkage, repeat resolution after undo, and preservation of the original `task_done` event.
 - `STEP3.md`, `TESTING.md`, `README.md`, `PLUGINS.md`, `AGENTS.md`, and `BUILD_PROMPT.md` describe the TaskNotes-wrapped ownership model and validation gate.
 - Documentation: Added commit-time changelog and doc-sync rules to `AGENTS.md` and `BUILD_PROMPT.md`, plus a requirement to confirm risky assumptions/design decisions with the user before implementing (not already answered by docs/comments).
 - Documentation: Added a **test-driven development workflow** section to `AGENTS.md` — test-first order as the way to write acceptance criteria and confirm design before implementation; a **"No vanity tests"** rule set (assert behaviour over current output, prove a test bites by breaking the implementation, cover boundaries, no tautologies, independent fixtures); **failing tests as the to-do list** (allowed on a branch, never skipped to fake a green run, and the merge to `main` as the one hard line); rules against weakening tests; test layout and run commands; and the manual-check substitute for plugin/mobile work. A matching ground rule was added to `BUILD_PROMPT.md`, and a pointer plus the practical order of operations to `TESTING.md`. Process guidance only; no engine, rule or runtime behavior changed.
@@ -22,6 +31,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - **TaskRPG now owns only task resolution and undo**: `Task done` resolves an open TaskNotes task through the engine; `Undo last` appends a correcting engine event.
 - `Task done` reads the TaskNotes scheduled date for the planned-day MP rule. A task scheduled for today avoids the unplanned MP surcharge.
 - `Undo last` appends a correcting RPG event and clears `completedDate` on a matching task note while preserving its status. The ownership of `completedDate` still needs verification; it is not proven to be TaskRPG-only metadata.
+- `hasUnresolvedTaskDone` moved to `Scripts/task-utils.js` and is now used by `Scripts/task-done.js`; it follows `undo.targetEventId` to the original `task_done` event.
+- After a valid undo, a later `Task done` resolution is allowed and the engine marks it as a repeat.
 - TaskNotes Workflows may later invoke `/task-done` automatically on an In Progress → Done change. This optional phase 2 is not implemented or validated.
 - Documentation: Replaced the 89-line **Test-driven development workflow** section in `AGENTS.md` (1,824 words) with a short section that keeps the test-first default, the trigger to load the `tdd` skill, the invariants that hold whether or not it is loaded, and the TaskRPG-specific material (test file layout and run commands, the boundary cases to cover, and the throwaway-log note). `AGENTS.md` drops from 3,340 to about 1,980 words. Documentation points at the skill now: `TESTING.md` and `BUILD_PROMPT.md` no longer reference the removed heading, and the `caveman` precedence rule in `AGENTS.md` names the skill's *Report* step instead.
 
@@ -35,10 +46,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 | File            | Status                     | Findings                                                                                                                                                  |
 | --------------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| STEP3.md        | Needs sync                 | Describe preserved TaskNotes status after RPG undo; remove claims that Undo restores open/planned state. Record the duplicate-guard defect.               |
-| CHANGELOG.md    | Revised draft              | Records status-related code changes separately from remaining defects and unverified behaviour.                                                           |
-| TESTING.md      | Needs regression checks    | Test Done-then-resolve, duplicate blocking, undo linkage by targetEventId, and preservation of TaskNotes fields. Do not claim post-undo behaviour passes. |
-| README.md       | Needs sync                 | Distinguish RPG undo from reopening a TaskNotes task; keep integration status unverified.                                                                 |
+| STEP3.md        | Updated                    | Documents preserved TaskNotes status after RPG undo, the `targetEventId` duplicate guard, repeat resolution after undo, and the expanded test command.     |
+| CHANGELOG.md    | Updated                    | Records the guard fix, regression tests, shared helper, documentation sync, and remaining integration-validation gaps.                                     |
+| TESTING.md      | Updated                    | Records passing automated tests, adds `task-undo-resolution.test.js`, and retains the Obsidian desktop/phone validation gate.                              |
+| README.md       | Updated                    | Distinguishes RPG undo from reopening a TaskNotes task; documents `targetEventId` linkage and repeat resolution; keeps integration status unverified.       |
 | PLUGINS.md      | Consistent                 | Correctly assigns task creation, planning, statuses, and fields to TaskNotes, and resolution/undo to TaskRPG.                                             |
 | AGENTS.md       | Consistent                 | Correctly separates TaskNotes task ownership from TaskRPG resolution/undo.                                                                                |
 | BUILD_PROMPT.md | Needs sync                 | Remove task-status restoration from Step 3 requirements; retain regression checks for resolution and undo.                                                |
@@ -48,9 +59,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 | Area                                 | Status                                   | Details                                                                                                                                                                                                                                                    |
 | ------------------------------------ | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| TaskNotes Done versus RPG resolution | Status rejection removed; untested       | Commit `7f85ee4` removes rejection of `done`/`completed` TaskNotes statuses and adds an event-log duplicate guard. End-to-end validation is still pending.                                                                                                 |
+| TaskNotes Done versus RPG resolution | Guard fixed; integration untested         | The duplicate guard follows `undo.targetEventId` to the original `task_done` event. End-to-end validation is still pending.                                                                                                                                  |
 | TaskNotes status restoration         | Hard-coded restoration removed; untested | Commit `60d00b9` preserves the existing status value instead of assigning planned/backlog. The helper still rewrites the status line and clears completedDate; field preservation requires testing.                                                        |
-| Automated tests                      | Not run on this branch                   | Run `node --test Scripts/engine.test.js Scripts/habit-done.test.js Scripts/task-utils.test.js` and record the result.                                                                                                                                      |
+| Automated tests                      | Pass on this branch                       | `node --test Scripts/engine.test.js Scripts/habit-done.test.js Scripts/task-utils.test.js Scripts/task-undo-resolution.test.js` passes.                                                                                                                     |
 | TaskNotes field mapping              | Unverified                               | Confirm the installed TaskNotes version preserves `taskId`, `skill`, `size`, `urgent`, `important`, status, and the scheduled-date field.                                                                                                                  |
 | Scheduled-date property              | To confirm                               | The scripts read `scheduledDate`, falling back to `scheduled`; adjust the mapping if the installed TaskNotes version uses another property.                                                                                                                |
 | Desktop Obsidian                     | Unverified                               | `Task done`, result-card modal, event log, and task-note updates have not been tested.                                                                                                                                                                     |
@@ -58,7 +69,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 | Engine/Hero.md                       | Not updated                              | Task Done and Undo last do not rewrite the derived hero note.                                                                                                                                                                                              |
 | Habit undo                           | Not cleaned up                           | Undoing a habit does not remove its habit-note history.                                                                                                                                                                                                    |
 | Result modal                         | Unverified                               | QuickAdd access to `obsidian.Modal` has not been tested; a Notice is the fallback.                                                                                                                                                                         |
-| Undo / re-roll                       | Guard defect remains                     | The duplicate guard filters undo events by taskId, but engine undo events identify the action using targetEventId, not taskId. A valid undo will generally not release the guard. Do not claim post-undo resolution or no-re-roll enforcement is verified. |
+| Undo / re-roll                       | Guard fixed; no-re-roll policy unchanged  | A valid undo releases the duplicate-resolution guard through `targetEventId`; a later Task done is a fresh, repeat-marked resolution. Do not use undo to seek a better roll.                                                                                  |
 | Outcome table                        | Placeholder                              | Uses the loot die rather than a separate recorded table draw.                                                                                                                                                                                              |
 | Automatic Workflows trigger          | Not built                                | Phase 2 only; do not treat it as available.                                                                                                                                                                                                                |
 | Existing gaps                        | Still apply                              | The Step 2 event-log/Hero repair gap and engine CLI default to `Engine/Events.jsonl` remain.                                                                                                                                                               |
@@ -66,10 +77,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 #### Required follow-up fixes
 
 - [x] Remove task-done.js rejection of TaskNotes done/completed statuses (implemented, not integration-tested).
-- [ ] Correct the duplicate guard to match undo.targetEventId to task_done.id; add regression tests before claiming post-undo behaviour works.
+- [x] Correct the duplicate guard to match undo.targetEventId to task_done.id; add regression tests before claiming post-undo behaviour works.
 - [x] Remove hard-coded planned/backlog restoration from undo-last.js (implemented, not integration-tested).
+- [x] STEP3.md, TESTING.md, README.md, BUILD_PROMPT.md: update wording after the code fix so the documented flow matches implementation.
 - [ ] Verify completedDate ownership and preserve TaskNotes status/frontmatter without rewriting plugin-owned completion data.
-- [ ] STEP3.md, TESTING.md, README.md, BUILD_PROMPT.md: update wording after the code fix so the documented flow matches implementation.
 
 ## [0.1.1] - 2026-10-14
 
@@ -130,7 +141,7 @@ Two tests drive the real macro against a fake vault (an in-memory file map and a
 ### Changed
 
 - The live log is now `Engine/Events.md` instead of `Engine/Events.jsonl`, and it holds real presses instead of test data.
-- `Engine/State.json` is still the output of `node Scripts/engine.js recalc`, but the panels no longer read it; the macro writes the hero note directly. It is unchanged since Step 1.
+- `Engine/State.json` is still the output of `node Scripts/engine.js recalc`, but the panels no longer read it; the macro writes the hero note directly. It is unchanged since Step 2.
 - Test count is now 45 (43 in `Scripts/engine.test.js`, 2 in `Scripts/habit-done.test.js`), up from 43.
 
 ### Quality checks
@@ -174,54 +185,17 @@ The command `node Scripts/engine.js recalc` rebuilds state from the log and prin
 | **XP and levels**    | - Task XP equals its size, plus 50% if important, plus 50% if urgent, plus 25% if it's in the weekly focus project. The bonuses add together, and the result is rounded up.<br>- Habit XP is 1 per press, including at 0 MP.<br>- Five skills, 10 levels each. The XP thresholds are placeholders in the settings note (level 2 at 10, up to level 10 at 320).<br>- Dice bonus of +1 at levels 2, 4, 6, 8 and 10.                                                                                                                                                                                                                                                                                                                                                                  |
 | **Roll**             | - 2d6 plus the skill's dice bonus, minus the HP penalty and the Tired penalty.<br>- Base thresholds: success at 9+, partial success at 6–8, setback at 5 or less.<br>- Each project has a threat level of +1 per finished arc, capped at +4, which raises every threshold. Tasks outside a project use T = 0.<br>- A success has a one-in-three chance of loot (a die roll where 5 or 6 drops). The engine only flags the drop; the narrator names it later.<br>- A roll never changes the XP or MP of the real task.                                                                                                                                                                                                                                                              |
 | **HP**               | - Maximum 10. An on-time core habit restores 1. A late press earns XP but no HP and doesn't count as an on-time day.<br>- A missed block deadline costs 1 HP, capped at 2 HP lost per day. Rest days, pause and weekends are exempt.<br>- Dice penalty: 7–10 HP is 0, 4–6 is −1, 1–3 is −2, 0 is −3.<br>- At 0 HP you are **Wounded**: tasks cost +1 MP, boss challenges are blocked.<br>- Missed blocks are back-filled when the vault opens.                                                                                                                                                                                                                                                                                                                                     |
-| **Rest and pause**   | - Rest day: a one-day pass, 4 a month, with no HP loss and no plan needed.<br>- Pause: freezes the game with no HP loss. Paused days are left out of every habit's measure.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| **Rest and pause**   | - Rest day: a one-day pass, 4 a month, with no HP loss, no plan needed.<br>- Pause: freezes the game with no HP loss. Paused days are left out of every habit's measure.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | **Settings changes** | - Each change is logged with the time it was recorded. The engine uses the rules in force on each day and never rewrites the past. Editing the note without recording an action does not change the past.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| **Undo**             | - Adds a correcting line to the log; nothing is deleted.<br>- It only reverses the newest task or habit action from the same game day, and can't be used to re-roll.<br>- Pressing Done again after an undo gets a fresh roll, flagged `repeat`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| **Undo**             | - Adds a correcting line to the log; nothing is deleted.<br>- It only reverses the newest task or habit action from the same game day, and can't be used to re-roll.<br>- Pressing Done again after an undo gets a fresh roll, flagged `repeat`.                                                                                                                                                                                                                                                                                                                                                                                        |
+| **Event log**        | - One shared, append-only JSON Lines file with one line per action: date, time, type, skill, size, roll, outcome, XP, MP.<br>- Events replay in timestamp order, so a back-filled missed deadline is appended rather than inserted.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| **Settings note**    | - `EngineSettings.md` holds every tunable number in a JSON block.<br>- The engine rejects out-of-range values and names the setting that is wrong.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| **State file**       | - `EngineState.json` is written by `recalc`.<br>- It is the saved copy that the Step 2 hero note and Meta Bind panels will read.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
-#### Data files
+#### Tests (`Scripts/engine.test.js`)
 
-- **Event log:** one shared, append-only JSON Lines file with one line per action (date, time, type, skill, size, roll, outcome, XP, MP). Events replay in timestamp order, so a back-filled missed deadline is appended rather than inserted.
-- **`Engine/Settings.md`:** holds every tunable number in a JSON block. The engine rejects out-of-range values and names the setting that is wrong.
-- **`Engine/State.json`:** written by `recalc`. It is the saved copy that the Step 2 hero note and Meta Bind panels will read.
-
-#### Tests
-
-`Scripts/engine.test.js`, run with `node --test Scripts/engine.test.js`.
-
-- One test per rule in the brief, plus settings changes, undo, the day boundary, back-filling and the terminal run. The first build passed 30 of 30.
-- Settings validation tests for `taskSizes`, `lootDropRolls`, `hpPenalties` and `habitTiers`.
-- A table-driven test for invalid actions: unknown size, bad `planned` or `onTime`, bad `lootRoll`, missing `habitId` or `projectId`, and an invalid rest-day date.
+- One test per rule in the brief, plus settings changes, undo, the day boundary, back-filling and the terminal run.
+- Settings validation tests for taskSizes, lootDropRolls, hpPenalties and habitTiers.
+- A table-driven test for invalid actions: unknown size, bad planned or onTime, bad lootRoll, missing habitId or projectId, and an invalid rest-day date.
 - A test that the terminal command exits with code 1 and writes to stderr on bad usage.
-- A test that the live `Settings.md` is valid.
-
-### Changed
-
-- **Test suite merged.** The original 30-test suite and a second 42-test suite are now one file of 43 tests, with no coverage lost.
-  - The merged suite uses the second suite's frozen settings copy. When you change a default on purpose, update that copy.
-  - Kept from the original suite: event log text parsing (including `line 2 is not valid JSON`), `localStamp`, and the check that the engine loads with no `fs`, `path` or `require`.
-  - Folded together: Wounded at 1 HP is now inside the task MP cost test, the own-skill MP discount is part of the skill level test, the rest-day monthly reset is part of the rest days test, and the two `rollDice` tests are one.
-  - Removed as duplicates: the extra `bonus(5)` dice check, the next-week focus lines in the XP test (the weekly-focus test covers them), and a repeated Wounded MP assertion.
-  - The undo test now matches the full error message. Its two failing cases each break one rule, and both rules share one message, so the setup tells them apart (a comment in the test explains).
-- **Settings format:** the settings note is now a JSON block instead of the PRD's table with min and max beside each value. This follows the choice of JSON Lines for the event log and will need revisiting when Step 2 adds Meta Bind fields.
-- `TESTING.md` is updated: the test-name table is current, and the note that tests read the live `Settings.md` now says they use the frozen copy.
-- The old suite is backed up at `files\engine.test.old.js` in the session folder. The test file is untracked in git.
-
-### Quality checks
-
-- 43 of 43 tests pass.
-- `engine.js` coverage: 100% of lines, 96% of branches. Before the merge, the second suite left 5 chunks of `engine.js` uncovered.
-- Mutation check: 12 deliberate engine breaks were run against the merged suite, and all 12 were caught (e.g. the Wounded surcharge applying at 1 HP, MP discounts using the wrong skill, the rest-day limit not resetting monthly). A 13th break changed no behaviour, so it was not counted.
-
-### Known issues
-
-- **Back-fill uses the wrong rules for old events.** An event dated before the first `settings_changed` entry gets today's rules instead of the rules in force on that day. `engine.js` was not changed, and there is no test yet because it would fail until the engine is fixed. A fix and a regression test are pending a decision.
-
-### Open questions
-
-1. **MP discount at levels 5 and 10:** treated as cumulative, so level 10 takes off 2 MP. If exactly 1 MP off at both levels was intended, it is a one-line change.
-2. **Repeat press after an undo:** the PRD says it gets a fresh roll logged as a repeat, but not whether it earns full XP. It currently does.
-
-### Not yet built
-
-- Boss challenges and inventory. Loot is only flagged on the roll result.
-- Macros and plugin wiring, which wait for Step 2 (hero note and Meta Bind panels).
+- A test that the live Settings.md is valid.
