@@ -1,7 +1,12 @@
+# Local memos
+TODO.md
+
 # Local Obsidian configuration and plugin state
 /.obsidian/
 
 # Local agent inventory, telemetry, memory and runtime state
+/.agents/
+/.claude/
 /.vault-operator/
 /.copilot/
 /copilot/
