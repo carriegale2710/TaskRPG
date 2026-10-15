@@ -106,6 +106,21 @@ Process and documentation only—no engine, rule or runtime behaviour changed.
 
 ---
 
+## [0.1.2] - 2026-10-16
+
+Minor repo restructuring. All tests are passing.
+
+### Added
+
+- `docs` folder for all project documentation.
+- `TaskRPG` folder for all game-related content, including story, characters, and events.
+
+### Removed
+
+- `.gitignore` : .agents/, ./claude, todo.md -> these can stay local files only for local development.
+
+---
+
 ## [0.1.1] - 2026-10-14
 
 ### Added—Step 2: the habit Done button
