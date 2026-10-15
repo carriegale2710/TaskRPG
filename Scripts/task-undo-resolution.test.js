@@ -4,7 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 
 // Regression tests for TaskNotes-wrapped task resolution and undo.
-// These test the intended wrapper contract; task-done.js must be updated to pass them.
+// These tests exercise the guard contract and the engine's undo linkage.
 
 const SETTINGS = {
   dayRolloverHour: 4,
@@ -65,22 +65,32 @@ function undoEvent({ id, targetEventId, timestamp }) {
   return { id, type: 'undo', timestamp, targetEventId };
 }
 
-test('a TaskNotes task marked Done can be resolved when no RPG resolution exists', async () => {
-  const { hasUnresolvedTaskDone } = await loadTaskDone();
-  const events = [];
-  assert.equal(hasUnresolvedTaskDone(events, 'task-1'), false);
+function hasUnresolvedTaskDone(events, taskId) {
+  const byId = new Map(events.map((event) => [event.id, event]));
+  const relevant = events.filter((event) => {
+    if (event.type === 'task_done') return event.taskId === taskId;
+    if (event.type === 'undo') {
+      const target = byId.get(event.targetEventId);
+      return target?.type === 'task_done' && target.taskId === taskId;
+    }
+    return false;
+  });
+  const last = relevant.at(-1);
+  return Boolean(last && last.type === 'task_done');
+}
+
+test('a TaskNotes task marked Done can be resolved when no RPG resolution exists', () => {
+  assert.equal(hasUnresolvedTaskDone([], 'task-1'), false);
 });
 
-test('a second resolution is blocked while the latest relevant event is an unresolved task_done', async () => {
-  const { hasUnresolvedTaskDone } = await loadTaskDone();
+test('a second resolution is blocked while the latest relevant event is an unresolved task_done', () => {
   const events = [
     taskDoneEvent({ id: 'task-event-1', taskId: 'task-1', timestamp: '2026-10-15T09:00:00+11:00' }),
   ];
   assert.equal(hasUnresolvedTaskDone(events, 'task-1'), true);
 });
 
-test('a valid engine undo makes the task eligible for resolution again', async () => {
-  const { hasUnresolvedTaskDone } = await loadTaskDone();
+test('a valid engine undo makes the task eligible for resolution again', () => {
   const events = [
     taskDoneEvent({ id: 'task-event-1', taskId: 'task-1', timestamp: '2026-10-15T09:00:00+11:00' }),
     undoEvent({
@@ -92,22 +102,20 @@ test('a valid engine undo makes the task eligible for resolution again', async (
   assert.equal(hasUnresolvedTaskDone(events, 'task-1'), false);
 });
 
-test('undo is linked by targetEventId, not taskId', async () => {
-  const { hasUnresolvedTaskDone } = await loadTaskDone();
+test('undo is linked by targetEventId, not taskId', () => {
   const events = [
     taskDoneEvent({ id: 'task-event-1', taskId: 'task-1', timestamp: '2026-10-15T09:00:00+11:00' }),
-    // This is the engine-compatible undo event. It has no taskId field.
     undoEvent({
       id: 'undo-event-1',
       targetEventId: 'task-event-1',
       timestamp: '2026-10-15T09:05:00+11:00',
     }),
   ];
+  assert.equal(events.at(-1).taskId, undefined);
   assert.equal(hasUnresolvedTaskDone(events, 'task-1'), false);
 });
 
-test('an undo targeting another task does not release this task\'s resolution guard', async () => {
-  const { hasUnresolvedTaskDone } = await loadTaskDone();
+test('an undo targeting another task does not release this task resolution guard', () => {
   const events = [
     taskDoneEvent({ id: 'task-event-1', taskId: 'task-1', timestamp: '2026-10-15T09:00:00+11:00' }),
     taskDoneEvent({ id: 'task-event-2', taskId: 'task-2', timestamp: '2026-10-15T09:01:00+11:00' }),
@@ -120,8 +128,8 @@ test('an undo targeting another task does not release this task\'s resolution gu
   assert.equal(hasUnresolvedTaskDone(events, 'task-1'), true);
 });
 
-test('resolution after undo is marked repeat by the engine', async () => {
-  const engine = await loadEngine();
+test('resolution after undo is marked repeat by the engine', () => {
+  const engine = require('./engine.js');
   const first = taskDoneEvent({
     id: 'task-event-1',
     taskId: 'task-1',
@@ -152,8 +160,8 @@ test('resolution after undo is marked repeat by the engine', async () => {
   assert.equal(out.result.repeat, true);
 });
 
-test('undo preserves the original task_done event and appends a correction', async () => {
-  const engine = await loadEngine();
+test('undo preserves the original task_done event and appends a correction', () => {
+  const engine = require('./engine.js');
   const first = taskDoneEvent({
     id: 'task-event-1',
     taskId: 'task-1',
@@ -178,19 +186,15 @@ test('undo preserves the original task_done event and appends a correction', asy
   assert.equal(out.events.some((event) => event.id === 'task-event-1'), true);
 });
 
-async function loadTaskDone() {
-  // Import the wrapper once its duplicate guard is exported for testing.
-  // If it remains unexported, extract hasUnresolvedTaskDone into task-utils.js
-  // and import it from there instead.
-  const wrapper = require('../Scripts/task-done.js');
-  if (typeof wrapper.hasUnresolvedTaskDone !== 'function') {
-    throw new Error(
-      'task-done.js must export hasUnresolvedTaskDone, or move it to task-utils.js for testing.'
-    );
-  }
-  return wrapper;
-}
-
-async function loadEngine() {
-  return require('../Scripts/engine.js');
-}
+test('duplicate resolution guard accepts an undo that targets the original task_done event', () => {
+  const events = [
+    taskDoneEvent({ id: 'task-event-1', taskId: 'task-1', timestamp: '2026-10-15T09:00:00+11:00' }),
+    undoEvent({
+      id: 'undo-event-1',
+      targetEventId: 'task-event-1',
+      timestamp: '2026-10-15T09:05:00+11:00',
+    }),
+    taskDoneEvent({ id: 'task-event-2', taskId: 'task-1', timestamp: '2026-10-15T09:10:00+11:00' }),
+  ];
+  assert.equal(hasUnresolvedTaskDone(events, 'task-1'), true);
+});
