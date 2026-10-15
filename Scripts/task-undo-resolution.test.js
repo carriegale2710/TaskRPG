@@ -2,9 +2,10 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const { hasUnresolvedTaskDone } = require('./task-utils.js');
+const engine = require('./engine.js');
 
 // Regression tests for TaskNotes-wrapped task resolution and undo.
-// These tests exercise the guard contract and the engine's undo linkage.
 
 const SETTINGS = {
   dayRolloverHour: 4,
@@ -65,20 +66,6 @@ function undoEvent({ id, targetEventId, timestamp }) {
   return { id, type: 'undo', timestamp, targetEventId };
 }
 
-function hasUnresolvedTaskDone(events, taskId) {
-  const byId = new Map(events.map((event) => [event.id, event]));
-  const relevant = events.filter((event) => {
-    if (event.type === 'task_done') return event.taskId === taskId;
-    if (event.type === 'undo') {
-      const target = byId.get(event.targetEventId);
-      return target?.type === 'task_done' && target.taskId === taskId;
-    }
-    return false;
-  });
-  const last = relevant.at(-1);
-  return Boolean(last && last.type === 'task_done');
-}
-
 test('a TaskNotes task marked Done can be resolved when no RPG resolution exists', () => {
   assert.equal(hasUnresolvedTaskDone([], 'task-1'), false);
 });
@@ -129,7 +116,6 @@ test('an undo targeting another task does not release this task resolution guard
 });
 
 test('resolution after undo is marked repeat by the engine', () => {
-  const engine = require('./engine.js');
   const first = taskDoneEvent({
     id: 'task-event-1',
     taskId: 'task-1',
@@ -161,7 +147,6 @@ test('resolution after undo is marked repeat by the engine', () => {
 });
 
 test('undo preserves the original task_done event and appends a correction', () => {
-  const engine = require('./engine.js');
   const first = taskDoneEvent({
     id: 'task-event-1',
     taskId: 'task-1',
@@ -169,8 +154,8 @@ test('undo preserves the original task_done event and appends a correction', () 
   });
   const undo = undoEvent({
     id: 'undo-event-1',
-    targetEventId: 'task-event-1',
-    timestamp: '2026-10-15T09:05:00+11:00',
+      targetEventId: 'task-event-1',
+      timestamp: '2026-10-15T09:05:00+11:00',
   });
 
   const out = engine.recordAction(

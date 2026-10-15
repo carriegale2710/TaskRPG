@@ -77,9 +77,27 @@ function updateTaskStatus(text, { status, completedDate }) {
     .replace(/^completedDate:.*$/m, `completedDate: "${completedDate ?? ''}"`);
 }
 
+// A task is unresolved when its latest relevant RPG event is task_done.
+// Undo events identify the action they reverse with targetEventId, so follow
+// that link back to the task_done event instead of filtering undo by taskId.
+function hasUnresolvedTaskDone(events, taskId) {
+  const byId = new Map(events.map((event) => [event.id, event]));
+  const relevant = events.filter((event) => {
+    if (event.type === 'task_done') return event.taskId === taskId;
+    if (event.type === 'undo') {
+      const target = byId.get(event.targetEventId);
+      return target?.type === 'task_done' && target.taskId === taskId;
+    }
+    return false;
+  });
+  const last = relevant.at(-1);
+  return Boolean(last && last.type === 'task_done');
+}
+
 module.exports = {
   OUTCOME_TABLE,
   formatResultCard,
+  hasUnresolvedTaskDone,
   parseFrontmatter,
   pickTableResult,
   scheduledDate,
