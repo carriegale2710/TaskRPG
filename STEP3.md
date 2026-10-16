@@ -6,37 +6,53 @@ This documentation describes the current code. The automated regression suite pa
 
 ## Ownership
 
-| Concern | Owner |
-| --- | --- |
-| Create a task | TaskNotes |
-| Plan or schedule a task | TaskNotes |
-| Task status | TaskNotes, with TaskRPG writing only its resolution-related status change |
-| Skill, size, urgent, important | TaskNotes user fields |
-| Dice, XP, MP, event log, result card | TaskRPG engine and `Scripts/task-done.js` |
-| Undo the RPG event | TaskRPG engine and `Scripts/undo-last.js` |
-| Automatic resolution on status change | Optional phase 2: TaskNotes Workflows |
+| Concern                               | Owner                                                                     |
+| ------------------------------------- | ------------------------------------------------------------------------- |
+| Create a task                         | TaskNotes                                                                 |
+| Plan or schedule a task               | TaskNotes                                                                 |
+| Task status                           | TaskNotes, with TaskRPG writing only its resolution-related status change |
+| Skill, size, urgent, important        | TaskNotes user fields                                                     |
+| Dice, XP, MP, event log, result card  | TaskRPG engine and `Scripts/task-done.js`                                 |
+| Undo the RPG event                    | TaskRPG engine and `Scripts/undo-last.js`                                 |
+| Automatic resolution on status change | Optional phase 2: TaskNotes Workflows                                     |
 
 ## TaskNotes setup
 
 Configure TaskNotes so each task note has:
 
-- A stable `taskId`.
-- A `skill` user field matching `Engine/Settings.md`.
-- A `size` user field matching `taskSizes` in settings.
-- `urgent` and `important` boolean user fields.
-- A scheduled date field used for planning.
-- Status values that include an open/planned state and a completed state.
+- [x] A stable `taskId`.
+- [x] A `skill` user field matching `Engine/Settings.md`.
+- [x] A `size` user field matching `taskSizes` in settings.
+- [x] Uses `urgent` and `important` tags.
+- [x] A scheduled date field used for planning.
+- [x] Status values that include an open/planned state and a completed state.
 
-The scripts currently read the scheduled date from `scheduledDate`, falling back to `scheduled`. Verify the actual property name used by your installed TaskNotes version and adjust the mapping if necessary.
+Example TaskNotes note configuration:
+
+```yaml
+status: open
+priority: normal
+due: 2026-10-17
+scheduled: 2026-10-16
+dateCreated: 2026-10-16T06:51:46.992+11:00
+dateModified: 2026-10-16T06:51:46.992+11:00
+tags:
+  - task
+  - important
+  - urgent
+skill: vitality
+size: small
+taskID: "1"
+```
 
 ## QuickAdd macros
 
 Configure two QuickAdd **Macro** choices, each with one **User Script** action. Enable their lightning-bolt commands. QuickAdd configuration is device-local unless explicitly synced.
 
-| QuickAdd choice | Script | Action |
-| --- | --- | --- |
-| Task done | `Scripts/task-done.js` | With a TaskNotes task open, records an engine `task_done` event, rolls 2d6 and a loot die, applies XP/MP, marks the note completed, and shows the result |
-| Undo last | `Scripts/undo-last.js` | Appends a correcting engine event for today’s newest task or habit action and restores a matching task note if found |
+| QuickAdd choice | Script                 | Action                                                                                                                                                   |
+| --------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Task done       | `Scripts/task-done.js` | With a TaskNotes task open, records an engine `task_done` event, rolls 2d6 and a loot die, applies XP/MP, marks the note completed, and shows the result |
+| Undo last       | `Scripts/undo-last.js` | Appends a correcting engine event for today’s newest task or habit action and restores a matching task note if found                                     |
 
 ## Phase 1 trigger
 

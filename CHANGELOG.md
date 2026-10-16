@@ -8,6 +8,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Step 3 redesign
 
+#### Required follow-up fixes
+
+- [x] Remove task-done.js rejection of TaskNotes done/completed statuses (implemented, not integration-tested).
+- [x] Correct the duplicate guard to match undo.targetEventId to task_done.id; add regression tests before claiming post-undo behaviour works.
+- [x] Remove hard-coded planned/backlog restoration from undo-last.js (implemented, not integration-tested).
+- [x] STEP3.md, TESTING.md, README.md, BUILD_PROMPT.md: update wording after the code fix so the documented flow matches implementation.
+- [x] Verify completedDate ownership and preserve TaskNotes status/frontmatter without rewriting plugin-owned completion data.
+
+---
+
 #### Summary
 
 - Fixed the task duplicate-resolution guard to follow `undo.targetEventId`, so a valid undo allows the same task to be resolved again.
@@ -15,16 +25,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - Moved `hasUnresolvedTaskDone` into `Scripts/task-utils.js`; `task-done.js` now uses the shared implementation.
 - Updated `STEP3.md`, `TESTING.md`, and `README.md` for the corrected undo flow and expanded automated test command.
 - Automated tests pass; Obsidian desktop/phone integration remains unvalidated.
-
-#### Required follow-up fixes
-
-- [x] Remove task-done.js rejection of TaskNotes done/completed statuses (implemented, not integration-tested).
-- [x] Correct the duplicate guard to match undo.targetEventId to task_done.id; add regression tests before claiming post-undo behaviour works.
-- [x] Remove hard-coded planned/backlog restoration from undo-last.js (implemented, not integration-tested).
-- [x] STEP3.md, TESTING.md, README.md, BUILD_PROMPT.md: update wording after the code fix so the documented flow matches implementation.
-- [ ] Verify completedDate ownership and preserve TaskNotes status/frontmatter without rewriting plugin-owned completion data.
-
----
+- Confirmed that the scheduled-date property is now `scheduled` instead of `scheduledDate`.
 
 #### Added
 
@@ -59,7 +60,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 | TaskNotes status restoration         | Hard-coded restoration removed; untested | Commit `60d00b9` preserves the existing status value instead of assigning planned/backlog. The helper still rewrites the status line and clears completedDate; field preservation requires testing. |
 | Automated tests                      | Pass on this branch                      | `node --test Scripts/engine.test.js Scripts/habit-done.test.js Scripts/task-utils.test.js Scripts/task-undo-resolution.test.js` passes.                                                             |
 | TaskNotes field mapping              | Unverified                               | Confirm the installed TaskNotes version preserves `taskId`, `skill`, `size`, `urgent`, `important`, status, and the scheduled-date field.                                                           |
-| Scheduled-date property              | To confirm                               | The scripts read `scheduledDate`, falling back to `scheduled`; adjust the mapping if the installed TaskNotes version uses another property.                                                         |
+| Scheduled-date property              | Updated, verified (tests passing)        | The scripts read `scheduledDate`, changed to `scheduled`; (TaskNotes version)                                                                                                                       |
 | Desktop Obsidian                     | Unverified                               | `Task done`, result-card modal, event log, and task-note updates have not been tested.                                                                                                              |
 | Mobile result card                   | Unverified                               | Phone result-card behaviour has not been tested.                                                                                                                                                    |
 | Engine/Hero.md                       | Not updated                              | Task Done and Undo last do not rewrite the derived hero note.                                                                                                                                       |
