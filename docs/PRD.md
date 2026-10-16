@@ -452,6 +452,45 @@ All of these are aspirational targets, to aim at and not to pass or fail. They r
 - The small rules that were previously marked as assumptions (a roll never changes the real task's XP or MP, habits are exempt from the Wounded surcharge, late-added tasks count as unplanned, a catch-up button, free retries on boss challenges, pausing the quiz) were confirmed in Q56.
 - Small details set as defaults (for example 4 rest days a month) can be changed.
 
+## 10. User Flows for Scripts
+
+### Completing a habit
+
+```txt
+ [Done button: Meta Bind or QuickAdd]
+                  |
+                  v
+ [Habit note] --> [habit-done.js] --> [engine.js]
+ (habitId, skill)  QuickAdd script     (owns every rule)
+                  |
+                  v
+ +-- Then writes, in this order ---------------------------+
+ |                                                         |
+ |  [Events.md] --> [Habit note] --> [Hero.md]             |
+ |   log line        History line     HP, MP, XP           |
+ |   appended        added            rewritten            |
+ +---------------------------------------------------------+
+                  |
+                  v
+ [Notice: 8s, or 12s if it fails]
+```
+
+### Finishing a task
+
+tba
+
+### Undoing a task
+
+tba
+
+### Undoing a habit
+
+tba
+
+### Completing the day
+
+tba
+
 ## 10. Future versions
 
 - Sync with Todoist, Google Tasks, Trello, Kanban or Habitica through plugins. The backlog is designed as the integration point.
