@@ -6,21 +6,20 @@ const utils = require("./task-utils.js");
 
 test("parses TaskNotes frontmatter", () => {
   const fields = utils.parseFrontmatter(
-    "---\ntype: task\ntaskId: abc\nscheduledDate: 2026-10-15\nurgent: true\n---\n# Task",
+    "---\ntype: task\ntaskId: abc\nscheduled: 2026-10-15\ntags: [urgent, important]\n---\n# Task",
   );
   assert.equal(fields.type, "task");
   assert.equal(fields.taskId, "abc");
-  assert.equal(fields.scheduledDate, "2026-10-15");
-  assert.equal(fields.urgent, "true");
+  assert.equal(fields.scheduled, "2026-10-15");
+  assert.deepEqual(utils.parseTags(fields.tags), ["urgent", "important"]);
+  assert.equal(utils.hasTag(fields.tags, "urgent"), true);
+  assert.equal(utils.hasTag(fields.tags, "important"), true);
 });
 
 test("reads the TaskNotes scheduled date", () => {
-  assert.equal(
-    utils.scheduledDate({ scheduledDate: "2026-10-15" }),
-    "2026-10-15",
-  );
-  assert.equal(utils.scheduledDate({ scheduled: "2026-10-15" }), "2026-10-15");
-  assert.equal(utils.scheduledDate({}), "");
+  assert.equal(utils.scheduled({ scheduled: "2026-10-15" }), "2026-10-15");
+  assert.equal(utils.scheduled({ scheduled: "2026-10-15" }), "2026-10-15");
+  assert.equal(utils.scheduled({}), "");
 });
 
 test("selects a placeholder table result", () => {
