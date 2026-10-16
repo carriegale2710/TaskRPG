@@ -11,12 +11,13 @@ This documentation describes the current code. The automated regression suite pa
 | Create a task                         | TaskNotes                                                                 |
 | Plan or schedule a task               | TaskNotes                                                                 |
 | Task status                           | TaskNotes, with TaskRPG writing only its resolution-related status change |
-| Skill, size, urgent, important        | TaskNotes user fields                                                     |
+| Skill, size, urgent, important        | TaskNotes custom user fields                                              |
+| urgent / important filters            | TaskNotes `tags` user field                                               |
 | Dice, XP, MP, event log, result card  | TaskRPG engine and `Scripts/task-done.js`                                 |
 | Undo the RPG event                    | TaskRPG engine and `Scripts/undo-last.js`                                 |
 | Automatic resolution on status change | Optional phase 2: TaskNotes Workflows                                     |
 
-## TaskNotes setup
+## ~~TaskNotes setup~~
 
 Configure TaskNotes so each task note has:
 
@@ -42,10 +43,10 @@ tags:
   - urgent
 skill: vitality
 size: small
-taskID: "1"
+taskId: "1"
 ```
 
-## QuickAdd macros
+## ~~QuickAdd macros~~
 
 Configure two QuickAdd **Macro** choices, each with one **User Script** action. Enable their lightning-bolt commands. QuickAdd configuration is device-local unless explicitly synced.
 
@@ -56,11 +57,8 @@ Configure two QuickAdd **Macro** choices, each with one **User Script** action. 
 
 ## Phase 1 trigger
 
-1. Create and plan the task in TaskNotes.
-2. When the work is finished, mark it Done in TaskNotes.
-3. Run **Task done** while that task note is open.
-4. If needed, run **Undo last** to reverse the RPG event.
-5. If the undo was intentional, run **Task done** again to make a fresh resolution. The engine records it as a repeat.
+~~1. Create and plan the task in TaskNotes.~~
+~~2. When the work is finished, mark it Done in TaskNotes.~~ 3. Run **Task done** while that task note is open. #FIXME 4. If needed, run **Undo last** to reverse the RPG event. 5. If the undo was intentional, run **Task done** again to make a fresh resolution. The engine records it as a repeat.
 
 TaskRPG does not create tasks or plan them in this phase.
 

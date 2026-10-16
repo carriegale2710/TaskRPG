@@ -245,3 +245,45 @@ views:
     sort:
       - property: status
         direction: ASC
+  - type: tasknotesTaskList
+    name: Important
+    filters:
+      and:
+        - file.hasTag("important")
+    order:
+      - status
+      - priority
+      - due
+      - scheduled
+      - projects
+      - contexts
+      - file.tags
+      - blockedBy
+      - file.name
+      - recurrence
+      - complete_instances
+      - file.tasks
+    sort:
+      - property: due
+        direction: ASC
+  - type: tasknotesTaskList
+    name: Urgent
+    filters:
+      and:
+        - file.hasTag("urgent")
+    order:
+      - status
+      - priority
+      - due
+      - scheduled
+      - projects
+      - contexts
+      - file.tags
+      - blockedBy
+      - file.name
+      - recurrence
+      - complete_instances
+      - file.tasks
+    sort:
+      - property: due
+        direction: ASC
