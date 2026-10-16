@@ -26,6 +26,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - After a valid undo, a later `Task done` resolution is allowed and the engine marks it as a repeat.
 - TaskNotes Workflows may later invoke `/task-done` automatically on an In Progress → Done change. This optional phase 2 is not implemented or validated.
 - Updated `STEP3.md`, `TESTING.md`, and `README.md` for the corrected undo flow and expanded automated test command.
+- Updated the scripts/tests (`task-done.js`, `task-utils.js` and `task-utils.test.js`) to derive urgency and importance from TaskNotes tags
 
 #### Fixed
 

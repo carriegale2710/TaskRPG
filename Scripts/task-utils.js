@@ -48,6 +48,26 @@ function scheduled(task) {
   return task.scheduled || "";
 }
 
+function parseTags(value) {
+  if (Array.isArray(value))
+    return value
+      .map((tag) => String(tag).trim().replace(/^#/, "").toLowerCase())
+      .filter(Boolean);
+  if (value === undefined || value === null || value === "") return [];
+  let text = String(value).trim();
+  if (text.startsWith("[") && text.endsWith("]")) text = text.slice(1, -1);
+  return text
+    .split(/[\s,]+/)
+    .map((tag) => tag.trim().replace(/^#/, "").toLowerCase())
+    .filter(Boolean);
+}
+
+function hasTag(value, tag) {
+  return parseTags(value).includes(
+    String(tag).trim().replace(/^#/, "").toLowerCase(),
+  );
+}
+
 function pickTableResult(outcome, roll) {
   const table = OUTCOME_TABLE[outcome];
   if (!table) throw new Error(`Unknown outcome: ${outcome}`);
@@ -114,8 +134,10 @@ function hasUnresolvedTaskDone(events, taskId) {
 module.exports = {
   OUTCOME_TABLE,
   formatResultCard,
+  hasTag,
   hasUnresolvedTaskDone,
   parseFrontmatter,
+  parseTags,
   pickTableResult,
   scheduled,
   today,

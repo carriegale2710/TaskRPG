@@ -52,8 +52,8 @@ module.exports = async ({ app }) => {
       skill: task.skill,
       size: task.size,
       planned,
-      important: task.important === "true",
-      urgent: task.urgent === "true",
+      important: utils.hasTag(task.tags, "important"),
+      urgent: utils.hasTag(task.tags, "urgent"),
       ...dice,
     };
 
