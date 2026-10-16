@@ -8,46 +8,44 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Step 3 redesign
 
-#### Summary
-
-- Fixed the task duplicate-resolution guard to follow `undo.targetEventId`, so a valid undo allows the same task to be resolved again.
-- Added `Scripts/task-undo-resolution.test.js`, covering guard behaviour, undo linkage, repeat resolution, and preservation of the original `task_done` event.
-- Moved `hasUnresolvedTaskDone` into `Scripts/task-utils.js`; `task-done.js` now uses the shared implementation.
-- Updated `STEP3.md`, `TESTING.md`, and `README.md` for the corrected undo flow and expanded automated test command.
-- Automated tests pass; Obsidian desktop/phone integration remains unvalidated.
-
-#### Required follow-up fixes
-
-- [x] Remove task-done.js rejection of TaskNotes done/completed statuses (implemented, not integration-tested).
-- [x] Correct the duplicate guard to match undo.targetEventId to task_done.id; add regression tests before claiming post-undo behaviour works.
-- [x] Remove hard-coded planned/backlog restoration from undo-last.js (implemented, not integration-tested).
-- [x] STEP3.md, TESTING.md, README.md, BUILD_PROMPT.md: update wording after the code fix so the documented flow matches implementation.
-- [ ] Verify completedDate ownership and preserve TaskNotes status/frontmatter without rewriting plugin-owned completion data.
-
----
+#### Decisions
 
 #### Added
 
-- `Scripts/task-utils.js` now provides a TaskNotes scheduled-date helper used by task resolution and undo.
-- `Scripts/task-utils.test.js` covers TaskNotes frontmatter parsing, scheduled-date mapping, outcome-table selection, result-card formatting, and completion-field updates.
-- `Scripts/task-undo-resolution.test.js` covers the shared duplicate-resolution guard, `targetEventId` undo linkage, repeat resolution after undo, and preservation of the original `task_done` event.
-- `STEP3.md`, `TESTING.md`, `README.md`, `PLUGINS.md`, `AGENTS.md`, and `BUILD_PROMPT.md` describe the TaskNotes-wrapped ownership model and validation gate.
+- Added the TaskNotes scheduled-date helper used by task resolution and undo in `task-utils.js`.
+- Added tests for TaskNotes frontmatter parsing, scheduled-date mapping, outcome-table selection, result-card formatting, and completion-field updates in `task-utils.test.js`
+- Added tests for shared duplicate-resolution guard, `targetEventId` undo linkage, repeat resolution after undo, and preservation of the original `task_done` event in `task-undo-resolution.test.js`
 
 #### Changed
 
 - **TaskNotes now owns task creation, planning, statuses, and the task user fields** (`skill`, `size`, `urgent`, and `important`).
 - **TaskRPG now owns only task resolution and undo**: `Task done` resolves an open TaskNotes task through the engine; `Undo last` appends a correcting engine event.
 - `Task done` reads the TaskNotes scheduled date for the planned-day MP rule. A task scheduled for today avoids the unplanned MP surcharge.
-- `Undo last` appends a correcting RPG event and clears `completedDate` on a matching task note while preserving its status. The ownership of `completedDate` still needs verification; it is not proven to be TaskRPG-only metadata.
-- `hasUnresolvedTaskDone` moved to `Scripts/task-utils.js` and is now used by `Scripts/task-done.js`; it follows `undo.targetEventId` to the original `task_done` event.
+- `Undo last` appends a correcting RPG event and clears `completedDate` on a matching task note while preserving its status.
+- `hasUnresolvedTaskDone` moved to `task-utils.js` and is now used by `task-done.js`; it follows `undo.targetEventId` to the original `task_done` event.
 - After a valid undo, a later `Task done` resolution is allowed and the engine marks it as a repeat.
 - TaskNotes Workflows may later invoke `/task-done` automatically on an In Progress → Done change. This optional phase 2 is not implemented or validated.
+- Updated `STEP3.md`, `TESTING.md`, and `README.md` for the corrected undo flow and expanded automated test command.
+- Updated the scripts/tests (`task-done.js`, `task-utils.js` and `task-utils.test.js`) to derive urgency and importance from TaskNotes tags
+
+#### Fixed
+
+- Script references to the `scheduledDate` property are now `scheduled`, following TaskNotes frontmatter conventions.
+- Fixed the task duplicate-resolution guard to follow `undo.targetEventId`, so a valid undo allows the same task to be resolved again.
+- Removed `task-done.js` rejection of TaskNotes done/completed statuses (implemented, not integration-tested).
+- Corrected the duplicate guard to match undo.targetEventId to task_done.id; add regression tests before claiming post-undo behaviour works.
+- Verified completedDate ownership and preserved TaskNotes status/frontmatter without rewriting plugin-owned completion data.
 
 #### Removed
 
-- `Scripts/new-task.js` and the `New task` QuickAdd flow.
-- `Scripts/plan-task.js` and the `Plan task` QuickAdd flow.
-- Task-note creation, slug generation, and size-suggestion helpers from `Scripts/task-utils.js`.
+- `new-task.js` and the `New task` QuickAdd flow.
+- `plan-task.js` and the `Plan task` QuickAdd flow.
+- Task-note creation, slug generation, and size-suggestion helpers from `task-utils.js`.
+- Removed hard-coded planned/backlog restoration from undo-last.js (implemented, not integration-tested).
+
+#### Pending
+
+- The ownership of `completedDate` still needs verification; it is not proven to be TaskRPG-only metadata.
 
 ---
 
@@ -59,7 +57,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 | TaskNotes status restoration         | Hard-coded restoration removed; untested | Commit `60d00b9` preserves the existing status value instead of assigning planned/backlog. The helper still rewrites the status line and clears completedDate; field preservation requires testing. |
 | Automated tests                      | Pass on this branch                      | `node --test Scripts/engine.test.js Scripts/habit-done.test.js Scripts/task-utils.test.js Scripts/task-undo-resolution.test.js` passes.                                                             |
 | TaskNotes field mapping              | Unverified                               | Confirm the installed TaskNotes version preserves `taskId`, `skill`, `size`, `urgent`, `important`, status, and the scheduled-date field.                                                           |
-| Scheduled-date property              | To confirm                               | The scripts read `scheduledDate`, falling back to `scheduled`; adjust the mapping if the installed TaskNotes version uses another property.                                                         |
+| Scheduled-date property              | Updated, verified (tests passing)        | The scripts read `scheduledDate`, changed to `scheduled`; (TaskNotes version)                                                                                                                       |
 | Desktop Obsidian                     | Unverified                               | `Task done`, result-card modal, event log, and task-note updates have not been tested.                                                                                                              |
 | Mobile result card                   | Unverified                               | Phone result-card behaviour has not been tested.                                                                                                                                                    |
 | Engine/Hero.md                       | Not updated                              | Task Done and Undo last do not rewrite the derived hero note.                                                                                                                                       |

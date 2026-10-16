@@ -11,25 +11,42 @@ This documentation describes the current code. The automated regression suite pa
 | Create a task                         | TaskNotes                                                                 |
 | Plan or schedule a task               | TaskNotes                                                                 |
 | Task status                           | TaskNotes, with TaskRPG writing only its resolution-related status change |
-| Skill, size, urgent, important        | TaskNotes user fields                                                     |
+| Skill, size, urgent, important        | TaskNotes custom user fields                                              |
+| urgent / important filters            | TaskNotes `tags` user field                                               |
 | Dice, XP, MP, event log, result card  | TaskRPG engine and `Scripts/task-done.js`                                 |
 | Undo the RPG event                    | TaskRPG engine and `Scripts/undo-last.js`                                 |
 | Automatic resolution on status change | Optional phase 2: TaskNotes Workflows                                     |
 
-## TaskNotes setup
+## ~~TaskNotes setup~~
 
 Configure TaskNotes so each task note has:
 
-- A stable `taskId`.
-- A `skill` user field matching `Engine/Settings.md`.
-- A `size` user field matching `taskSizes` in settings.
-- `urgent` and `important` boolean user fields.
-- A scheduled date field used for planning.
-- Status values that include an open/planned state and a completed state.
+- [x] A stable `taskId`.
+- [x] A `skill` user field matching `Engine/Settings.md`.
+- [x] A `size` user field matching `taskSizes` in settings.
+- [x] Uses `urgent` and `important` tags.
+- [x] A scheduled date field used for planning.
+- [x] Status values that include an open/planned state and a completed state.
 
-The scripts currently read the scheduled date from `scheduledDate`, falling back to `scheduled`. Verify the actual property name used by your installed TaskNotes version and adjust the mapping if necessary.
+Example TaskNotes note configuration:
 
-## QuickAdd macros
+```yaml
+status: open
+priority: normal
+due: 2026-10-17
+scheduled: 2026-10-16
+dateCreated: 2026-10-16T06:51:46.992+11:00
+dateModified: 2026-10-16T06:51:46.992+11:00
+tags:
+  - task
+  - important
+  - urgent
+skill: vitality
+size: small
+taskId: "1"
+```
+
+## ~~QuickAdd macros~~
 
 Configure two QuickAdd **Macro** choices, each with one **User Script** action. Enable their lightning-bolt commands. QuickAdd configuration is device-local unless explicitly synced.
 
@@ -40,11 +57,8 @@ Configure two QuickAdd **Macro** choices, each with one **User Script** action. 
 
 ## Phase 1 trigger
 
-1. Create and plan the task in TaskNotes.
-2. When the work is finished, mark it Done in TaskNotes.
-3. Run **Task done** while that task note is open.
-4. If needed, run **Undo last** to reverse the RPG event.
-5. If the undo was intentional, run **Task done** again to make a fresh resolution. The engine records it as a repeat.
+~~1. Create and plan the task in TaskNotes.~~
+~~2. When the work is finished, mark it Done in TaskNotes.~~ 3. Run **Task done** while that task note is open. #FIXME 4. If needed, run **Undo last** to reverse the RPG event. 5. If the undo was intentional, run **Task done** again to make a fresh resolution. The engine records it as a repeat.
 
 TaskRPG does not create tasks or plan them in this phase.
 
