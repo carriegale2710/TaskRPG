@@ -56,7 +56,7 @@ Not for prose, story, canon, documentation or hand-made settings edits—nothing
 - **Decision log.** Run `/log-decision` whenever a new decision warrants being added to the PRD (the main decision doc): decision, rationale, alternatives, implications. File it before the change is assumed settled.
 - **Doc sync before release/PR.** Always run `/update-docs` before each release or before opening a new PR.
 - **README is protected.** Do not touch `README.md` unless the information already there is contradictory or outdated compared to the repo. When it is out of date, correct it rather than adding new sections; do not expand README opportunistically.
-- **Update on every commit.** Every time you make a commit, invoke the `update-changelog` skill. A commit that adds tests for a feature that is not built yet says so in its changelog line; do not claim behaviour that does not exist.
+- **Update CHANGELOG.md on every commit.** Every time you make a commit, invoke the `/update-changelog` skill. A commit that adds tests for a feature that is not built yet says so in its changelog line; do not claim behaviour that does not exist.
 - **Document decisions and limitations.** If you change a documented rule, behavior, architecture, public API, or plugin mapping, explicitly record it in docs. Note known limitations, validation status, and any follow-ups.
 - **No silent drift.** If you're unsure whether a doc needs updating, update it or call it out in the commit/PR notes.
 

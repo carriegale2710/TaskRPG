@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here.
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version numbers follow the build brief's steps: `0.1.0` is Step 1 (engine and tests) and `0.1.1` is Step 2 (habit Done button). Nothing is tagged yet, and `0.1.1` still lives on the `issue-2-habit-button` branch.
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). See [changelog-reference.md](../.agents/skills/update-changelog/references) for guidance - used by `/update-changelog` skill. Version numbers follow the build brief's steps: `0.1.0` is Step 1 (engine and tests) and `0.1.1` is Step 2 (habit Done button). Nothing is tagged yet, and `0.1.1` still lives on the `issue-2-habit-button` branch.
 
 ## [UNRELEASED]—Step 3 (issue #3, draft PR #10)
 
