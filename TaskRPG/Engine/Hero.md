@@ -10,6 +10,7 @@ xp_craft: 0
 xp_mind: 0
 xp_presence: 0
 ---
+
 # Hero state
 
 Derived from [[Events]]; do not edit these numbers by hand.

@@ -1,94 +1,159 @@
 # Changelog
 
-All notable changes to this project are documented in this file.
+All notable changes to project documented here. Format follows Keep a Changelog (https://keepachangelog.com/). Invoke `changelog` skill to keep this file up-to-date. This file is change history only: current build status, done/not-done steps, and known gaps live in `docs/BUILD_PLAN.md`. Version numbers follow semver, one minor bump per release while 0.y.z: `0.1.0` = Step 1 (engine/tests), `0.2.0` = Step 2 (habit Done button), `0.3.0` = repo restructure, `0.4.0` = agent setup/docs skills.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Nothing has been committed or tagged yet, so everything below sits under **Unreleased**. Once Step 1 is committed, rename the section to a version number (for example `0.1.0`) and add the date.
+## [UNRELEASED] - Step 3 (issue #3, draft PR #10)
 
-## [0.1.0] - 2026-10-14
+### Step 3 redesign
 
-### Added—Step 1: engine and tests
+TaskNotes = task creation, planning, statuses, user fields, while TaskRPG = task resolution and undo. `Task done` resolves open TaskNotes task through engine. `Undo last` appends correcting engine event.
 
-#### Engine (`Scripts/engine.js`)
+#### Added
 
-- Dependency-free game engine with no Obsidian code. It takes the event log plus the settings note and returns the new state and the result of an action.
-- The engine loads without `fs`, `path` or `require`, so it can run on the phone.
-- Terminal command `node Scripts/engine.js recalc` rebuilds state from the log. It prints the same state on repeat runs. On bad usage it exits with code 1 and writes to stderr.
-- **Time:** the day rolls over at 4:00 AM.
-- **MP**
-  - Maximum 10, refilled each morning.
-  - Task cost by size: small 1, medium 3, large 5.
-  - Surcharges: +1 for an unplanned task, +1 for every task while Wounded.
-  - Discounts: −1 at skill levels 5 and 10 (in that skill only). A task never costs less than 1.
-  - Overdraft: a task counts as overdraft when its cost is more than the remaining MP. Overdraft halves XP (rounded up) and adds a −1 "Tired" roll penalty. HP is unaffected.
-  - Habit cost by the share of eligible days in the last 30 that were done on time: under ⅓ costs 2 MP, ⅓ to under ⅔ costs 1 MP, ⅔ or more costs 0 MP. A new habit starts at 2 MP.
-  - Eligible days are weekdays that are not rest or pause days. A weekend, rest or pause day counts only if the habit was done.
-- **XP and levels**
-  - Task XP equals its size, plus 50% if important, plus 50% if urgent, plus 25% for the weekly focus project. The bonuses add together and the result is rounded up.
-  - Habit XP is 1 per press, including at 0 MP.
-  - Five skills with 10 levels each. The XP thresholds are placeholders held in the settings note (level 2 at 10 up to level 10 at 320).
-  - Dice bonus of +1 at levels 2, 4, 6, 8 and 10.
-- **Roll:** 2d6 plus the skill's dice bonus, minus the HP penalty and the Tired penalty.
-  - Base thresholds: success at 9+, partial success at 6–8, setback at 5 or less.
-  - Each project has a threat level of +1 per finished arc, capped at +4. It raises every threshold. Tasks outside a project use T = 0.
-  - A success has a one-in-three chance of loot (a die roll where 5 or 6 drops). The engine only flags the drop. The narrator names it later.
-  - A roll never changes the XP or MP of the real task.
-- **HP**
-  - Maximum 10. An on-time core habit restores 1 HP. A late press earns XP but no HP and doesn't count as an on-time day.
-  - A missed block deadline costs 1 HP, capped at 2 HP lost per day. Rest days, pause and weekends are exempt.
-  - Dice penalty: 7–10 HP is 0, 4–6 is −1, 1–3 is −2, 0 is −3.
-  - At 0 HP you are Wounded: tasks cost +1 MP and boss challenges are blocked.
-  - Missed blocks are back-filled when the vault opens.
-- **Rest and pause**
-  - Rest day: a one-day pass, 4 a month, with no HP loss and no plan needed.
-  - Pause: freezes the game with no HP loss. Paused days are left out of every habit's measure.
-- **Settings changes:** each change is logged with the time it was recorded. The engine uses the rules in force on each day and never rewrites the past. Editing the note without recording an action does not change the past.
-- **Undo:** adds a correcting line to the log and nothing is deleted. It only reverses the newest task or habit action from the same game day, and it can't be used to re-roll. Pressing Done again after an undo gets a fresh roll, flagged `repeat`.
+- TaskNotes scheduled-date helper in `task-utils.js`, used by resolution (`task-done.js`).
+- Tests: TaskNotes frontmatter parsing, scheduled-date mapping, outcome-table selection, result-card formatting, completion-field updates (`task-utils.test.js`).
+- Tests: shared duplicate-resolution guard, `targetEventId` undo linkage, repeat resolution after undo, preserved original `task_done` event (`task-undo-resolution.test.js`).
 
-#### Data files
+#### Changed
 
-- **Event log:** one shared, append-only JSON Lines file with one line per action (date, time, type, skill, size, roll, outcome, XP, MP). Events are replayed in timestamp order, so a back-filled missed deadline is appended rather than inserted.
-- `Engine/Settings.md` holds every tunable number in a JSON block. The engine rejects out-of-range values and names the setting that is wrong.
-- `Engine/State.json` is written by `recalc`. It is the saved copy that the Step 2 hero note and Meta Bind panels will read.
+- `Task done` reads scheduled date for planned-day MP rule. Today-scheduled task avoids unplanned MP surcharge.
+- `Undo last` appends correcting RPG event, clears `completedDate` on matching task note, preserves status.
+- `hasUnresolvedTaskDone` moved to `task-utils.js`, used by `task-done.js`; follows `undo.targetEventId` to original `task_done`.
+- Post-valid-undo allows later `Task done`; engine marks repeat.
+- Documentation updated for the ownership split and undo flow: `STEP3.md`, `TESTING.md`, `PLUGINS.md`, `AGENTS.md`, `BUILD_PLAN.md`, `README.md`.
+- Scripts and tests derive urgency/importance from TaskNotes tags.
 
-#### Tests
+#### Fixed
 
-- `Scripts/engine.test.js`, run with `node --test Scripts/engine.test.js`.
-  - Covers one test per rule in the brief, plus settings changes, undo, the day boundary, back-filling and the terminal run.
-  - The first build passed 30 of 30.
-- Settings validation tests for `taskSizes`, `lootDropRolls`, `hpPenalties` and `habitTiers`.
-- A table-driven test for invalid actions: unknown size, bad `planned` or `onTime`, bad `lootRoll`, missing `habitId` or `projectId`, and an invalid rest-day date.
-- A test that the terminal command exits with code 1 and writes to stderr on bad usage.
-- A test that the live `Settings.md` is valid.
+- Scheduled date property uses `scheduled`, not `scheduledDate`.
+- Duplicate-resolution guard follows `undo.targetEventId`, allowing re-resolution after valid undo.
+- Removed `task-done.js` rejection of TaskNotes done/completed statuses.
+- `task-done.js`/`undo-last.js` rewrite `status` and `completedDate` lines, preserving status value; other frontmatter untouched.
+
+#### Removed
+
+- `new-task.js` and `New task` QuickAdd flow.
+- `plan-task.js` and `Plan task` QuickAdd flow.
+- Task-note creation, slug generation, size-suggestion helpers from `task-utils.js`.
+- Hard-coded planned/backlog restoration from `undo-last.js`.
+
+---
+
+## [0.4.1] - 2026-10-18
+
+Docs-only release. Refactor all doc content, structure, strategy: kill verbosity, staleness, redundancy, drift. Each doc one job, clear split. No engine, script, or runtime change.
+
+### Added
+
+- `docs/ARCHITECTURE.md`—system structure, data model, engine ownership, module boundaries, storage, invariants.
+- `docs/DECISIONS.md`—decision log: accepted/provisional/superseded, rationale, alternatives, implications.
+- `docs/BUILD_PLAN.md`—roadmap, milestones, build order, acceptance criteria, build status (done/not-done, gaps, validation).
+- `docs/DOCUMENTATION.md`—doc structure, per-file responsibility, separation, starter templates.
 
 ### Changed
 
-- **Test suite merged.** The original 30-test suite and a second 42-test suite were merged into one file of 43 tests, with no coverage lost.
-  - The merged suite uses the second suite's frozen settings copy. When you change a default on purpose, update that copy.
-  - Kept from the original suite: event log text parsing (including `line 2 is not valid JSON`), `localStamp`, and the check that the engine loads with no `fs`, `path` or `require`.
-  - Folded together: Wounded at 1 HP now sits inside the task MP cost test, the own-skill MP discount is part of the skill level test, the rest-day monthly reset is part of the rest days test, and the two `rollDice` tests are now one.
-  - Removed as duplicates: the extra `bonus(5)` dice check, the next-week focus lines in the XP test (the weekly-focus test covers them), and a repeated Wounded MP assertion.
-  - The undo test now matches the full error message. Its two failing cases each break one rule. Both rules share one message, so the setup tells them apart, as a comment in the test explains.
-- **Settings format:** the settings note is a JSON block instead of the PRD's table with min and max beside each value. This follows the choice of JSON Lines for the event log, and it will need revisiting when Step 2 adds Meta Bind fields.
-- `TESTING.md` is updated: the test-name table is current, and the note that tests read the live `Settings.md` now says they use the frozen copy.
-- The old suite is backed up at `files\engine.test.old.js` in the session folder. The test file is untracked in git.
+- Repo layout: `CHANGELOG.md` moved `docs/` to repo root.
+- `docs/PRD.md` restructured: single "Settled decisions" §3, subsections renumbered; scope, leaning, build-default reorganized.
+- `AGENTS.md` rewritten: authority order, session skills, safety, before coding, coding rules, documentation; no more PRD duplication.
+- `README.md` rewritten: first-time-reader landing page (purpose, value, features, requirements, setup, doc links), not spec.
+- `docs/PLUGINS.md`, `docs/TESTING.md` updated to new doc set, single-responsibility split.
+- Build status, known gaps moved out of `CHANGELOG.md`, `docs/TESTING.md` into `docs/BUILD_PLAN.md`.
+- `TaskRPG/Journal/AGENTS.md` moved to `Journal/README.md`; `TaskRPG/Journal/Templates/Daily.md` moved to `TaskRPG/Templates/Daily.md`.
+- `TaskRPG/Engine/Habits/Morning routine.md` now links `[[BUILD_PLAN.md]]`, not removed `[[STEP2]]`.
+- `TaskNotes` base views: labels normalized, `sort` keys `column` to `property`, `columnOrder` added, project filter added to default task list.
+- `.gitignore` adds local `/Clippings/`, `/TaskNotes/` ignores.
 
-### Quality checks
+### Removed
 
-- 43 of 43 tests pass.
-- `engine.js` coverage: 100% of lines, 96% of branches.
-- Before the merge, the second suite left 5 chunks of `engine.js` uncovered.
-- Mutation check: 12 deliberate engine breaks were run against the merged suite and all 12 were caught. Examples: the Wounded surcharge applying at 1 HP, MP discounts using the wrong skill, and the rest-day limit not resetting monthly. A 13th break changed no behaviour, so it was not counted.
+- `docs/BUILD_PROMPT.md`, `docs/STEP3.md`.
+- `TaskRPG/Campaign/AGENTS.md`, `TaskRPG/World/AGENTS.md`.
 
-### Known issues
+---
 
-- **Back-fill uses the wrong rules for old events.** An event dated before the first `settings_changed` entry gets today's rules instead of the rules in force on that day. `engine.js` was not changed, and there is no test for this yet because it would fail until the engine is fixed. A fix and a regression test are pending a decision.
+## [0.4.0] - 2026-10-16
 
-### Open questions
+### Agent setup + Documentation skills
 
-1. **MP discount at levels 5 and 10:** treated as cumulative, so level 10 takes off 2 MP. If exactly 1 MP off at both levels was intended, it is a one-line change.
-2. **Repeat press after an undo:** the PRD says it gets a fresh roll logged as a repeat, but not whether it earns full XP. It currently does.
+> Branch: `repo-structure` - Merged.
+> Process/docs only; no engine/rule/runtime behavior changed.
 
-### Not yet built
+#### Decisions
 
-- Boss challenges and inventory. Loot is only flagged on the roll result.
-- Macros and plugin wiring, which wait for Step 2 (hero note and Meta Bind panels).
+- Code documentation skills can now use caveman-style prose to cut verbosity.
+- Use `/tdd` and `/ponytail` skills for each coding session from now on to improve outputs.
+
+#### Added
+
+- TDD rules in `AGENTS.md`: test-first default, no vanity tests, failing tests as to-do, never weaken test, layout/commands/checks. Matching ground rule in `BUILD_PLAN.md`; pointer and order in `TESTING.md`.
+- Session skills in `AGENTS.md`: load `caveman` at start of every session, `ponytail` at start of coding sessions only; skip `ponytail` for story/canon/prose/settings/research. Compression never overrides TDD reporting, doc sync, confirm-before-implementing.
+- `tdd` workflow referenced in `AGENTS.md`; changelog-at-commit, doc sync, confirm risky assumptions/design decisions.
+- Made new local `/changelog` skill (`.agents/skills/changelog/SKILL.md`, gitignored/untracked) with reference guide doc to run on each commit.
+- Added new user flow diagram section to PRD. Has only habit done flow for now.
+
+#### Changed
+
+- `AGENTS.md` TDD section cut ~89 lines/1,824 words to short section; file ~3,340 → ~1,980 words.
+- Docs point at skill; `TESTING.md` and `BUILD_PLAN.md` drop removed heading reference; caveman precedence names skill Report step.
+
+---
+
+## [0.3.0] - 2026-10-16
+
+Minor repo restructuring. All tests passing.
+
+### Added
+
+- `docs` folder for project documentation.
+- `TaskRPG` folder for game-related content (story, characters, events).
+
+### Removed
+
+- `.gitignore` ignores local dev files (`.agents/`, `./claude`, `todo.md`).
+
+---
+
+## [0.2.0] - 2026-10-14
+
+### Added - Step 2: habit Done button
+
+- Habit Done macro (`Scripts/habit-done.js`): QuickAdd user script behind `TaskRPG: Habit Done`. Runs only while note in `Engine/Habits/` open; else notice naming folder. Reads habit frontmatter (`habitId`, lowercase letters/digits/hyphens; `skill`). Suggester asks within habit block vs after; sets `onTime` true/false. Cancelling writes nothing. Loads `Scripts/engine.js` by read/eval, no require, phone-capable. Write order: event log, habit History, derived hero state. Notice 8s (12s on failure) in PRD 4.8 format. No dice roll or story beat; event has no `roll`.
+- Habit note and button: `Engine/Habits/Morning routine.md` first habit. Frontmatter `type: core-habit`, `habitId: morning-routine`, `skill: vitality`, `block: morning`. Done button is Meta Bind `meta-bind-button` running QuickAdd choice by command ID (copied, never guessed); QuickAdd command is fallback. `## History` holds `timestamp | on time/late | status` lines.
+- Hero note and Meta Bind fields: `Engine/Hero.md` derived from log; must not hand-edit. Frontmatter `hp`, `maxHP`, `mp`, `maxMP`, `xp_<skill>` for five skills. Body shows Meta Bind inline fields. Stable identity stays in `Campaign/00 Hero.md`.
+- Live event log is note: `Engine/Events.md` (Markdown, one JSON object per line). Step 1 left extension open; `.jsonl` hidden in Obsidian file list, so `.md` wins. Engine skips blank lines and `#`/code-fence lines.
+- Tests (`Scripts/habit-done.test.js`): two tests with fake vault and stub Notice:
+- On-time and late press each append `settings_changed` then `habit_done`, add `| on time |`/`| late |` to History, update `xp_vitality`, notice contains `+1 XP`. No `roll` field.
+- Cancelling suggester or no habit open writes no event.
+
+### Changed
+
+- Live log now `Engine/Events.md` instead of `Engine/Events.jsonl`; holds real presses.
+- `Engine/State.json` still output of `node Scripts/engine.js recalc`, but panels no longer read it; macro writes hero note directly. Unchanged since Step 2.
+- Test count 45 (43 engine, 2 habit), up from 43.
+
+### Also on this branch (not Step 2)
+
+- `gm_bridge.py` moved to `Scripts/gm_bridge.py` via `git mv`. `README.md` usage/table updated.
+
+---
+
+## [0.1.0] - 2026-10-14
+
+### Added - Step 1: engine and tests
+
+Engine (`Scripts/engine.js`): dependency-free game engine, no Obsidian. Takes event log + settings note, returns state and action result. Loads without `fs`, `path`, `require`; phone-capable. `node Scripts/engine.js recalc` rebuilds state, deterministic repeat runs. Bad usage exits code 1, stderr.
+
+Game features:
+
+- Time: day rolls over 4:00 AM.
+- MP: max 10, refill each morning. Task cost by size small 1/medium 3/large 5. Surcharge +1 unplanned, +1 per task while Wounded. Discounts -1 at skill levels 5 and 10 in that skill. Never below 1. Overdraft if cost > remaining MP halves XP (round up) and adds -1 Tired penalty; HP unaffected. Habit cost by on-time share last 30 eligible days: under 1/3 = 2 MP, 1/3 to under 2/3 = 1 MP, 2/3+ = 0 MP. New habit starts 2 MP. Eligible days are weekdays not rest/pause; weekend/rest/pause counts only if habit done.
+- XP/levels: task XP size plus 50% important, 50% urgent, 25% weekly focus project; bonuses stack, round up. Habit XP 1 per press even at 0 MP. Five skills, 10 levels. XP thresholds placeholder in settings (level 2 at 10 through level 10 at 320). Dice bonus +1 at levels 2,4,6,8,10.
+- Roll: 2d6 + skill dice bonus - HP penalty - Tired penalty. Success 9+, partial 6-8, setback <=5. Project threat +1 per finished arc, cap +4, raises thresholds. Tasks outside project T=0. Success has 1/3 loot chance (die 5/6 drops); engine flags drop, narrator names later. Roll never changes task XP/MP.
+- HP: max 10. On-time core habit restores 1. Late press earns XP, no HP, not on-time day. Missed block deadline costs 1 HP, cap 2/day. Rest/pause/weekends exempt. Dice penalty: 7-10 HP = 0, 4-6 = -1, 1-3 = -2, 0 = -3. At 0 HP Wounded: tasks +1 MP, boss blocked. Missed blocks back-filled when vault opens.
+- Rest/pause: rest day one-day pass, 4/month, no HP loss/no plan. Pause freezes game, no HP loss; paused days excluded from habit measure.
+- Settings changes: each logged with recorded time; engine uses rules in force each day, never rewrites past. Editing note without recording action doesn't change past.
+- Undo: adds correcting log line; nothing deleted. Only newest task/habit action same game day, can't reroll. Pressing Done after undo gets fresh roll, flagged `repeat`.
+- Event log: shared append-only JSON Lines, one line/action with date/time/type/skill/size/roll/outcome/XP/MP. Events replay timestamp order, back-filled missed deadline appended not inserted.
+- Settings note: `EngineSettings.md` holds tunable numbers in JSON block. Engine rejects out-of-range values and names wrong setting.
+- State file: `EngineState.json` written by recalc. Saved copy later hero note/Meta Bind panels read.
+
+Tests (`Scripts/engine.test.js`): one test per rule plus settings changes, undo, day boundary, backfill, terminal run. Validation tests for taskSizes, lootDropRolls, hpPenalties, habitTiers. Table-driven invalid actions test. Bad usage exit code 1/stderr test. Live Settings.md validity test.

@@ -22,8 +22,8 @@ history, arcs, and quests.
 - Guild of Makers alliance (level 2)
 
 ## Key NPCs
-- [[World/NPCs/Veyra]] - rival artificer, antagonist
-- [[World/NPCs/The Archivist]] - quest giver
+- [[Veyra]] - rival artificer, antagonist
+- [[The Archivist]] - quest giver
 
 ## World Rules
 - Magic unstable near unfinished projects

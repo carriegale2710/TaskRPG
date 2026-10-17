@@ -1,49 +1,72 @@
 # TaskRPG Agent Instructions
 
-## Source of truth
+## Authority
 
-- Follow [PRD.md](./PRD.md) for product behavior and implementation scope.
-- The PRD's **Settled decisions** are requirements. **Leaning** items are not final; **Build defaults** are starting values, not immutable rules. Success metrics are aspirational, and items marked Later, Should-have or Future versions are not v1 requirements.
-- If these instructions and the PRD conflict, follow the PRD. Keep this file focused on working rules rather than duplicating the full specification.
-- Preserve existing behavior unless the PRD explicitly changes it. Make small, testable changes and verify the affected behavior.
+1. `docs/PRD.md` is the source of truth for product behavior, architecture, ownership, and v1 scope.
+2. This file governs how agents work in this repository.
+3. `docs/TESTING.md` governs test layout, commands, coverage expectations, and manual checks.
+4. Project skills under `.agents/skills/` govern optional workflow behavior.
+5. If sources conflict: PRD > this file > `docs/TESTING.md` > skills.
+6. Safety, confirmation, test-evidence, and decision-request rules always use clear prose.
 
-## Product principles
+## Session skills
 
-- Build an immersive, character-driven RPG layer that makes real tasks and habits rewarding through novelty and visible progression.
-- Keep randomness real: dice and engine-owned tables determine what happens; AI agents narrate it. Do not let AI invent or alter game-state outcomes.
-- Stats are game state, not measurements of real-world energy or health. Never bring back capacity-based MP, guilt, death, punishment, or proactive distress check-ins.
-- Every task or habit Done action should give its specified immediate feedback. Keep story consequences moving forward; setbacks must not create dead ends.
-- Keep characters, preferences and story personal, continuous, kind, and consistent with the user's established world and quiz hard limits.
+If the agent supports project skills:
 
-## Architecture and ownership
+- If available, load `caveman` at start of every session. Stop only if user says so.
+- If available, load `ponytail` before all coding, refactoring, diagnosis, brainstorming, or design-decision work.
+- Load `write-tests` before the first test or engine change.
+- If a required skill cannot load, say so and continue without silently skipping the underlying rule.
 
-- Obsidian is the interface. QuickAdd macros call one plain JavaScript engine with no dependencies; keep game rules in the engine and macros thin.
-- The event log is the source of truth. Recalculate derived HP, MP, XP, levels and results from it. Do not silently overwrite or discard history; undo is a correcting event.
-- Keep tunable values in the settings note and make rule changes prospective as specified in the PRD. Validate setting ranges and report invalid data clearly.
-- Vault Operator agents are for narration and character conversations, not building or testing code. They may write only to their designated Story, Campaigns, World and Characters areas, with approval where required. They must not write Engine-owned state, backlog task lines or user-authored journal content. These boundaries protect data integrity, not privacy.
-- Engine files (event log, derived hero state and habit records) are written by macros. The hero profile contains stable identity only. Journal notes are the user's journal plus the generated "Today's turns" view. Backlog tasks are managed by the user and TaskNotes.
-- Shared hero progression belongs to the player and applies across campaigns. Each campaign keeps separate arcs, quests and story history; shared-world canon is updated only with approval.
-- Treat every vault file as potentially model-visible. Provide an agent only the context needed for its task, but do not store content in the vault that you would not consent to sending to the configured model provider. No file or folder is private by guarantee.
+Skills never override the PRD, this file, safety rules, test evidence, or confirmation requirements.
 
-## Game behavior
+## Safety
 
-- MP is an in-game budget capped at 10 and refilled each morning. Planning, task and habit costs, XP, HP, dice, skills, projects, rewards and recovery follow the PRD; do not infer new mechanics or change formulas casually.
-- A task Done action rolls using the engine and shows an immediate result from the random tables. The next morning briefing narrates the day's results and recaps prior events; do not require a separate story beat after every task.
-- Habit Done actions show their short status feedback and do not generate a dice roll or story beat.
-- The event log, story log, hero state, habit notes and character memory are the durable records. Daily notes are a journal view with "Today's turns", not the game-state source of truth; only daily notes are pruned, after backup.
-- Maintain continuity from the shared world canon, the selected campaign's story log and relevant character memory. Do not mix campaign histories, invent conflicting canon or advance unrelated/new plot threads without the user's direction.
-- Characters stay in fiction and give advice only when asked. Only the narrator or game system may provide brief real-talk, in the PRD's neutral, kind, no-guilt style.
-- A missed day is handled by the PRD's rest, pause, weekend and recovery rules. Never shame the user or create catch-up work as punishment.
+- Never expose API keys, tokens, or credentials.
+- Do not imply vault content is private from an AI provider.
+- Ask before deleting or moving more than three files, pruning records, or restructuring the vault.
+- Do not touch the user's other notes; stay inside the TaskRPG folders defined in PRD 4.15.
+- Never delete or rewrite event history to correct an action; use the engine’s undo/correction mechanism.
+- Treat every plugin integration listed in `docs/PLUGINS.md` as an assumption to verify until `docs/TESTING.md` records a result.
+- Never point `engine-smoke.js` or the throwaway test log at the live event log or important real tasks.
+- Treat `State.json` and `Events.md` as live state: do not edit them manually to correct behavior; use the engine’s undo/correction mechanism.
 
-## Build and test
+## Before coding
 
-- Work in small, end-to-end pieces, following the PRD's build order and thin-slice requirements. Each step should leave something testable and observable.
-- Keep engine behavior runnable from the terminal without Obsidian. Add or update automated tests for each engine rule changed, including relevant settings, event replay and undo behavior.
-- Test macros and Obsidian/mobile integration at the relevant slice; treat untested plugin behavior as an assumption to verify, not a guaranteed capability.
-- Keep changes scoped. Update directly related documentation, preserve readable vault data and formatting, and report validation results and unresolved limitations.
+- Read all of `docs/PRD.md` before writing or changing code.
+- Implement only PRD “Settled decisions” for v1.
+- Treat “Leaning items” as non-final, “Build defaults” as starting values, and Later/Should-have/Future items as out of scope.
+- Read the affected code before proposing or making changes.
+- If code contradicts the PRD, stop. Report:
+  - PRD section/rule
+  - Current code behavior
+  - Exact conflict
+  - Options
+  - Recommended resolution
+- Wait for the user’s decision before changing behavior.
+- Confirm before implementing any risky assumption or design decision not settled by the PRD, this file, `docs/TESTING.md`, or inline comments.
+- When asking, include context, the decision needed, alternatives, tradeoffs, and a recommendation.
 
-## Safety and care
+## Coding rules
 
-- Ask before deleting or moving many files, pruning records, or making broad vault restructures.
-- Do not delete or rewrite event history to correct an action; use the engine's undo/correction mechanism.
-- Never expose API keys or credentials. Do not imply that any vault content is private from an AI provider.
+- Make the smallest testable change that satisfies the PRD.
+- Work in small steps: finish one step, say what to press to try it, and wait for the user before continuing.
+- Preserve existing behavior unless the PRD explicitly changes it.
+- Keep engine behavior runnable from the terminal without Obsidian.
+- Use test-driven development for engine behavior: write the failing test first, confirm it fails for the right reason, then implement.
+- Add or update tests for every changed engine rule, including settings, event replay, and undo behavior where relevant.
+- Never weaken a test to make a change pass.
+- Treat failing tests as the work list.
+- Report what is proven by test output separately from what is assumed or manually checked.
+- Follow `docs/TESTING.md` for commands, test locations, rule-to-test mapping, boundary cases, and manual Obsidian checks.
+
+## Documentation
+
+- Read `docs/DOCUMENTATION.md` for details on repository structure, where information belongs, doc file responsibilities, clear separation of concerns, and doc file starter templates.
+- Run `/log-decision` when a new decision should be recorded in the PRD.
+- Run `/update-docs` before every release and before opening a PR.
+- Update directly related documentation in the same change.
+- Update `CHANGELOG.md` on every commit.
+- Do not claim behavior that does not exist; label test-only changes as test-only.
+- Record changes to rules, behavior, architecture, public APIs, plugin mappings, limitations, validation status, and follow-ups.
+- Do not edit `README.md` unless its existing content is contradictory or outdated; correct it rather than expanding it.

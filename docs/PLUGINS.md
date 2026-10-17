@@ -2,7 +2,7 @@
 
 Audience: coding agents building TaskRPG and Vault Operator agents running it.
 
-Read with: AGENTS.md, PRD.md, BUILD_PROMPT.md and TESTING.md.
+Read with: AGENTS.md, PRD.md, BUILD_PLAN.md and TESTING.md.
 
 ## 1. Architecture and boundaries
 
@@ -12,15 +12,16 @@ TaskRPG separates responsibilities:
 | ------------------- | -------------------------------------------------------------- |
 | Engine              | Game rules, action results and state reconstructed from events |
 | Settings note       | Tunable values, skill definitions and configuration            |
-| QuickAdd wrappers   | Gather inputs, call the engine and persist results             |
+| QuickAdd wrappers   | Call the engine for task resolution, undo and other actions    |
 | Meta Bind           | Buttons, input fields and displays                             |
-| TaskNotes and Bases | Task records, backlog and task views                           |
+| TaskNotes and Bases | Task creation, planning, statuses, task fields and task views  |
 | Dice Roller         | Approved narrative-table draws                                 |
 | Vault Operator      | Narration, personas, story and scoped memory                   |
 
 Rules:
 
 - Keep the engine a standalone, dependency-free JavaScript module.
+- Keep engine Obsidian-free. All vault and file I/O in wrapper layer. A later plugin is a swap, not a rewrite (see `PRD.md`).
 - Do not put game rules in templates, plugin settings or macros.
 - Keep QuickAdd scripts in a visible folder.
 - Reuse documented plugin capabilities before building custom UI.
@@ -29,22 +30,23 @@ Rules:
 - Record desktop and mobile integration results in TESTING.md.
 - Build one step at a time and stop for user validation.
 - Buttons, dice and stats must remain usable without AI.
+- **TaskNotes owns task creation, planning, statuses, and task user fields. TaskRPG owns task resolution (`Task done`) and undo.**
 
 ## 2. Planned plugin stack
 
 Confirm each plugin is installed, enabled and working before its build step.
 
-| Plugin             | Needed from | TaskRPG use                                                                    | Integration checks                                                                  |
-| ------------------ | ----------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
-| QuickAdd           | Step 0      | Thin action wrappers, forms, planning, undo, recalculation and briefing launch | Verify script loading, command invocation and phone behaviour                       |
-| Templater          | Step 0      | Scaffold daily notes, habits, personas and other starter notes                 | Verify template paths; keep game logic out of templates                             |
-| Lazy Plugin Loader | Step 0      | Startup optimisation where useful                                              | Do not delay dependencies in a way that breaks startup processing or buttons        |
-| Meta Bind          | Step 2      | Habit/task buttons, hero panels and settings inputs                            | Verify bindings, command actions and mobile rendering                               |
-| Fit                | Step 2      | Desktop/phone vault sync                                                       | Verify event-log and note sync, conflict handling and device-local configuration    |
-| TaskNotes          | Step 3      | One note per task, task properties and backlog views                           | Verify required fields, completion timestamps and preservation of custom properties |
-| Bases              | Step 3      | Core Obsidian feature used by TaskNotes views                                  | Enable it and verify the installed TaskNotes version's requirements                 |
-| Dice Roller        | Step 3      | Narrative outcomes from table notes                                            | Verify table syntax, weighting and the supported integration method                 |
-| Vault Operator     | Step 4      | Narrator, onboarding, character conversations, summaries and briefing          | Verify model connection, agent setup, memory scope and approval controls            |
+| Plugin             | Needed from | TaskRPG use                                                                       | Integration checks                                                                                   |
+| ------------------ | ----------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| QuickAdd           | Step 0      | Thin action wrappers for task resolution, undo, recalculation and briefing launch | Verify script loading, command invocation and phone behaviour                                        |
+| Templater          | Step 0      | Scaffold daily notes, habits, personas and other starter notes                    | Verify template paths; keep game logic out of templates                                              |
+| Lazy Plugin Loader | Step 0      | Startup optimisation where useful                                                 | Do not delay dependencies in a way that breaks startup processing or buttons                         |
+| Meta Bind          | Step 2      | Habit/task buttons, hero panels and settings inputs                               | Verify bindings, command actions and mobile rendering                                                |
+| Fit                | Step 2      | Desktop/phone vault sync                                                          | Verify event-log and note sync, conflict handling and device-local configuration                     |
+| TaskNotes          | Step 3      | Task creation, planning, statuses, task user fields, backlog and task views       | Verify required fields, scheduled dates, completion timestamps and preservation of custom properties |
+| Bases              | Step 3      | Core Obsidian feature used by TaskNotes views                                     | Enable it and verify the installed TaskNotes version's requirements                                  |
+| Dice Roller        | Step 3      | Narrative outcomes from table notes                                               | Verify table syntax, weighting and the supported integration method                                  |
+| Vault Operator     | Step 4      | Narrator, onboarding, character conversations, summaries and briefing             | Verify model connection, agent setup, memory scope and approval controls                             |
 
 The table describes the planned stack, not verified installation status.
 
@@ -64,19 +66,19 @@ Reuse capture, template and JavaScript-macro examples.
 Suggested wrappers:
 
 - habit-done
-- task-new
-- task-plan
 - task-done
 - undo-last
 - recalculate
 - morning-briefing
 
+Task creation and planning belong to TaskNotes. Do not add `task-new` or `task-plan` QuickAdd wrappers.
+
 Each action wrapper should:
 
-1. Gather and validate inputs.
-2. Read the required settings and event state.
+1. Read and validate the required TaskNotes task or settings state.
+2. Read the required event state.
 3. Call the engine.
-4. Persist the engine-produced event and derived state.
+4. Persist the engine-produced event and resolution-related task fields.
 5. Display the result.
 
 Do not independently recalculate XP, MP, HP or outcomes in a wrapper.
@@ -101,22 +103,27 @@ Resources:
 - Repository: https://github.com/callumalpass/tasknotes
 - Documentation: https://tasknotes.dev/obsidian/
 
-Reuse the documented task schema, templates and Bases views before
-implementing a custom backlog.
+Use TaskNotes as the task layer: create tasks, plan or schedule them, manage statuses, and store the TaskRPG user fields.
 
 TaskRPG needs task metadata for:
 
+- A stable task ID.
 - Skill.
 - Size.
 - Urgent and important flags.
+- A scheduled date, used for the planned-day MP rule.
 - Project association where applicable.
-- Planning and completion information required by the PRD.
+- Completion information written by task resolution.
 
 Verify actual property names and supported operations against the installed
 version. Do not invent an API or assume frontmatter fields are preserved.
 
-The New task form and deterministic action wrappers may update task records.
-Narrator and character agents must not edit task lines or task state.
+Only the task-resolution wrapper may update resolution-related completion fields.
+Narrator and character agents must not edit task records or task state.
+
+TaskNotes Workflows may later invoke `/task-done` automatically on an
+In Progress → Done change. Treat this as optional phase 2; do not enable or
+document it as working until separately validated.
 
 The HTTP API, CLI and MCP integration are optional. Do not enable them merely
 because they exist. If needed, verify authentication and availability
@@ -160,7 +167,7 @@ These run in the development environment, not inside the production engine.
 Resources:
 
 - Repository: https://github.com/dubzzz/fast-check
-- Examples: https://github.com/dubzzz/fast-check-examples
+- Documentation: https://fast-check.dev/
 
 Purpose: generate varied inputs for engine invariant and regression tests.
 
@@ -231,8 +238,8 @@ Do not replace the existing coding workflow solely to try a new agent tool.
 Vault Operator is the narrative layer, not the game engine.
 
 - Narrator and character agents write only to their designated Story,
-  Campaigns, World and Characters areas.
-- They never edit task lines, Engine state or user-authored journal content.
+  Campaign, World and Characters areas.
+- They never edit task records, Engine state or user-authored journal content.
 - Supply only the journal context needed for the current interaction.
 - Keep character and campaign memory separate.
 - Require approval before promoting campaign events into shared world canon.
@@ -254,15 +261,15 @@ Sync is not a substitute for an independently recoverable backup.
 
 ## 7. Build checks and issue dependencies
 
-| Step                   | Issue | Validate                                                                               |
-| ---------------------- | ----- | -------------------------------------------------------------------------------------- |
-| Habit button           | #2    | Button calls QuickAdd; event and hero state update; toast works; phone result recorded |
-| Task buttons           | #3    | Task creation, planning, result card and undo; custom properties preserved             |
-| Onboarding and tables  | #4    | Quiz resumes; personas are reviewed; approved tables integrate with task completion    |
-| Companion and briefing | #5    | Scoped memory, linked quests and briefing launch or documented fallback                |
-| Agent safeguards       | #8    | Write controls, minimal context, campaign isolation and AI-outage recovery             |
-| Trial week             | #6    | Minimal routine, feedback and continue/adjust/stop decision                            |
-| Expansion              | #7    | Explicit continue approval; add one feature at a time                                  |
+| Step                   | Issue | Validate                                                                                            |
+| ---------------------- | ----- | --------------------------------------------------------------------------------------------------- |
+| Habit button           | #2    | Button calls QuickAdd; event and hero state update; toast works; phone result recorded              |
+| Task resolution        | #3    | TaskNotes fields and scheduling; task resolution, result card and undo; custom properties preserved |
+| Onboarding and tables  | #4    | Quiz resumes; personas are reviewed; approved tables integrate with task completion                 |
+| Companion and briefing | #5    | Scoped memory, linked quests and briefing launch or documented fallback                             |
+| Agent safeguards       | #8    | Write controls, minimal context, campaign isolation and AI-outage recovery                          |
+| Trial week             | #6    | Minimal routine, feedback and continue/adjust/stop decision                                         |
+| Expansion              | #7    | Explicit continue approval; add one feature at a time                                               |
 
 Order:
 
