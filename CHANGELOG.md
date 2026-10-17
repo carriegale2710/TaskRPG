@@ -22,6 +22,7 @@ TaskNotes = task creation, planning, statuses, user fields, while TaskRPG = task
 - Post-valid-undo allows later `Task done`; engine marks repeat.
 - Documentation updated for the ownership split and undo flow: `STEP3.md`, `TESTING.md`, `PLUGINS.md`, `AGENTS.md`, `BUILD_PLAN.md`, `README.md`.
 - Scripts and tests derive urgency/importance from TaskNotes tags.
+- `Journal/` folder moved outside of `TaskRPG`/ folder - user-owned content, agents should not touch it.
 
 #### Fixed
 
