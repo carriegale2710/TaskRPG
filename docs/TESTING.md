@@ -1,18 +1,10 @@
-# TaskRPG: Testing guide (Step 1, the engine)
+# TaskRPG: Testing guide
 
 Two ways to check the engine: automated tests in a terminal (every rule), and a short manual run inside Obsidian (the engine loading and working in the real app, including your phone).
 
-## Step 3 addendum — automated tests pass; Obsidian validation pending
+## Task resolution and undo tests
 
-Issue #3 is now **TaskNotes-wrapped task resolution and undo**. TaskNotes owns task creation, planning, statuses, and the skill, size, urgent and important user fields. TaskRPG owns only `Task done` and `Undo last`. The old `New task` and `Plan task` macros have been removed.
-
-The implementation is on `feat/3-task-creation-planning-completion-undo` in draft PR #10. The automated suite passes, including `Scripts/task-undo-resolution.test.js`. No Obsidian desktop or phone result has been recorded here. The Step 1 smoke test below uses `Engine/Test Events.md`; the Step 3 QuickAdd scripts write the live `Engine/Events.md`, so **do not** use an important task or concurrent synced devices for the first integration check.
-
-Run from the vault root with Node.js 22 or newer:
-
-```sh
-node --test Scripts/engine.test.js Scripts/habit-done.test.js Scripts/task-utils.test.js Scripts/task-undo-resolution.test.js
-```
+TaskNotes owns task creation, planning, statuses, and the skill, size, urgent and important user fields. TaskRPG owns only `Task done` and `Undo last`. The old `New task` and `Plan task` macros have been removed.
 
 `task-utils.test.js` tests pure helpers, including the TaskNotes scheduled-date mapping.
 
@@ -25,9 +17,15 @@ node --test Scripts/engine.test.js Scripts/habit-done.test.js Scripts/task-utils
 - Resolve → undo → resolve produces a fresh resolution marked `repeat` by the engine.
 - The original `task_done` event remains in the log; undo appends a correction.
 
-These tests import `hasUnresolvedTaskDone` from `Scripts/task-utils.js`, the same implementation used by `Scripts/task-done.js`. They are not evidence that the QuickAdd scripts work inside Obsidian or that TaskNotes preserves the required fields. Follow `STEP3.md` for the manual TaskNotes create/schedule → mark Done → `Task done` → inspect result → `Undo last` flow and phone card check. First confirm the Step 2 validation gate described in `STEP2.md`.
+These tests import `hasUnresolvedTaskDone` from `Scripts/task-utils.js`, the same implementation used by `Scripts/task-done.js`. They are not evidence that the QuickAdd scripts work inside Obsidian or that TaskNotes preserves the required fields. To verify the integration, create and schedule a task in TaskNotes, mark it Done, run `Task done`, inspect the result, then run `Undo last`; check the result card or Notice on desktop and phone. Never point this check at an important task or concurrent synced devices: the Step 3 QuickAdd scripts write the live `Engine/Events.md`, while the Step 1 smoke test below uses `Engine/Test Events.md`.
 
-Record results here when tested: desktop and phone model/OS, Obsidian and plugin versions, commands used, TaskNotes field mapping and view behaviour, event/task-note/hero-state changes, card versus Notice fallback, any exact error, and whether the issue #3 acceptance criteria are met. Current limitations to verify include no automatic Workflows trigger, no derived hero-note update on task Done/undo, and no proven modal integration. Do not mark these as validated without a real test.
+Run from the vault folder with Node.js 22 or newer:
+
+```sh
+node --test Scripts/engine.test.js Scripts/habit-done.test.js Scripts/task-utils.test.js Scripts/task-undo-resolution.test.js
+```
+
+Record manual check results and validation status in `docs/BUILD_PLAN.md` (Build status → Known gaps and validation status). Do not mark anything validated without a real test.
 
 ## 1. Automated tests
 
@@ -79,7 +77,7 @@ Tests use fixed dates and fixed dice, so they give the same result on any machin
 
 ### Write the test first
 
-The working rule is the `tdd` skill — load it before the first test or engine change. The repo-specific default, the invariants that hold whether or not it is loaded, and the file layout and run commands below are in `AGENTS.md` (_Build and test_ and _Test-driven development_). In practice, for this vault:
+The working rule is the `write-tests` skill — load it before the first test or engine change. The repo-specific default, the invariants that hold whether or not it is loaded, and the file layout and run commands below are in `AGENTS.md` (_Coding rules_). In practice, for this vault:
 
 1. Add the test to the matching `Scripts/*.test.js`, or a new `*.test.js` for a new module, using fixed dates and fixed dice.
 2. Run it and read the output: it must fail on the assertion you intended, not on a typo, a wrong path or a missing import. The test is the written acceptance criterion for the rule.
@@ -88,7 +86,7 @@ The working rule is the `tdd` skill — load it before the first test or engine 
 5. Prove the test bites: break the implementation on purpose (flip a boundary, move a threshold), confirm the test fails, then restore it. A test that survives a broken implementation is a vanity test.
 6. For a bug, reproduce it as a failing test first, then fix the cause.
 
-Failing tests for a feature that is not built yet are fine and useful — they are the to-do list, and they document what "done" means before any code exists. The one hard line is the merge to `main`: a PR doesn't merge while the tests for the feature it delivers are failing. **Never** convert a red test to a skip just to get a green run.
+Failing tests for a feature that is not built yet are fine and useful — they are the to-do list, and they document what "done" means before any code exists. The one hard line is the merge to `main`: a PR doesn't merge while the tests for the feature it delivers are failing. Anything still unfinished moves to the backlog in `BUILD_PLAN.md` with the reason recorded. **Never** convert a red test to a skip just to get a green run.
 
 The same idea applies to the manual checks below: write the steps and the expected notice, log line and file change before building the slice, then run it and record the real result.
 

@@ -2,7 +2,7 @@
 
 Audience: coding agents building TaskRPG and Vault Operator agents running it.
 
-Read with: AGENTS.md, PRD.md, BUILD_PROMPT.md and TESTING.md.
+Read with: AGENTS.md, PRD.md, BUILD_PLAN.md and TESTING.md.
 
 ## 1. Architecture and boundaries
 
@@ -21,6 +21,7 @@ TaskRPG separates responsibilities:
 Rules:
 
 - Keep the engine a standalone, dependency-free JavaScript module.
+- Keep engine Obsidian-free. All vault and file I/O in wrapper layer. A later plugin is a swap, not a rewrite (see `PRD.md`).
 - Do not put game rules in templates, plugin settings or macros.
 - Keep QuickAdd scripts in a visible folder.
 - Reuse documented plugin capabilities before building custom UI.
@@ -35,17 +36,17 @@ Rules:
 
 Confirm each plugin is installed, enabled and working before its build step.
 
-| Plugin             | Needed from | TaskRPG use                                                                    | Integration checks                                                                  |
-| ------------------ | ----------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
-| QuickAdd           | Step 0      | Thin action wrappers for task resolution, undo, recalculation and briefing launch | Verify script loading, command invocation and phone behaviour                       |
-| Templater          | Step 0      | Scaffold daily notes, habits, personas and other starter notes                 | Verify template paths; keep game logic out of templates                             |
-| Lazy Plugin Loader | Step 0      | Startup optimisation where useful                                              | Do not delay dependencies in a way that breaks startup processing or buttons        |
-| Meta Bind          | Step 2      | Habit/task buttons, hero panels and settings inputs                            | Verify bindings, command actions and mobile rendering                               |
-| Fit                | Step 2      | Desktop/phone vault sync                                                       | Verify event-log and note sync, conflict handling and device-local configuration    |
-| TaskNotes          | Step 3      | Task creation, planning, statuses, task user fields, backlog and task views    | Verify required fields, scheduled dates, completion timestamps and preservation of custom properties |
-| Bases              | Step 3      | Core Obsidian feature used by TaskNotes views                                  | Enable it and verify the installed TaskNotes version's requirements                 |
-| Dice Roller        | Step 3      | Narrative outcomes from table notes                                            | Verify table syntax, weighting and the supported integration method                 |
-| Vault Operator     | Step 4      | Narrator, onboarding, character conversations, summaries and briefing          | Verify model connection, agent setup, memory scope and approval controls            |
+| Plugin             | Needed from | TaskRPG use                                                                       | Integration checks                                                                                   |
+| ------------------ | ----------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| QuickAdd           | Step 0      | Thin action wrappers for task resolution, undo, recalculation and briefing launch | Verify script loading, command invocation and phone behaviour                                        |
+| Templater          | Step 0      | Scaffold daily notes, habits, personas and other starter notes                    | Verify template paths; keep game logic out of templates                                              |
+| Lazy Plugin Loader | Step 0      | Startup optimisation where useful                                                 | Do not delay dependencies in a way that breaks startup processing or buttons                         |
+| Meta Bind          | Step 2      | Habit/task buttons, hero panels and settings inputs                               | Verify bindings, command actions and mobile rendering                                                |
+| Fit                | Step 2      | Desktop/phone vault sync                                                          | Verify event-log and note sync, conflict handling and device-local configuration                     |
+| TaskNotes          | Step 3      | Task creation, planning, statuses, task user fields, backlog and task views       | Verify required fields, scheduled dates, completion timestamps and preservation of custom properties |
+| Bases              | Step 3      | Core Obsidian feature used by TaskNotes views                                     | Enable it and verify the installed TaskNotes version's requirements                                  |
+| Dice Roller        | Step 3      | Narrative outcomes from table notes                                               | Verify table syntax, weighting and the supported integration method                                  |
+| Vault Operator     | Step 4      | Narrator, onboarding, character conversations, summaries and briefing             | Verify model connection, agent setup, memory scope and approval controls                             |
 
 The table describes the planned stack, not verified installation status.
 
@@ -166,7 +167,7 @@ These run in the development environment, not inside the production engine.
 Resources:
 
 - Repository: https://github.com/dubzzz/fast-check
-- Examples: https://quickadd.obsidian.guide/docs/Examples/
+- Documentation: https://fast-check.dev/
 
 Purpose: generate varied inputs for engine invariant and regression tests.
 
@@ -237,7 +238,7 @@ Do not replace the existing coding workflow solely to try a new agent tool.
 Vault Operator is the narrative layer, not the game engine.
 
 - Narrator and character agents write only to their designated Story,
-  Campaigns, World and Characters areas.
+  Campaign, World and Characters areas.
 - They never edit task records, Engine state or user-authored journal content.
 - Supply only the journal context needed for the current interaction.
 - Keep character and campaign memory separate.
@@ -260,15 +261,15 @@ Sync is not a substitute for an independently recoverable backup.
 
 ## 7. Build checks and issue dependencies
 
-| Step                   | Issue | Validate                                                                               |
-| ---------------------- | ----- | -------------------------------------------------------------------------------------- |
-| Habit button           | #2    | Button calls QuickAdd; event and hero state update; toast works; phone result recorded |
+| Step                   | Issue | Validate                                                                                            |
+| ---------------------- | ----- | --------------------------------------------------------------------------------------------------- |
+| Habit button           | #2    | Button calls QuickAdd; event and hero state update; toast works; phone result recorded              |
 | Task resolution        | #3    | TaskNotes fields and scheduling; task resolution, result card and undo; custom properties preserved |
-| Onboarding and tables  | #4    | Quiz resumes; personas are reviewed; approved tables integrate with task completion    |
-| Companion and briefing | #5    | Scoped memory, linked quests and briefing launch or documented fallback                |
-| Agent safeguards       | #8    | Write controls, minimal context, campaign isolation and AI-outage recovery             |
-| Trial week             | #6    | Minimal routine, feedback and continue/adjust/stop decision                            |
-| Expansion              | #7    | Explicit continue approval; add one feature at a time                                  |
+| Onboarding and tables  | #4    | Quiz resumes; personas are reviewed; approved tables integrate with task completion                 |
+| Companion and briefing | #5    | Scoped memory, linked quests and briefing launch or documented fallback                             |
+| Agent safeguards       | #8    | Write controls, minimal context, campaign isolation and AI-outage recovery                          |
+| Trial week             | #6    | Minimal routine, feedback and continue/adjust/stop decision                                         |
+| Expansion              | #7    | Explicit continue approval; add one feature at a time                                               |
 
 Order:
 

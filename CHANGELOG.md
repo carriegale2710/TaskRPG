@@ -1,20 +1,16 @@
 # Changelog
 
-All notable changes to project documented here. Format follows Keep a Changelog. Version numbers follow build brief steps: `0.1.0` = Step 1 (engine/tests), `0.1.1` = Step 2 (habit Done button). Nothing tagged yet; `0.1.1` lives on `issue-2-habit-button` branch.
+All notable changes to project documented here. Format follows Keep a Changelog (https://keepachangelog.com/). Invoke `changelog` skill to keep this file up-to-date. This file is change history only: current build status, done/not-done steps, and known gaps live in `docs/BUILD_PLAN.md`. Version numbers follow semver, one minor bump per release while 0.y.z: `0.1.0` = Step 1 (engine/tests), `0.2.0` = Step 2 (habit Done button), `0.3.0` = repo restructure, `0.4.0` = agent setup/docs skills.
 
 ## [UNRELEASED] - Step 3 (issue #3, draft PR #10)
 
 ### Step 3 redesign
 
-#### Decisions
-
-- TaskNotes owns task creation, planning, statuses, and task user fields (`skill`, `size`, `urgent`, `important`).
-- TaskRPG owns only task resolution and undo. `Task done` resolves open TaskNotes task through engine;
-- `Undo last` appends correcting engine event. `completedDate` ownership still unverified.
+TaskNotes = task creation, planning, statuses, user fields, while TaskRPG = task resolution and undo. `Task done` resolves open TaskNotes task through engine. `Undo last` appends correcting engine event.
 
 #### Added
 
-- TaskNotes scheduled-date helper in `task-utils.js`, used by resolution and undo.
+- TaskNotes scheduled-date helper in `task-utils.js`, used by resolution (`task-done.js`).
 - Tests: TaskNotes frontmatter parsing, scheduled-date mapping, outcome-table selection, result-card formatting, completion-field updates (`task-utils.test.js`).
 - Tests: shared duplicate-resolution guard, `targetEventId` undo linkage, repeat resolution after undo, preserved original `task_done` event (`task-undo-resolution.test.js`).
 
@@ -24,63 +20,62 @@ All notable changes to project documented here. Format follows Keep a Changelog.
 - `Undo last` appends correcting RPG event, clears `completedDate` on matching task note, preserves status.
 - `hasUnresolvedTaskDone` moved to `task-utils.js`, used by `task-done.js`; follows `undo.targetEventId` to original `task_done`.
 - Post-valid-undo allows later `Task done`; engine marks repeat.
-- TaskNotes Workflows may later auto-invoke `/task-done` on In Progress → Done. Phase 2 optional, unbuilt/unverified.
-- Docs updated: `STEP3.md`, `TESTING.md`, `README.md` for corrected undo flow and expanded test command.
-- Scripts/tests Derive urgency/importance from TaskNotes tags.
+- Documentation updated for the ownership split and undo flow: `STEP3.md`, `TESTING.md`, `PLUGINS.md`, `AGENTS.md`, `BUILD_PLAN.md`, `README.md`.
+- Scripts and tests derive urgency/importance from TaskNotes tags.
 
 #### Fixed
 
 - Scheduled date property uses `scheduled`, not `scheduledDate`.
 - Duplicate-resolution guard follows `undo.targetEventId`, allowing re-resolution after valid undo.
-- Removed `task-done.js` rejection of TaskNotes done/completed statuses. Implemented, not integration-tested.
-- Preserved completedDate ownership, status/frontmatter; no rewrite of plugin-owned completion data.
+- Removed `task-done.js` rejection of TaskNotes done/completed statuses.
+- `task-done.js`/`undo-last.js` rewrite `status` and `completedDate` lines, preserving status value; other frontmatter untouched.
 
 #### Removed
 
 - `new-task.js` and `New task` QuickAdd flow.
 - `plan-task.js` and `Plan task` QuickAdd flow.
 - Task-note creation, slug generation, size-suggestion helpers from `task-utils.js`.
-- Hard-coded planned/backlog restoration from `undo-last.js`. Implemented, not integration-tested.
-
-#### Pending
-
-- `completedDate` ownership verification pending.
-
-#### Known issues and validation limitations
-
-- Duplicate guard follows `undo.targetEventId`; end-to-end pending.
-- Status restoration: commit `60d00b9` preserves status, rewrites status line, clears completedDate. Field preservation needs testing.
-- Tests pass: `node --test Scripts/engine.test.js Scripts/habit-done.test.js Scripts/task-utils.test.js Scripts/task-undo-resolution.test.js`.
-- TaskNotes field mapping unverified for installed version.
-- Desktop Obsidian unverified (`Task done`, result modal, event log, task updates).
-- Mobile result card unverified.
-- `Hero.md` not rewritten by Task Done/Undo.
-- Habit undo doesn't remove habit-note history.
-- Result modal QuickAdd `obsidian.Modal` untested; Notice fallback.
-- Undo/releases guard via `targetEventId`; no-reroll policy unchanged; valid undo then Task done is fresh repeat-marked resolution. Do not use undo to seek better roll.
-- Outcome table uses loot die, not separate table draw.
-- Automatic Workflows trigger not built (Phase 2 only).
-- Step 2 event-log/Hero repair gap and engine CLI default to `Engine/Events.jsonl` remain.
-
-#### Documentation consistency
-
-- `STEP3.md`: updated for preserved status, targetEventId guard, repeat resolution, test command, urgent/important-as-tags decided but unbuilt.
-- `CHANGELOG.md`: records guard fix, regression tests, shared helper, doc sync, tag decision, validation gaps.
-- Still to sync: `PLUGINS.md` line 112, `TESTING.md` line 7, `BUILD_PROMPT.md` lines 84/86, `PRD.md` still describe urgent/important as TaskNotes user fields.
-- `TESTING.md`: passing tests recorded, `task-undo-resolution.test.js` added, Obsidian validation gate retained.
-- `README.md`: distinguishes RPG undo from reopening TaskNotes task; documents targetEventId and repeat resolution; integration unverified.
-- `PLUGINS.md`: consistent. Task creation/planning/statuses/fields to TaskNotes, resolution/undo to TaskRPG.
-- `AGENTS.md`: consistent. Ownership split correct.
-- `BUILD_PROMPT.md`: updated. Undo preserves status and clears completion metadata; regression-test bullet added.
-- `PRD.md`: compare uploaded revised draft before replacing spec.
+- Hard-coded planned/backlog restoration from `undo-last.js`.
 
 ---
 
-## [0.1.3] - 2026-10-16
+## [0.4.1] - 2026-10-18
+
+Docs-only release. Refactor all doc content, structure, strategy: kill verbosity, staleness, redundancy, drift. Each doc one job, clear split. No engine, script, or runtime change.
+
+### Added
+
+- `docs/ARCHITECTURE.md`—system structure, data model, engine ownership, module boundaries, storage, invariants.
+- `docs/DECISIONS.md`—decision log: accepted/provisional/superseded, rationale, alternatives, implications.
+- `docs/BUILD_PLAN.md`—roadmap, milestones, build order, acceptance criteria, build status (done/not-done, gaps, validation).
+- `docs/DOCUMENTATION.md`—doc structure, per-file responsibility, separation, starter templates.
+
+### Changed
+
+- Repo layout: `CHANGELOG.md` moved `docs/` to repo root.
+- `docs/PRD.md` restructured: single "Settled decisions" §3, subsections renumbered; scope, leaning, build-default reorganized.
+- `AGENTS.md` rewritten: authority order, session skills, safety, before coding, coding rules, documentation; no more PRD duplication.
+- `README.md` rewritten: first-time-reader landing page (purpose, value, features, requirements, setup, doc links), not spec.
+- `docs/PLUGINS.md`, `docs/TESTING.md` updated to new doc set, single-responsibility split.
+- Build status, known gaps moved out of `CHANGELOG.md`, `docs/TESTING.md` into `docs/BUILD_PLAN.md`.
+- `TaskRPG/Journal/AGENTS.md` moved to `Journal/README.md`; `TaskRPG/Journal/Templates/Daily.md` moved to `TaskRPG/Templates/Daily.md`.
+- `TaskRPG/Engine/Habits/Morning routine.md` now links `[[BUILD_PLAN.md]]`, not removed `[[STEP2]]`.
+- `TaskNotes` base views: labels normalized, `sort` keys `column` to `property`, `columnOrder` added, project filter added to default task list.
+- `.gitignore` adds local `/Clippings/`, `/TaskNotes/` ignores.
+
+### Removed
+
+- `docs/BUILD_PROMPT.md`, `docs/STEP3.md`.
+- `TaskRPG/Campaign/AGENTS.md`, `TaskRPG/World/AGENTS.md`.
+
+---
+
+## [0.4.0] - 2026-10-16
 
 ### Agent setup + Documentation skills
 
-Process/docs only; no engine/rule/runtime behavior changed.
+> Branch: `repo-structure` - Merged.
+> Process/docs only; no engine/rule/runtime behavior changed.
 
 #### Decisions
 
@@ -89,25 +84,20 @@ Process/docs only; no engine/rule/runtime behavior changed.
 
 #### Added
 
-- TDD rules in `AGENTS.md`: test-first default, no vanity tests, failing tests as to-do, never weaken test, layout/commands/checks. Matching ground rule in `BUILD_PROMPT.md`; pointer and order in `TESTING.md`.
-- Session skills in `AGENTS.md`: load `ponytail` (minimal engineering) and `caveman` (compressed comms) at start of coding sessions; skip for story/canon/prose/settings/research. Compression never overrides TDD reporting, doc sync, confirm-before-implementing.
-- `tdd` skill at `.agents/skills/tdd/SKILL.md`.
-- Commit hygiene in `AGENTS.md`/`BUILD_PROMPT.md`: changelog-at-commit, doc sync, confirm risky assumptions/design decisions.
-- Made new `/update-changelog` skill with reference guide doc to run on each commit.
+- TDD rules in `AGENTS.md`: test-first default, no vanity tests, failing tests as to-do, never weaken test, layout/commands/checks. Matching ground rule in `BUILD_PLAN.md`; pointer and order in `TESTING.md`.
+- Session skills in `AGENTS.md`: load `caveman` at start of every session, `ponytail` at start of coding sessions only; skip `ponytail` for story/canon/prose/settings/research. Compression never overrides TDD reporting, doc sync, confirm-before-implementing.
+- `tdd` workflow referenced in `AGENTS.md`; changelog-at-commit, doc sync, confirm risky assumptions/design decisions.
+- Made new local `/changelog` skill (`.agents/skills/changelog/SKILL.md`, gitignored/untracked) with reference guide doc to run on each commit.
 - Added new user flow diagram section to PRD. Has only habit done flow for now.
 
 #### Changed
 
 - `AGENTS.md` TDD section cut ~89 lines/1,824 words to short section; file ~3,340 → ~1,980 words.
-- Docs point at skill; `TESTING.md` and `BUILD_PROMPT.md` drop removed heading reference; caveman precedence names skill Report step.
-
-#### Pending
-
-- Add user flow diagram to PRD for each QuickAdd script or feature.
+- Docs point at skill; `TESTING.md` and `BUILD_PLAN.md` drop removed heading reference; caveman precedence names skill Report step.
 
 ---
 
-## [0.1.2] - 2026-10-16
+## [0.3.0] - 2026-10-16
 
 Minor repo restructuring. All tests passing.
 
@@ -122,7 +112,7 @@ Minor repo restructuring. All tests passing.
 
 ---
 
-## [0.1.1] - 2026-10-14
+## [0.2.0] - 2026-10-14
 
 ### Added - Step 2: habit Done button
 
@@ -139,26 +129,6 @@ Minor repo restructuring. All tests passing.
 - Live log now `Engine/Events.md` instead of `Engine/Events.jsonl`; holds real presses.
 - `Engine/State.json` still output of `node Scripts/engine.js recalc`, but panels no longer read it; macro writes hero note directly. Unchanged since Step 2.
 - Test count 45 (43 engine, 2 habit), up from 43.
-
-### Quality checks
-
-- `node --test Scripts/engine.test.js Scripts/habit-done.test.js`: 45 pass, 0 fail (Node 22.14.0, 2026-10-14).
-- Coverage `--experimental-test-coverage`:
-  - `engine.js`: 100% lines, 96.3% branches, 100% functions.
-  - `habit-done.js`: 95.7% lines, 81.5% branches, 100% functions. Uncovered lines 21-22 are invalid-frontmatter error.
-
-### Known issues
-
-- No in-vault repair path. If display write fails after log saved, repair from log; nothing rewrites Hero. CLI default still `Engine/Events.jsonl` (not live `Engine/Events.md`) and writes `Engine/State.json`, panels no longer read. PRD recalculate button not built.
-- Missed habit blocks not back-filled in vault. Engine has `backfillMissedDeadlines` + tests, but no macro calls it. Closed block leaves no `missed_deadline`/HP loss. Block times undefined (`block: morning`, no deadline).
-- Each press rewrites whole log note (vault adapter no append), sync conflict mid-press can lose lines. One-writer rule guards.
-- Meta Bind button hard-codes QuickAdd choice command ID. Fit doesn't sync plugin settings by default; choice/ID must exist on phone.
-- Carried from `0.1.0`: event dated before first `settings_changed` gets today's rules. `engine.js` unchanged, bug and missing regression test remain.
-
-### Open questions
-
-1. Repeat presses of one habit/day: engine allows, each costs MP/earns 1 XP. Decide whether button stops after first on-time press or asks if separate block.
-2. Habit deadline times: needs timestamp per block. Decide frontmatter vs settings note.
 
 ### Also on this branch (not Step 2)
 

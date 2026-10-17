@@ -1,74 +1,72 @@
 # TaskRPG Agent Instructions
 
-| When working on               | Open first                                                                           |
-| ----------------------------- | ------------------------------------------------------------------------------------ |
-| Product behavior/scope        | `docs/PRD.md` (settled decisions §4; build defaults §6; scope §8)                    |
-| Current build step / status   | `docs/BUILD_PROMPT.md` and `docs/CHANGELOG.md`                                       |
-| Plugin/integration boundaries | `docs/PLUGINS.md`                                                                    |
-| Tests/commands/manual checks  | `docs/TESTING.md`                                                                    |
-| Engine rules                  | `TaskRPG/Scripts/engine.js`, `engine.test.js`, `task-utils.js`, `task-utils.test.js` |
-| Live vault state              | `TaskRPG/Engine/Settings.md`, `Hero.md`, `Events.md`, `State.json`                   |
-| Macros                        | `TaskRPG/Scripts/task-done.js`, `habit-done.js`, `undo-last.js`, `gm_bridge.py`      |
-| Vault-area rules              | local `AGENTS.md` in `TaskRPG/Campaign/`, `TaskRPG/Journal/`, `TaskRPG/World/`       |
+## Authority
 
-## Source of truth
-
-- Follow [PRD.md](./docs/PRD.md) for product behavior and implementation scope.
-- The PRD's **Settled decisions** are requirements. **Leaning** items are not final; **Build defaults** are starting values, not immutable rules. Success metrics are aspirational, and items marked Later, Should-have or Future versions are not v1 requirements.
-- If these instructions and the PRD conflict, follow the PRD. Keep this file focused on working rules rather than duplicating the full specification.
-- Preserve existing behavior unless the PRD explicitly changes it. Make small, testable changes and verify the affected behavior.
-- Product principles, architecture/ownership and game behavior live in the PRD (sections 3, 4.2, 4.3, 4.5-4.12, 4.15, 4.17-4.21, 4.25-4.38). Do not restate them here.
+1. `docs/PRD.md` is the source of truth for product behavior, architecture, ownership, and v1 scope.
+2. This file governs how agents work in this repository.
+3. `docs/TESTING.md` governs test layout, commands, coverage expectations, and manual checks.
+4. Project skills under `.agents/skills/` govern optional workflow behavior.
+5. If sources conflict: PRD > this file > `docs/TESTING.md` > skills.
+6. Safety, confirmation, test-evidence, and decision-request rules always use clear prose.
 
 ## Session skills
 
-Skills live in `.agents/skills/`; load them by ID with the skill tool. If a skill cannot be loaded, say so rather than continuing silently without it.
+If the agent supports project skills:
 
-1. **`caveman`**—compressed communication, to cut tokens. Load it at the start of **every** new agent session, before anything else, whatever the work: coding, story, canon, journal, PRD or prose drafting, vault-data edits, research or Q&A. Default level `full`; `/caveman lite|full|ultra|off` changes it mid-session. It stays on for the whole session. **Only the user can turn it off**; never drop it on your own, including when the type of work changes. A user's `off` lasts for that session; the next new session loads it again.
-2. **`ponytail`**—pragmatic, minimalist engineering. Reuse over rebuild, root cause over symptom, no speculative scaffolding. It governs _how much_ gets built, not what must be proven. Load it **only** when the work is coding, refactoring, brainstorming, diagnosing bugs or design-decision work, before the first code change, implementation plan, design proposal or diagnosis. Do not load it for story, canon, character voice, narration, journal content, PRD or prose drafting, hand-made settings or vault-data edits, or pure research and Q&A. If a session moves into or out of that work, load or drop `ponytail` to match; `caveman` is unaffected.
+- If available, load `caveman` at start of every session. Stop only if user says so.
+- If available, load `ponytail` before all coding, refactoring, diagnosis, brainstorming, or design-decision work.
+- Load `write-tests` before the first test or engine change.
+- If a required skill cannot load, say so and continue without silently skipping the underlying rule.
 
-**A coding session** is any session that reads, writes, reviews or plans engine, script, macro, test or configuration code. It is **not** a coding session when the work is story, canon, character voice, narration, journal content, PRD or prose drafting, hand-made settings or vault-data edits, or pure research and Q&A. Coding sessions are where the `tdd` skill applies (see _Test-driven development_); they are a subset of `ponytail` work.
+Skills never override the PRD, this file, safety rules, test evidence, or confirmation requirements.
 
-Where these skills pull against the rules in this file, this file wins:
+## Safety
 
-- **Compression never overrides the reporting rules here.** The `tdd` skill's _Report_ step, the proven-versus-assumed distinction, failing-run output and the "state options clearly" contract in _Assumptions and risky decisions_ stay in plain prose. The `caveman` skill's own Auto-Clarity rules already exempt security warnings, irreversible actions and multi-step sequences where compression risks misreading; treat a test-evidence report or a decision request as the same case. Resume caveman afterward.
-- **Caveman governs chat replies and all repo documents.** Every documentation file in the repo (`docs/PRD.md`, `docs/CHANGELOG.md` entries, `docs/TESTING.md`, `docs/PLUGINS.md`, `README.md`, and any other doc) may be written in caveman style at the session's current level. Everything else written to the vault or the repo stays normal prose: code, comments, commit messages, and all vault or campaign content (story, canon, narration, character voice, journal entries, other prose drafts). Never write those in caveman style—the `caveman` skill requires this for code and commits too.
-- **"Confirm before implementing" beats ponytail's "ship the lazy version and question it in the same response".** Cut unrequested scope freely, then ask; do not ship a design decision the docs do not settle.
-- **Ponytail does not license skipping proof.** Tests, doc sync and changelog updates stay required exactly as described in _Build and test_ and _Test-driven development_ below.
+- Never expose API keys, tokens, or credentials.
+- Do not imply vault content is private from an AI provider.
+- Ask before deleting or moving more than three files, pruning records, or restructuring the vault.
+- Do not touch the user's other notes; stay inside the TaskRPG folders defined in PRD 4.15.
+- Never delete or rewrite event history to correct an action; use the engine’s undo/correction mechanism.
+- Treat every plugin integration listed in `docs/PLUGINS.md` as an assumption to verify until `docs/TESTING.md` records a result.
+- Never point `engine-smoke.js` or the throwaway test log at the live event log or important real tasks.
+- Treat `State.json` and `Events.md` as live state: do not edit them manually to correct behavior; use the engine’s undo/correction mechanism.
 
-## Build and test
+## Before coding
 
-- Keep engine behavior runnable from the terminal without Obsidian. Add or update automated tests for each engine rule changed, including relevant settings, event replay and undo behavior.
-- Test macros and Obsidian/mobile integration at the relevant slice; treat untested plugin behavior as an assumption to verify, not a guaranteed capability.
-- Keep changes scoped. Update directly related documentation, preserve readable vault data and formatting, and report validation results and unresolved limitations.
-- `TaskRPG/Scripts/engine-smoke.js` and the throwaway test log (`TaskRPG/Engine/Test Events.md`) exist for first integration checks and manual tests. Never point one at the live log or an important real task.
-- Test file layout, run commands, the rule-to-test table, the boundary cases to cover, and the manual Obsidian checks live in `docs/TESTING.md`. Follow it rather than restating here.
+- Read all of `docs/PRD.md` before writing or changing code.
+- Implement only PRD “Settled decisions” for v1.
+- Treat “Leaning items” as non-final, “Build defaults” as starting values, and Later/Should-have/Future items as out of scope.
+- Read the affected code before proposing or making changes.
+- If code contradicts the PRD, stop. Report:
+  - PRD section/rule
+  - Current code behavior
+  - Exact conflict
+  - Options
+  - Recommended resolution
+- Wait for the user’s decision before changing behavior.
+- Confirm before implementing any risky assumption or design decision not settled by the PRD, this file, `docs/TESTING.md`, or inline comments.
+- When asking, include context, the decision needed, alternatives, tradeoffs, and a recommendation.
 
-## Test-driven development
+## Coding rules
 
-Default to test-driven development for anything with engine behavior: write the check first, watch it fail for the right reason, then make it pass. **Load the `tdd` skill before the first test or engine change in a coding session.** `docs/TESTING.md` is this project's how-to: the practical order of operations, the run commands, the rule-to-test table and the manual checks.
+- Make the smallest testable change that satisfies the PRD.
+- Work in small steps: finish one step, say what to press to try it, and wait for the user before continuing.
+- Preserve existing behavior unless the PRD explicitly changes it.
+- Keep engine behavior runnable from the terminal without Obsidian.
+- Use test-driven development for engine behavior: write the failing test first, confirm it fails for the right reason, then implement.
+- Add or update tests for every changed engine rule, including settings, event replay, and undo behavior where relevant.
+- Never weaken a test to make a change pass.
+- Treat failing tests as the work list.
+- Report what is proven by test output separately from what is assumed or manually checked.
+- Follow `docs/TESTING.md` for commands, test locations, rule-to-test mapping, boundary cases, and manual Obsidian checks.
 
-The invariants that hold whether or not the skill is loaded—never weakening a test, failing tests as the to-do list, reporting honestly what is proven, regression tests first—live in the `tdd` skill. Do not restate them here. Where the `tdd` skill and this file disagree, this file wins and the skill is corrected.
+## Documentation
 
-Not for prose, story, canon, documentation or hand-made settings edits—nothing to assert; get the docs in sync instead.
-
-## Documentation, changelog and doc drift
-
-- **Decision log.** Run `/log-decision` whenever a new decision warrants being added to the PRD (the main decision doc): decision, rationale, alternatives, implications. File it before the change is assumed settled.
-- **Doc sync before release/PR.** Always run `/update-docs` before each release or before opening a new PR.
-- **README is protected.** Do not touch `README.md` unless the information already there is contradictory or outdated compared to the repo. When it is out of date, correct it rather than adding new sections; do not expand README opportunistically.
-- **Update CHANGELOG.md on every commit.** Every time you make a commit, invoke the `/update-changelog` skill. A commit that adds tests for a feature that is not built yet says so in its changelog line; do not claim behaviour that does not exist.
-- **Document decisions and limitations.** If you change a documented rule, behavior, architecture, public API, or plugin mapping, explicitly record it in docs. Note known limitations, validation status, and any follow-ups.
-- **No silent drift.** If you're unsure whether a doc needs updating, update it or call it out in the commit/PR notes.
-
-## Safety and care
-
-- Ask before deleting or moving many files, pruning records, or making broad vault restructures.
-- Do not delete or rewrite event history to correct an action; use the engine's undo/correction mechanism.
-- Never expose API keys or credentials. Do not imply that any vault content is private from an AI provider.
-
-## Assumptions and risky decisions
-
-- **Confirm before implementing.** If you need to make any risky assumption or design/implementation decision that is not already answered by the repo's documentation (PRD, AGENTS, README, TESTING, etc.) or inline comments, stop and confirm with the user before implementing.
-- **State options clearly.** When asking, include context, the assumption/decision, alternatives considered, tradeoffs, and your recommended approach.
-- **Don't guess silently.** If the documentation is ambiguous or missing, ask rather than inventing behavior. Preserve existing behavior unless the PRD explicitly changes it.
-- **Verify untested integrations.** Treat untested plugin behavior (QuickAdd, Meta Bind, TaskNotes, Vault Operator, Dice Roller, Templater) as assumptions to verify, not guarantees.
+- Read `docs/DOCUMENTATION.md` for details on repository structure, where information belongs, doc file responsibilities, clear separation of concerns, and doc file starter templates.
+- Run `/log-decision` when a new decision should be recorded in the PRD.
+- Run `/update-docs` before every release and before opening a PR.
+- Update directly related documentation in the same change.
+- Update `CHANGELOG.md` on every commit.
+- Do not claim behavior that does not exist; label test-only changes as test-only.
+- Record changes to rules, behavior, architecture, public APIs, plugin mappings, limitations, validation status, and follow-ups.
+- Do not edit `README.md` unless its existing content is contradictory or outdated; correct it rather than expanding it.

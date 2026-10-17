@@ -45,6 +45,9 @@ formulas:
 views:
   - type: tasknotesTaskList
     name: Manual Order
+    filters:
+      and:
+        - projects == ["[[taskrpg]]"]
     groupBy:
       property: status
       direction: ASC
