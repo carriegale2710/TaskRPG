@@ -10,9 +10,49 @@ TaskNotes = task creation, planning, statuses, user fields, while TaskRPG = task
 
 #### Added
 
-- TaskNotes scheduled-date helper in `task-utils.js`, used by resolution (`task-done.js`).
-- Tests: TaskNotes frontmatter parsing, scheduled-date mapping, outcome-table selection, result-card formatting, completion-field updates (`task-utils.test.js`).
-- Tests: shared duplicate-resolution guard, `targetEventId` undo linkage, repeat resolution after undo, preserved original `task_done` event (`task-undo-resolution.test.js`).
+**Task resolution feature**: `task-done.js`
+
+    - `Task done` reads scheduled date for planned-day MP rule. Today-scheduled task avoids unplanned MP surcharge.
+
+- resolves the active TaskNotes task
+- validates its skill/size
+- prevents duplicate resolution
+- rolls dice
+- appends a `task_done` event to `Engine/Events.md`
+- updates resolution metadata
+- shows a result card with a Notice fallback
+
+**Undo feature**: `undo-last.js`
+
+    - `Undo last` appends correcting RPG event, clears `completedDate` on matching task note, preserves status.
+
+- finds the newest same-day action
+- appends an undo correction
+- preserves the original event
+- clears completedDate on the matching task without changing TaskNotes status.
+
+**Shared task helpers**: `task-utils.js`
+
+- for TaskNotes frontmatter parsing
+- scheduled-date lookup
+- urgent/important tags
+- placeholder outcome tables
+- result-card formatting
+- duplicate-resolution guard
+
+**Tests**:
+
+- Adds `task-utils.test.js`
+  - TaskNotes frontmatter parsing,
+  - scheduled-date mapping,
+  - outcome-table selection,
+  - result-card formatting,
+  - completion-field updates
+- Adds `task-undo-resolution.test.js`
+  - shared duplicate-resolution guard
+  - `targetEventId` undo linkage
+  - repeat resolution after undo
+  - preserved original `task_done` event
 
 #### Changed
 
@@ -23,12 +63,12 @@ TaskNotes = task creation, planning, statuses, user fields, while TaskRPG = task
 - Documentation updated for the ownership split and undo flow: `STEP3.md`, `TESTING.md`, `PLUGINS.md`, `AGENTS.md`, `BUILD_PLAN.md`, `README.md`.
 - Scripts and tests derive urgency/importance from TaskNotes tags.
 - `Journal/` folder moved outside of `TaskRPG`/ folder - user-owned content, agents should not touch it.
+- Moves the game content from repository root into `TaskRPG/`: `Engine/`, `Scripts/`, `Story/`, `World/`, `Characters/`, `Campaign/`, `Backlog/`, and assets.
 
 #### Fixed
 
 - Scheduled date property uses `scheduled`, not `scheduledDate`.
 - Duplicate-resolution guard follows `undo.targetEventId`, allowing re-resolution after valid undo.
-- Removed `task-done.js` rejection of TaskNotes done/completed statuses.
 - `task-done.js`/`undo-last.js` rewrite `status` and `completedDate` lines, preserving status value; other frontmatter untouched.
 
 #### Removed
