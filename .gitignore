@@ -1,7 +1,14 @@
+# Local private memos
+TODO.md
+/Clippings/
+/TaskNotes/
+
 # Local Obsidian configuration and plugin state
 /.obsidian/
 
 # Local agent inventory, telemetry, memory and runtime state
+/.agents/
+/.claude/
 /.vault-operator/
 /.copilot/
 /copilot/
@@ -9,7 +16,7 @@
 /outputs/
 
 # Plugin setup folders
-/TaskNotes/
+/TaskNotes/Tasks/
 /atlas-vtt/
 /_fit/
 
