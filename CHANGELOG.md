@@ -56,14 +56,13 @@ TaskNotes = task creation, planning, statuses, user fields, while TaskRPG = task
 
 #### Changed
 
-- `Task done` reads scheduled date for planned-day MP rule. Today-scheduled task avoids unplanned MP surcharge.
-- `Undo last` appends correcting RPG event, clears `completedDate` on matching task note, preserves status.
 - `hasUnresolvedTaskDone` moved to `task-utils.js`, used by `task-done.js`; follows `undo.targetEventId` to original `task_done`.
 - Post-valid-undo allows later `Task done`; engine marks repeat.
 - Documentation updated for the ownership split and undo flow: `STEP3.md`, `TESTING.md`, `PLUGINS.md`, `AGENTS.md`, `BUILD_PLAN.md`, `README.md`.
 - Scripts and tests derive urgency/importance from TaskNotes tags.
 - `Journal/` folder moved outside of `TaskRPG`/ folder - user-owned content, agents should not touch it.
 - Moves the game content from repository root into `TaskRPG/`: `Engine/`, `Scripts/`, `Story/`, `World/`, `Characters/`, `Campaign/`, `Backlog/`, and assets.
+- Categorize tests with describe blocks to improve terminal readabilty. See `docs/TESTING.md`.
 
 #### Fixed
 

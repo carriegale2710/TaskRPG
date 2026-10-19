@@ -22,8 +22,10 @@ These tests import `hasUnresolvedTaskDone` from `Scripts/task-utils.js`, the sam
 Run from the vault folder with Node.js 22 or newer:
 
 ```sh
-node --test Scripts/engine.test.js Scripts/habit-done.test.js Scripts/task-utils.test.js Scripts/task-undo-resolution.test.js
+node --test
 ```
+
+Each test file wraps its tests in a `describe()` block named after the file, so the terminal output groups results by file: the spec reporter prints `▶ engine.test.js`, and the TAP reporter nests the same name above its tests. Keep a file's tests inside its one `describe()` block when you add tests, and do not rename the block.
 
 Record manual check results and validation status in `docs/BUILD_PLAN.md` (Build status → Known gaps and validation status). Do not mark anything validated without a real test.
 
@@ -79,7 +81,7 @@ Tests use fixed dates and fixed dice, so they give the same result on any machin
 
 The working rule is the `write-tests` skill — load it before the first test or engine change. The repo-specific default, the invariants that hold whether or not it is loaded, and the file layout and run commands below are in `AGENTS.md` (_Coding rules_). In practice, for this vault:
 
-1. Add the test to the matching `Scripts/*.test.js`, or a new `*.test.js` for a new module, using fixed dates and fixed dice.
+1. Add the test to the matching `Scripts/*.test.js`, or a new `*.test.js` for a new module, using fixed dates and fixed dice. Put it inside that file's `describe()` block, so the terminal output still shows which file a test belongs to.
 2. Run it and read the output: it must fail on the assertion you intended, not on a typo, a wrong path or a missing import. The test is the written acceptance criterion for the rule.
 3. Change `Scripts/engine.js` (or the script under test) to make it pass. Do not delete, skip or loosen the assertion to get green.
 4. Re-run the file and read the whole run. A change that was never seen failing is not yet evidence.
