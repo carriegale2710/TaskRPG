@@ -52,6 +52,63 @@ describe("task-utils.test.js", () => {
     assert.equal(fields.status, "open");
   });
 
+  test("parses type, taskId, skill and size written in double quotes", () => {
+    const fields = utils.parseFrontmatter(
+      '---\ntype: "task"\ntaskId: "1"\nskill: "mind"\nsize: "medium"\n---\n# Task',
+    );
+    assert.equal(fields.type, "task");
+    assert.equal(fields.taskId, "1");
+    assert.equal(fields.skill, "mind");
+    assert.equal(fields.size, "medium");
+  });
+
+  test("accepts a fully quoted task the way task-done.js checks it", () => {
+    const fields = utils.parseFrontmatter(
+      '---\ntype: "task"\ntaskId: "1"\nskill: "mind"\nsize: "medium"\n---\n# Task',
+    );
+    const settings = {
+      skills: ["mind"],
+      taskSizes: { medium: { mp: 3, xp: 3 } },
+    };
+    assert.equal(fields.type !== "task" || !fields.taskId, false);
+    assert.equal(settings.skills.includes(fields.skill), true);
+    assert.equal(Boolean(settings.taskSizes[fields.size]), true);
+  });
+
+  test("single-quoted and unquoted values match double-quoted values", () => {
+    const read = (note) => utils.parseFrontmatter(note);
+    const values = [
+      ["type", "task"],
+      ["taskId", "1"],
+      ["skill", "mind"],
+      ["size", "m"],
+    ];
+    for (const [key, value] of values) {
+      const doubleQuoted = read(`---\n${key}: "${value}"\n---\n# Task`);
+      const singleQuoted = read(`---\n${key}: '${value}'\n---\n# Task`);
+      const unquoted = read(`---\n${key}: ${value}\n---\n# Task`);
+      assert.equal(doubleQuoted[key], value);
+      assert.equal(singleQuoted[key], value);
+      assert.equal(unquoted[key], value);
+    }
+  });
+
+  test("parses an empty quoted value as an empty string", () => {
+    const fields = utils.parseFrontmatter(
+      '---\ncompletedDate: ""\nstatus: \'\'\n---\n# Task',
+    );
+    assert.equal(fields.completedDate, "");
+    assert.equal(fields.status, "");
+  });
+
+  test("keeps a colon or quote inside a quoted value", () => {
+    const fields = utils.parseFrontmatter(
+      '---\nname: "a: b"\nnote: \'a "b"\'\n---\n# Task',
+    );
+    assert.equal(fields.name, "a: b");
+    assert.equal(fields.note, 'a "b"');
+  });
+
   test("handles CRLF, a leading BOM, empty and missing frontmatter", () => {
     const crlf = utils.parseFrontmatter(
       "---\r\ntags:\r\n  - important\r\n---\r\n# Task",
