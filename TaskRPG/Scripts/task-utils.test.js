@@ -170,4 +170,74 @@ describe("task-utils.test.js", () => {
     assert.equal(fields.completedDate, "2026-10-15T01:00:00+11:00");
     assert.equal(fields.taskId, "abc");
   });
+
+  test("inserts a missing completedDate into the frontmatter", () => {
+    const text = "---\ntype: task\ntaskId: abc\nstatus: done\n---\n# Task";
+    const updated = utils.updateTaskStatus(text, {
+      status: "done",
+      completedDate: "2026-10-15T01:00:00+11:00",
+    });
+    const fields = utils.parseFrontmatter(updated);
+    assert.equal(fields.completedDate, "2026-10-15T01:00:00+11:00");
+    assert.equal(fields.taskId, "abc");
+    assert.equal(updated.endsWith("# Task"), true);
+  });
+
+  test("edits only the frontmatter, not a status line in the body", () => {
+    const body = "# Task\n\nstatus: body-value\ncompletedDate: body-date";
+    const text = `---\ntype: task\ntaskId: abc\n---\n${body}`;
+    const updated = utils.updateTaskStatus(text, {
+      status: "completed",
+      completedDate: "2026-10-15T01:00:00+11:00",
+    });
+    assert.equal(utils.parseFrontmatter(updated).status, "completed");
+    assert.equal(updated.endsWith(body), true);
+    assert.match(updated, /^status: body-value$/m);
+  });
+
+  test("writes replacement-pattern characters literally", () => {
+    const text =
+      '---\ntype: task\nstatus: open\ncompletedDate: ""\n---\n# Task';
+    const updated = utils.updateTaskStatus(text, {
+      status: "$&",
+      completedDate: "$1 and $&",
+    });
+    const fields = utils.parseFrontmatter(updated);
+    assert.equal(fields.status, "$&");
+    assert.equal(fields.completedDate, "$1 and $&");
+  });
+
+  test("undo writes an empty completedDate and preserves the existing status", () => {
+    const text = "---\ntype: task\ntaskId: abc\nstatus: done\n---\n# Task";
+    const updated = utils.updateTaskStatus(text, {
+      status: "done",
+      completedDate: "",
+    });
+    const fields = utils.parseFrontmatter(updated);
+    assert.equal(fields.status, "done");
+    assert.equal(fields.completedDate, "");
+  });
+
+  test("preserves CRLF line endings when inserting a field", () => {
+    const text =
+      "---\r\ntype: task\r\ntaskId: abc\r\nstatus: done\r\n---\r\n# Task\r\n";
+    const updated = utils.updateTaskStatus(text, {
+      status: "done",
+      completedDate: "2026-10-15T01:00:00+11:00",
+    });
+    assert.equal(utils.parseFrontmatter(updated).completedDate, "2026-10-15T01:00:00+11:00");
+    assert.equal(/[^\r]\n/.test(updated), false);
+    assert.equal(updated.endsWith("---\r\n# Task\r\n"), true);
+  });
+
+  test("throws a clear error when there is no frontmatter to edit", () => {
+    assert.throws(
+      () =>
+        utils.updateTaskStatus("# Task\n\nstatus: body-value", {
+          status: "completed",
+          completedDate: "2026-10-15T01:00:00+11:00",
+        }),
+      /frontmatter/i,
+    );
+  });
 });

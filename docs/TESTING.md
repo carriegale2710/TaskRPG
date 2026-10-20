@@ -6,7 +6,7 @@ Two ways to check the engine: automated tests in a terminal (every rule), and a 
 
 TaskNotes owns task creation, planning, statuses, and the skill, size, urgent and important user fields. TaskRPG owns only `Task done` and `Undo last`. The old `New task` and `Plan task` macros have been removed.
 
-`task-utils.test.js` tests pure helpers, including the TaskNotes scheduled-date mapping.
+`task-utils.test.js` tests pure helpers, including the TaskNotes scheduled-date mapping and completion-field updates (missing-field insertion, frontmatter-only edits, literal `$` values, undo, CRLF).
 
 `task-undo-resolution.test.js` tests the shared duplicate-resolution guard:
 

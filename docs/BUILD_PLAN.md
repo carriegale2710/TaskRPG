@@ -32,9 +32,9 @@ Done vs not done, per step. This file is the single home for build status; updat
 
 ### Known gaps and validation status
 
-- `completedDate` ownership unverified.
+- `completedDate` ownership unverified. Missing-field insertion, frontmatter-only edits, literal `$` values and CRLF are covered by `task-utils.test.js` (issue #14); TaskNotes still needs the manual check.
 - Duplicate-resolution guard end-to-end pending.
-- Status restoration (commit `60d00b9`): preserves status, rewrites the status line, clears `completedDate`; field preservation still needs testing.
+- Status restoration (commit `60d00b9`): preserves status, rewrites the status line, clears or inserts `completedDate`; field preservation still needs the manual Obsidian check.
 - TaskNotes field mapping unverified for the installed version.
 - Desktop Obsidian unverified (`Task done`, result modal, event log, task updates).
 - Mobile result card unverified.
@@ -210,7 +210,7 @@ node --test Scripts/engine.test.js Scripts/habit-done.test.js Scripts/task-utils
 
 All of these tests pass on this branch.
 
-`Scripts/task-utils.test.js` covers frontmatter parsing (including TaskNotes block-list tags, double-, single- and unquoted scalar values, empty quoted values, values containing a colon or quote, CRLF and BOM), scheduled-date mapping, outcome-table selection, result-card formatting, and completion-field updates. It also checks that a fully quoted `type`/`taskId`/`skill`/`size` passes the same checks `task-done.js` applies.
+`Scripts/task-utils.test.js` covers frontmatter parsing (including TaskNotes block-list tags, double-, single- and unquoted scalar values, empty quoted values, values containing a colon or quote, CRLF and BOM), scheduled-date mapping, outcome-table selection, result-card formatting, and completion-field updates. Completion-field tests cover inserting a missing field, editing only the frontmatter (a `status:` line in the body is untouched), literal `$&`/`$1` values, the undo case (`completedDate: ""` with status preserved), CRLF preservation, and a clear error when there is no frontmatter. It also checks that a fully quoted `type`/`taskId`/`skill`/`size` passes the same checks `task-done.js` applies.
 
 `Scripts/task-undo-resolution.test.js` covers the shared `hasUnresolvedTaskDone` guard, `targetEventId` undo linkage, repeat resolution after undo, and preservation of the original `task_done` event. It does **not** exercise the QuickAdd macros end to end, TaskNotes compatibility, Obsidian’s modal, the phone fallback, or hero-state updates.
 

@@ -122,9 +122,21 @@ function formatResultCard({
 }
 
 function updateTaskStatus(text, { status, completedDate }) {
-  return text
-    .replace(/^status:.*$/m, `status: ${status}`)
-    .replace(/^completedDate:.*$/m, `completedDate: "${completedDate ?? ""}"`);
+  const match = /^(\uFEFF?---)(\r?\n)([\s\S]*?)(\r?\n---)/.exec(text);
+  if (!match) throw new Error("Task note has no frontmatter to update.");
+  const [, open, eol, body, close] = match;
+  const lines = body ? body.split(eol) : [];
+  // Values are written as plain text, never as a String.replace pattern.
+  const values = {
+    status: String(status ?? ""),
+    completedDate: `"${completedDate ?? ""}"`,
+  };
+  for (const [key, value] of Object.entries(values)) {
+    const index = lines.findIndex((line) => line.split(":")[0].trim() === key);
+    if (index === -1) lines.push(`${key}: ${value}`);
+    else lines[index] = `${key}: ${value}`;
+  }
+  return `${open}${eol}${lines.join(eol)}${close}${text.slice(match[0].length)}`;
 }
 
 // A task is unresolved when its latest relevant RPG event is task_done.

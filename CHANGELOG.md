@@ -70,6 +70,7 @@ TaskNotes = task creation, planning, statuses, user fields, while TaskRPG = task
 - `parseFrontmatter` strips matching quotes from scalar values (`taskId: "1"` reads as `1`) and ignores a leading BOM. Tests cover double-, single- and unquoted `type`/`taskId`/`skill`/`size`, empty quoted values, and values containing a colon or quote (issue #17). Test-only: the behaviour already shipped with the quoted-`taskId` fix.
 - Scheduled date property uses `scheduled`, not `scheduledDate`.
 - Duplicate-resolution guard follows `undo.targetEventId`, allowing re-resolution after valid undo.
+- `updateTaskStatus` now edits only the frontmatter block, inserts `status`/`completedDate` when missing, writes `$&`/`$1` literally, preserves CRLF, and throws a clear error when there is no frontmatter (issue #14). This fixes `Task done` silently logging an event without marking the note.
 - `task-done.js`/`undo-last.js` rewrite `status` and `completedDate` lines, preserving status value; other frontmatter untouched.
 
 #### Removed
