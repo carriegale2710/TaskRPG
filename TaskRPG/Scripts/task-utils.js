@@ -27,16 +27,37 @@ const OUTCOME_TABLE = {
   ],
 };
 
+function unquote(value) {
+  const text = String(value).trim();
+  const quoted = /^(["'])([\s\S]*)\1$/.exec(text);
+  return quoted ? quoted[2] : text;
+}
+
 function parseFrontmatter(text) {
-  const match = /^---\r?\n([\s\S]*?)\r?\n---/.exec(text);
+  const match = /^(?:\uFEFF)?---\r?\n([\s\S]*?)\r?\n---/.exec(text);
   if (!match) return {};
   const fields = {};
+  let listKey = null;
   for (const line of match[1].split(/\r?\n/)) {
+    // TaskNotes writes tags as a block list. Attribute items to the key above.
+    const item = /^\s*-\s+(.*)$/.exec(line);
+    if (item && listKey) {
+      if (!Array.isArray(fields[listKey])) fields[listKey] = [];
+      fields[listKey].push(unquote(item[1]));
+      continue;
+    }
     const index = line.indexOf(":");
-    if (index > 0)
-      fields[line.slice(0, index).trim()] = line.slice(index + 1).trim();
+    if (index > 0) {
+      const key = line.slice(0, index).trim();
+      fields[key] = unquote(line.slice(index + 1));
+      listKey = fields[key] === "" ? key : null;
+    }
   }
   return fields;
+}
+
+function normalizeTag(tag) {
+  return unquote(tag).replace(/^#/, "").toLowerCase();
 }
 
 function today(date = new Date()) {
@@ -49,23 +70,15 @@ function scheduled(task) {
 }
 
 function parseTags(value) {
-  if (Array.isArray(value))
-    return value
-      .map((tag) => String(tag).trim().replace(/^#/, "").toLowerCase())
-      .filter(Boolean);
+  if (Array.isArray(value)) return value.map(normalizeTag).filter(Boolean);
   if (value === undefined || value === null || value === "") return [];
   let text = String(value).trim();
   if (text.startsWith("[") && text.endsWith("]")) text = text.slice(1, -1);
-  return text
-    .split(/[\s,]+/)
-    .map((tag) => tag.trim().replace(/^#/, "").toLowerCase())
-    .filter(Boolean);
+  return text.split(/[\s,]+/).map(normalizeTag).filter(Boolean);
 }
 
 function hasTag(value, tag) {
-  return parseTags(value).includes(
-    String(tag).trim().replace(/^#/, "").toLowerCase(),
-  );
+  return parseTags(value).includes(normalizeTag(tag));
 }
 
 function pickTableResult(outcome, roll) {

@@ -210,7 +210,7 @@ node --test Scripts/engine.test.js Scripts/habit-done.test.js Scripts/task-utils
 
 All of these tests pass on this branch.
 
-`Scripts/task-utils.test.js` covers frontmatter parsing, scheduled-date mapping, outcome-table selection, result-card formatting, and completion-field updates.
+`Scripts/task-utils.test.js` covers frontmatter parsing (including TaskNotes block-list tags, quoted values, CRLF and BOM), scheduled-date mapping, outcome-table selection, result-card formatting, and completion-field updates.
 
 `Scripts/task-undo-resolution.test.js` covers the shared `hasUnresolvedTaskDone` guard, `targetEventId` undo linkage, repeat resolution after undo, and preservation of the original `task_done` event. It does **not** exercise the QuickAdd macros end to end, TaskNotes compatibility, Obsidian’s modal, the phone fallback, or hero-state updates.
 

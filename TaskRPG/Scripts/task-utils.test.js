@@ -17,6 +17,54 @@ describe("task-utils.test.js", () => {
     assert.equal(utils.hasTag(fields.tags, "important"), true);
   });
 
+  test("parses TaskNotes tags written as a YAML block list", () => {
+    const fields = utils.parseFrontmatter(
+      "---\ntype: task\ntags:\n  - task\n  - important\n  - #urgent\n---\n# Task",
+    );
+    assert.deepEqual(fields.tags, ["task", "important", "#urgent"]);
+    assert.equal(utils.hasTag(fields.tags, "important"), true);
+    assert.equal(utils.hasTag(fields.tags, "urgent"), true);
+  });
+
+  test("parses quoted flow-list tags without quotes", () => {
+    const fields = utils.parseFrontmatter(
+      '---\ntags: ["urgent", "important"]\n---\n# Task',
+    );
+    assert.deepEqual(utils.parseTags(fields.tags), ["urgent", "important"]);
+  });
+
+  test("matches tags case-insensitively and ignores prefixes", () => {
+    assert.equal(utils.hasTag("#Urgent", "urgent"), true);
+    assert.equal(utils.hasTag("urgently", "urgent"), false);
+    assert.equal(utils.hasTag("Important", "important"), true);
+    assert.deepEqual(utils.parseTags(null), []);
+    assert.deepEqual(utils.parseTags(undefined), []);
+    assert.deepEqual(utils.parseTags([]), []);
+    assert.deepEqual(utils.parseTags(""), []);
+  });
+
+  test("strips quotes from scalar values", () => {
+    const fields = utils.parseFrontmatter(
+      '---\ntaskId: "1"\nscheduled: \'2026-10-15\'\nstatus: open\n---\n# Task',
+    );
+    assert.equal(fields.taskId, "1");
+    assert.equal(fields.scheduled, "2026-10-15");
+    assert.equal(fields.status, "open");
+  });
+
+  test("handles CRLF, a leading BOM, empty and missing frontmatter", () => {
+    const crlf = utils.parseFrontmatter(
+      "---\r\ntags:\r\n  - important\r\n---\r\n# Task",
+    );
+    assert.deepEqual(crlf.tags, ["important"]);
+
+    const bom = utils.parseFrontmatter("\uFEFF---\ntype: task\n---\n# Task");
+    assert.equal(bom.type, "task");
+
+    assert.deepEqual(utils.parseFrontmatter("---\n---\n# Task"), {});
+    assert.deepEqual(utils.parseFrontmatter("# Task"), {});
+  });
+
   test("reads the TaskNotes scheduled date", () => {
     assert.equal(utils.scheduled({ scheduled: "2026-10-15" }), "2026-10-15");
     assert.equal(utils.scheduled({ scheduled: "2026-10-15" }), "2026-10-15");
@@ -62,7 +110,7 @@ describe("task-utils.test.js", () => {
     });
     const fields = utils.parseFrontmatter(updated);
     assert.equal(fields.status, "completed");
-    assert.equal(fields.completedDate, '"2026-10-15T01:00:00+11:00"');
+    assert.equal(fields.completedDate, "2026-10-15T01:00:00+11:00");
     assert.equal(fields.taskId, "abc");
   });
 });

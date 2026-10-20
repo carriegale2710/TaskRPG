@@ -66,6 +66,8 @@ TaskNotes = task creation, planning, statuses, user fields, while TaskRPG = task
 
 #### Fixed
 
+- TaskNotes block-list `tags` (`tags:` then `  - important`) now parse as a list, so `urgent`/`important` XP bonuses apply. Quoted flow-list tags (`["urgent", "important"]`) lose their quotes.
+- `parseFrontmatter` strips matching quotes from scalar values (`taskId: "1"` reads as `1`) and ignores a leading BOM.
 - Scheduled date property uses `scheduled`, not `scheduledDate`.
 - Duplicate-resolution guard follows `undo.targetEventId`, allowing re-resolution after valid undo.
 - `task-done.js`/`undo-last.js` rewrite `status` and `completedDate` lines, preserving status value; other frontmatter untouched.
