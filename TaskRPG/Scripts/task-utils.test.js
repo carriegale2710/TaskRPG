@@ -62,7 +62,7 @@ describe("task-utils.test.js", () => {
     assert.equal(fields.size, "medium");
   });
 
-  test("accepts a fully quoted task the way task-done.js checks it", () => {
+  test("accepts quoted values the way task-done.js checks them", () => {
     const fields = utils.parseFrontmatter(
       '---\ntype: "task"\ntaskId: "1"\nskill: "mind"\nsize: "medium"\n---\n# Task',
     );
@@ -70,7 +70,7 @@ describe("task-utils.test.js", () => {
       skills: ["mind"],
       taskSizes: { medium: { mp: 3, xp: 3 } },
     };
-    assert.equal(fields.type !== "task" || !fields.taskId, false);
+    assert.equal(fields.taskId, "1");
     assert.equal(settings.skills.includes(fields.skill), true);
     assert.equal(Boolean(settings.taskSizes[fields.size]), true);
   });

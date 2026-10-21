@@ -78,6 +78,9 @@ TaskNotes = task creation, planning, statuses, user fields, while TaskRPG = task
 - `Undo last` now restores the TaskNotes status to `open` and clears `completedDate`, so the note no longer stays Done after an undo (issue #19). The status value is defined once as `OPEN_TASK_STATUS` in `task-utils.js`; TaskNotes 4.13.8 uses `open` as `defaultTaskStatus`.
 - Task notes identified via the `tasksFolder` in TaskNotes' `data.json` (fallback `TaskNotes/Tasks`) instead of assuming notes sit directly in `TaskNotes/`.
 - Identifies a note is a task by `taskTag` (read from `data.json`, fallback `task`) instead of requiring a `type: task` frontmatter field. Adds `taskTag` to `task-utils.js` and tests that a note without the tag is refused.
+- Task identity: Adds `taskId` as the stable identity (decision D-023), a TaskNotes body template (`TaskNotes/Templates/template.md`: `taskId: {{nano}}`) for new notes. Template verified manually on 2026-10-21 (taskId written, tags/status preserved).
+- `Task done` now treats `taskId: null`, `taskId: ~` and `taskId: undefined` as missing instead of accepting the literal word as an ID. `task-done.test.js` adds negative cases for missing, empty and `null` `taskId`, `skill` and `size`: no event is logged and the note is untouched (test-only coverage for the skill/size checks, which the engine also enforces).
+
 
 #### Removed
 

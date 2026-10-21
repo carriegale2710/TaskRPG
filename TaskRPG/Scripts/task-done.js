@@ -6,6 +6,13 @@ const SETTINGS = "TaskRPG/Engine/Settings.md";
 const ENGINE = "TaskRPG/Scripts/engine.js";
 const UTILS = "TaskRPG/Scripts/task-utils.js";
 
+// Frontmatter values arrive as text: `taskId:` reads as "", `taskId: null` and
+// `taskId: ~` read as the literal words. All of them mean "no ID".
+function missing(value) {
+  const text = String(value ?? "").trim();
+  return text === "" || text === "null" || text === "~" || text === "undefined";
+}
+
 module.exports = async ({ app }) => {
   const files = app.vault.adapter;
   let committed = false;
