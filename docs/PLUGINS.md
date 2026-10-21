@@ -67,7 +67,7 @@ Suggested wrappers:
 
 - habit-done
 - task-done
-- undo-last
+- task-undo
 - recalculate
 - morning-briefing
 

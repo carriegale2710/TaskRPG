@@ -51,7 +51,7 @@ TaskRPG is not yet a distributable starter vault: it is a single-person project,
 2. Install and enable the required community plugins.
 3. Place the `TaskRPG/` folder in your vault. The current build has `Engine`, `Scripts`, `Story`, `World`, `Characters`, `Campaign`, `Journal`, `Assets` and `Backlog`, with `Campaign/` to be replaced by the per-campaign layout in [What's in your vault](#whats-in-your-vault).
 4. Configure TaskNotes so each task note has `taskId`, `skill`, `size`, `urgent`, `important`, a status, and a scheduled date.
-5. In QuickAdd, create macro choices for `Task done` and `Undo last` (user-script actions pointing at `TaskRPG/Scripts/task-done.js` and `TaskRPG/Scripts/undo-last.js`), plus a habit `Done` macro for `habit-done.js`. Enable their lightning-bolt commands.
+5. In QuickAdd, create macro choices for `Task done` and `Undo last` (user-script actions pointing at `TaskRPG/Scripts/task-done.js` and `TaskRPG/Scripts/task-undo.js`), plus a habit `Done` macro for `habit-done.js`. Enable their lightning-bolt commands.
 6. Set up the Meta Bind panels and the hero note at `TaskRPG/Engine/Hero.md` for HP, MP and skill XP.
 7. Open `TaskRPG/Engine/Settings.md` and configure your hero, habits and tunable game numbers.
 8. Optional terminal check of the engine and its tests: see [`docs/TESTING.md`](docs/TESTING.md) for the exact commands. Pass explicit file paths to the `recalc` command — its defaults are not wired to the live log yet, and it overwrites whichever state file you point it at.
@@ -140,7 +140,7 @@ A success has a one-in-three chance of **loot**. A roll only changes the story, 
 
 ### Undo
 
-**Undo last** adds a correcting line to the log (nothing is deleted). It works for same-day tasks and habits only, newest first. After an undo, the same task can be resolved again as a fresh turn. Do not use undo to seek a better roll.
+**Undo last** adds a correcting line to the log (nothing is deleted). It works for same-day tasks and habits only, newest first. Undoing a task sets its TaskNotes status back to `open`. After an undo, the same task can be resolved again as a fresh turn. Do not use undo to seek a better roll.
 
 ## What's in your vault
 

@@ -70,7 +70,7 @@ function undoEvent({ id, targetEventId, timestamp }) {
   return { id, type: "undo", timestamp, targetEventId };
 }
 
-describe("task-undo-resolution.test.js", () => {
+describe("task-undo.test.js", () => {
   test("a TaskNotes task marked Done can be resolved when no RPG resolution exists", () => {
     assert.equal(hasUnresolvedTaskDone([], "task-1"), false);
   });

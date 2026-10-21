@@ -1,5 +1,8 @@
 "use strict";
 
+// TaskNotes' default, non-completed status (verified against TaskNotes 4.13.8).
+const OPEN_TASK_STATUS = "open";
+
 const OUTCOME_TABLE = {
   success: [
     "A clean victory—the way forward opens.",
@@ -139,6 +142,14 @@ function updateTaskStatus(text, { status, completedDate }) {
   return `${open}${eol}${lines.join(eol)}${close}${text.slice(match[0].length)}`;
 }
 
+// Undo restores the TaskNotes status to the plugin default and clears completion.
+function reopenTaskNote(text) {
+  return updateTaskStatus(text, {
+    status: OPEN_TASK_STATUS,
+    completedDate: "",
+  });
+}
+
 // A task is unresolved when its latest relevant RPG event is task_done.
 // Undo events identify the action they reverse with targetEventId, so follow
 // that link back to the task_done event instead of filtering undo by taskId.
@@ -157,6 +168,7 @@ function hasUnresolvedTaskDone(events, taskId) {
 }
 
 module.exports = {
+  OPEN_TASK_STATUS,
   OUTCOME_TABLE,
   formatResultCard,
   hasTag,
@@ -164,6 +176,7 @@ module.exports = {
   parseFrontmatter,
   parseTags,
   pickTableResult,
+  reopenTaskNote,
   scheduled,
   today,
   updateTaskStatus,

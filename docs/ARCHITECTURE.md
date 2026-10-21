@@ -133,7 +133,6 @@ These boundaries are requirements. They keep a future Obsidian plugin a swap rat
 | `TaskNotes/` | Task records, scheduling, statuses, user fields                            | User and TaskNotes            |
 | `D&D-Vault/` | Dashboard, Campaigns, VTT, Asset Library, Rules, Templates, Inbox, Archive | User and Game Master AI agent |
 
-
 ### Rules
 
 - Hero profile contains stable identity only: name, appearance, background, class, personality, goals.
@@ -245,7 +244,7 @@ User marks TaskNotes task Done
 
 ```text
 Undo last button
-  → undo-last.js
+  → task-undo.js
   → engine.recordAction with undo action
   → engine selects newest eligible same-day task/habit action
   → append correcting undo event

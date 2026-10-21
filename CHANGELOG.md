@@ -22,14 +22,14 @@ TaskNotes = task creation, planning, statuses, user fields, while TaskRPG = task
 - updates resolution metadata
 - shows a result card with a Notice fallback
 
-**Undo feature**: `undo-last.js`
+**Undo feature**: `task-undo.js`
 
-    - `Undo last` appends correcting RPG event, clears `completedDate` on matching task note, preserves status.
+    - `Undo last` appends correcting RPG event, writes `status: open` and clears `completedDate` on matching task note.
 
 - finds the newest same-day action
 - appends an undo correction
 - preserves the original event
-- clears completedDate on the matching task without changing TaskNotes status.
+- clears completedDate and restores the TaskNotes default `open` status on the matching task; habit undo leaves task notes untouched.
 
 **Shared task helpers**: `task-utils.js`
 
@@ -48,7 +48,8 @@ TaskNotes = task creation, planning, statuses, user fields, while TaskRPG = task
   - outcome-table selection,
   - result-card formatting,
   - completion-field updates
-- Adds `task-undo-resolution.test.js`
+  - reopening a task after undo (`status: open`, empty `completedDate`)
+- Adds `task-undo.test.js`
   - shared duplicate-resolution guard
   - `targetEventId` undo linkage
   - repeat resolution after undo
@@ -72,14 +73,15 @@ TaskNotes = task creation, planning, statuses, user fields, while TaskRPG = task
 - Scheduled date property uses `scheduled`, not `scheduledDate`.
 - Duplicate-resolution guard follows `undo.targetEventId`, allowing re-resolution after valid undo.
 - `updateTaskStatus` now edits only the frontmatter block, inserts `status`/`completedDate` when missing, writes `$&`/`$1` literally, preserves CRLF, and throws a clear error when there is no frontmatter (issue #14). This fixes `Task done` silently logging an event without marking the note.
-- `task-done.js`/`undo-last.js` rewrite `status` and `completedDate` lines, preserving status value; other frontmatter untouched.
+- `task-done.js`/`task-undo.js` rewrite only the `status` and `completedDate` lines; other frontmatter untouched. `task-done.js` preserves the TaskNotes status.
+- `Undo last` now restores the TaskNotes status to `open` and clears `completedDate`, so the note no longer stays Done after an undo (issue #19). The status value is defined once as `OPEN_TASK_STATUS` in `task-utils.js`; TaskNotes 4.13.8 uses `open` as `defaultTaskStatus`.
 
 #### Removed
 
 - `new-task.js` and `New task` QuickAdd flow.
 - `plan-task.js` and `Plan task` QuickAdd flow.
 - Task-note creation, slug generation, size-suggestion helpers from `task-utils.js`.
-- Hard-coded planned/backlog restoration from `undo-last.js`.
+- Hard-coded planned/backlog restoration from `task-undo.js`.
 
 ---
 

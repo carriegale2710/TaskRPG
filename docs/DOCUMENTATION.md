@@ -292,7 +292,7 @@ Open the relevant file before working on that area.
 | Test commands, layout, manual checks            | `docs/TESTING.md`                                                                    |
 | Engine implementation and tests                 | `TaskRPG/Scripts/engine.js`, `engine.test.js`, `task-utils.js`, `task-utils.test.js` |
 | Live vault state                                | `TaskRPG/Engine/Settings.md`, `Hero.md`, `Events.md`, `State.json`                   |
-| Macros and integrations                         | `TaskRPG/Scripts/task-done.js`, `habit-done.js`, `undo-last.js`, `gm_bridge.py`      |
+| Macros and integrations                         | `TaskRPG/Scripts/task-done.js`, `habit-done.js`, `task-undo.js`, `gm_bridge.py`      |
 | Vault-area rules                                | `AGENTS.md` in `TaskRPG/Campaign/`, `TaskRPG/Journal/`, `TaskRPG/World/`             |
 ```
 

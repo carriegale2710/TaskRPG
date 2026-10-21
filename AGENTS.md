@@ -14,7 +14,7 @@
 If the agent supports project skills:
 
 - If available, load `caveman` at start of every session. Stop only if user says so.
-- If available, load `ponytail` before all coding, refactoring, diagnosis, brainstorming, or design-decision work.
+- If available, load `ponytail` writing, refactoring code or brainstorming solutions or ideas to solve user problems.
 - Load `write-tests` before the first test or engine change.
 - If a required skill cannot load, say so and continue without silently skipping the underlying rule.
 

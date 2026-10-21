@@ -42,20 +42,14 @@ module.exports = async ({ app }) => {
       const path = await findTaskPath(files, utils, target.taskId);
       if (path) {
         const text = await files.read(path);
-        // TaskNotes owns task status. Undo only clears TaskRPG resolution metadata;
-        // it does not rewrite the TaskNotes status or guess a restored status.
-        await files.write(
-          path,
-          utils.updateTaskStatus(text, {
-            status: utils.parseFrontmatter(text).status || "",
-            completedDate: "",
-          }),
-        );
+        // TaskNotes owns task status. Undo restores its default open status and
+        // clears the completion date, editing only the frontmatter block.
+        await files.write(path, utils.reopenTaskNote(text));
       }
     }
 
     new Notice(
-      "Undid the last RPG action. TaskNotes status was not changed.",
+      "Undid the last RPG action. TaskNotes status restored to open.",
       8000,
     );
   } catch (error) {

@@ -1,6 +1,6 @@
 # TaskRPG Decision Log
 
-**Last Updated**: 2026-10-18
+**Last Updated**: 2026-10-20
 Newest first. A decision remains active until marked `Superseded`.
 
 Statuses:
@@ -8,6 +8,16 @@ Statuses:
 - **Accepted**—settled; agents must follow it.
 - **Provisional**—reasonable default, explicitly revisable.
 - **Superseded**—no longer active; link to the replacement decision.
+
+## D-021—Undo restores the TaskNotes default `open` status
+
+- **Status:** Accepted
+- **Decision:** `Undo last` sets the matching TaskNotes task note's status to the TaskNotes default `open` and clears `completedDate`. No previous-status lookup is added and the event schema is unchanged.
+- **Context:** Undo previously cleared only `completedDate`, leaving the note reading Done while the RPG log treated the task as unresolved (issue #19).
+- **Rationale:** `open` is the plugin's own default, keeps the note consistent with the unresolved RPG state, and avoids storing or guessing a prior status.
+- **Alternatives considered:** Preserve the status; look up and restore the status from the event log (schema change).
+- **Implications:** The `open` value lives once as `OPEN_TASK_STATUS` in `Scripts/task-utils.js`; the note edit goes through the frontmatter-only writer from issue #14. Verified against TaskNotes 4.13.8.
+- **Revisit when:** The configured TaskNotes statuses or `defaultTaskStatus` change.
 
 ## D-020—Use event log as source of truth
 

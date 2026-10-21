@@ -160,7 +160,7 @@ Full rationale and alternatives are in [`DECISIONS.md`](./DECISIONS.md).
 - In phase 1, finish work, mark Done in TaskNotes, then run the manual Task done command with the task note open.
 - Task completion status and RPG resolution are distinct. Duplicate protection uses recorded RPG resolution, not TaskNotes status alone.
 - Undo last reverses the newest eligible RPG action with a correcting event, preserving original dice and history.
-- TaskNotes owns task statuses. Any status restoration must use verified configured mappings.
+- TaskNotes owns task statuses. Undo last writes the verified TaskNotes default status `open` and clears `completedDate` on the matching task note; it keeps no previous-status lookup.
 - A task may optionally link to one campaign for story framing.
 - Resolution records one global game event and awards shared progression once, even if it advances campaign story.
 - Unfinished tasks remain managed in TaskNotes and may be rescheduled without penalty.

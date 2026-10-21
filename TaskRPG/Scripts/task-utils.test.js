@@ -218,6 +218,17 @@ describe("task-utils.test.js", () => {
     assert.equal(fields.completedDate, "");
   });
 
+  test("undoing a task_done event reopens the matching note", () => {
+    const text =
+      '---\ntype: task\ntaskId: abc\nstatus: done\ncompletedDate: "2026-10-15T01:00:00+11:00"\n---\n# Task';
+    const updated = utils.reopenTaskNote(text);
+    const fields = utils.parseFrontmatter(updated);
+    assert.equal(fields.status, "open");
+    assert.equal(fields.completedDate, "");
+    assert.equal(fields.taskId, "abc");
+    assert.equal(updated.endsWith("# Task"), true);
+  });
+
   test("preserves CRLF line endings when inserting a field", () => {
     const text =
       "---\r\ntype: task\r\ntaskId: abc\r\nstatus: done\r\n---\r\n# Task\r\n";

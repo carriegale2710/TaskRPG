@@ -34,7 +34,7 @@ Done vs not done, per step. This file is the single home for build status; updat
 
 - `completedDate` ownership unverified. Missing-field insertion, frontmatter-only edits, literal `$` values and CRLF are covered by `task-utils.test.js` (issue #14); TaskNotes still needs the manual check.
 - Duplicate-resolution guard end-to-end pending.
-- Status restoration (commit `60d00b9`): preserves status, rewrites the status line, clears or inserts `completedDate`; field preservation still needs the manual Obsidian check.
+- TaskNotes status ownership: undo writes the plugin default `open` and clears `completedDate`; verified against TaskNotes 4.13.8 (`defaultTaskStatus: "open"`), field preservation still needs the manual Obsidian check.
 - TaskNotes field mapping unverified for the installed version.
 - Desktop Obsidian unverified (`Task done`, result modal, event log, task updates).
 - Mobile result card unverified.
@@ -137,7 +137,7 @@ The engine takes the event log plus the settings note and returns the new state 
 - [ ] Configure TaskNotes task fields: `taskId`, `skill`, `size`, `urgent`, `important`, status, and a scheduled date. Verify the installed TaskNotes version preserves these fields.
 - [ ] **Task done** (`Scripts/task-done.js`): with a TaskNotes task open, read its mapped fields and scheduled date, deduct MP, roll 2d6, pick a result from a placeholder table, apply XP, write the engine event to `Engine/Events.md`, and show the result card (roll, outcome, table result, XP and MP changes, and any loot). The user taps to dismiss it.
 - [ ] A task scheduled for today avoids the unplanned MP surcharge; a task without today’s scheduled date receives it.
-- [ ] **Undo last** (`Scripts/undo-last.js`): append a correcting engine event for the newest same-game-day task or habit action. On the matching TaskNotes task note, clear the completion field and otherwise preserve the task's existing status and frontmatter; do not restore an open/planned status or rewrite plugin-owned fields. Never delete history or enable a re-roll.
+- [ ] **Undo last** (`Scripts/task-undo.js`): append a correcting engine event for the newest same-game-day task or habit action. On the matching TaskNotes task note, write `status: open` (the plugin default) and clear the completion field, editing only the frontmatter block; leave other plugin-owned fields alone. Never delete history or enable a re-roll.
 - [ ] Regression tests for resolution and undo: the duplicate-resolution guard follows `undo.targetEventId`, a valid undo allows the same task to be resolved again as a repeat, and the original `task_done` event is preserved.
 - [ ] Optional phase 2, later: TaskNotes Workflows fires `/task-done` automatically when a task moves from In Progress to Done. Do not build or claim this until it is separately approved and validated.
 - [ ] **Done when:** you create and schedule a task in TaskNotes, mark it Done there, run **Task done**, get the result card, and then undo it. Check the card on the phone and use a short notice if pop-ups misbehave. Record TaskNotes field mapping and any limitations.
@@ -151,7 +151,7 @@ Configure TaskNotes so each task note has:
 - [x] A `size` user field matching `taskSizes` in settings.
 - [x] Uses `urgent` and `important` tags.
 - [x] A scheduled date field used for planning.
-- [x] Status values that include an open/planned state and a completed state.
+- [x] Status values that include an open/planned state and a completed state. Installed TaskNotes 4.13.8 uses `open` as `defaultTaskStatus`, with `in-progress` and `done` as the other non-completed/completed statuses.
 
 Example TaskNotes note configuration:
 
@@ -178,7 +178,7 @@ Configure two QuickAdd **Macro** choices, each with one **User Script** action. 
 | QuickAdd choice | Script                 | Action                                                                                                                                                   |
 | --------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Task done       | `Scripts/task-done.js` | With a TaskNotes task open, records an engine `task_done` event, rolls 2d6 and a loot die, applies XP/MP, marks the note completed, and shows the result |
-| Undo last       | `Scripts/undo-last.js` | Appends a correcting engine event for today’s newest task or habit action and restores a matching task note if found                                     |
+| Undo last       | `Scripts/task-undo.js` | Appends a correcting engine event for today’s newest task or habit action and restores a matching task note if found                                     |
 
 ## Phase 1 trigger
 
@@ -196,7 +196,7 @@ Later, TaskNotes Workflows may invoke `/task-done` automatically when a task mov
 - **Task done** requires an open note in `TaskNotes/`. It reads the task’s mapped fields, validates skill and size against settings, determines whether the TaskNotes scheduled date is today, rolls through the engine, appends the event to `Engine/Events.md`, then updates the note’s completion fields.
 - A task scheduled for today avoids the unplanned MP surcharge. A task without today’s scheduled date receives the engine’s unplanned cost.
 - The result card uses the same loot die to select from a six-entry placeholder outcome table. This is not a Dice Roller table integration.
-- **Undo last** uses the engine’s same-game-day newest-action rule. It appends an `undo` event without removing the original roll. For a task, it clears `completedDate` and restores an open/planned status based on the TaskNotes scheduled date.
+- **Undo last** uses the engine’s same-game-day newest-action rule. It appends an `undo` event without removing the original roll. For a task, it clears `completedDate` and sets the TaskNotes status to `open`; a habit undo does not touch task notes.
 - The duplicate-resolution guard follows `undo.targetEventId` back to the original `task_done` event. After a valid undo, the same task can be resolved again; the engine marks that later resolution as a repeat. An undo for a different task does not release this task’s guard.
 - Undo does not rebuild `Engine/Hero.md` and does not remove habit-note history. **Do not use undo to re-roll.**
 
@@ -205,14 +205,14 @@ Later, TaskNotes Workflows may invoke `/task-done` automatically when a task mov
 From the vault root with Node.js 22 or newer:
 
 ```sh
-node --test Scripts/engine.test.js Scripts/habit-done.test.js Scripts/task-utils.test.js Scripts/task-undo-resolution.test.js
+node --test Scripts/engine.test.js Scripts/habit-done.test.js Scripts/task-utils.test.js Scripts/task-undo.test.js
 ```
 
 All of these tests pass on this branch.
 
-`Scripts/task-utils.test.js` covers frontmatter parsing (including TaskNotes block-list tags, double-, single- and unquoted scalar values, empty quoted values, values containing a colon or quote, CRLF and BOM), scheduled-date mapping, outcome-table selection, result-card formatting, and completion-field updates. Completion-field tests cover inserting a missing field, editing only the frontmatter (a `status:` line in the body is untouched), literal `$&`/`$1` values, the undo case (`completedDate: ""` with status preserved), CRLF preservation, and a clear error when there is no frontmatter. It also checks that a fully quoted `type`/`taskId`/`skill`/`size` passes the same checks `task-done.js` applies.
+`Scripts/task-utils.test.js` covers frontmatter parsing (including TaskNotes block-list tags, double-, single- and unquoted scalar values, empty quoted values, values containing a colon or quote, CRLF and BOM), scheduled-date mapping, outcome-table selection, result-card formatting, and completion-field updates. Completion-field tests cover inserting a missing field, editing only the frontmatter (a `status:` line in the body is untouched), literal `$&`/`$1` values, the undo case (`status: open` with `completedDate: ""`), CRLF preservation, and a clear error when there is no frontmatter. It also checks that a fully quoted `type`/`taskId`/`skill`/`size` passes the same checks `task-done.js` applies.
 
-`Scripts/task-undo-resolution.test.js` covers the shared `hasUnresolvedTaskDone` guard, `targetEventId` undo linkage, repeat resolution after undo, and preservation of the original `task_done` event. It does **not** exercise the QuickAdd macros end to end, TaskNotes compatibility, Obsidian’s modal, the phone fallback, or hero-state updates.
+`Scripts/task-undo.test.js` covers the shared `hasUnresolvedTaskDone` guard, `targetEventId` undo linkage, repeat resolution after undo, and preservation of the original `task_done` event. It does **not** exercise the QuickAdd macros end to end, TaskNotes compatibility, Obsidian’s modal, the phone fallback, or hero-state updates.
 
 ## Manual validation gate
 
