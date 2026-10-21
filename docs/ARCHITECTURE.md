@@ -21,7 +21,7 @@ Standalone engine
 Event log → derived hero state → UI / narration
 ```
 
-- **TaskNotes** owns task creation, planning, statuses, and user fields.
+- **TaskNotes** owns task creation, planning, and user fields; TaskRPG writes only its two status values (`done`, `open`).
 - **QuickAdd wrappers** own vault I/O and call the engine.
 - **The engine** owns every RPG rule and derives state from the event log.
 - **Vault Operator** provides narrator and character agents; it never implements game rules.
@@ -35,7 +35,8 @@ Event log → derived hero state → UI / narration
 
 | Concern                                          | Owner                              |
 | ------------------------------------------------ | ---------------------------------- |
-| Task creation, scheduling, statuses, user fields | TaskNotes                          |
+| Task creation, scheduling, user fields            | TaskNotes                          |
+| Task note status writes (`done`, `open`)          | TaskRPG QuickAdd wrappers          |
 | Task RPG resolution and undo                     | TaskRPG QuickAdd wrappers + engine |
 | Habit completion records                         | Habit notes + QuickAdd wrapper     |
 | Game rules, XP, MP, HP, dice outcomes            | Engine                             |
@@ -132,7 +133,7 @@ Paths are relative to the `TaskRPG/` project folder.
 | `Engine/`      | Shared event log, derived hero state, habit records, settings             | QuickAdd wrappers only            |
 | `Scripts/`     | Standalone engine and thin QuickAdd scripts                               | Coding agent                      |
 | `Journal/`     | Daily notes and “Today’s turns”; only this folder is pruned after backup  | User and macros                   |
-| `TaskNotes/`   | Task records, scheduling, statuses, user fields                           | User and TaskNotes                |
+| `TaskNotes/`   | Task records, scheduling, user fields                                     | User, TaskNotes, TaskRPG status writes |
 | `Campaign/`    | Current campaign story state (`00 Hero`, rules, story so far, quest board) | User and Game Master AI agent     |
 | `Story/`       | Cross-campaign canon, approved by the user                                | Game Master AI agent              |
 | `World/`       | NPCs, quests, regions                                                     | User and Game Master AI agent     |
@@ -204,7 +205,7 @@ Model-per-agent support is untested and must be validated in the thin slice.
 | Templater          | Templates                                     |
 | Bases              | Built-in views                                |
 | Lazy Plugin Loader | Startup performance                           |
-| TaskNotes          | Task backlog, planning, statuses, user fields |
+| TaskNotes          | Task backlog, planning, user fields; status `done`/`open` set by TaskRPG |
 | Vault Operator     | Narrator and character agents                 |
 
 ### Integration rules

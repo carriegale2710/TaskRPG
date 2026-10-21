@@ -80,11 +80,12 @@ module.exports = async ({ app }) => {
     );
     committed = true;
 
-    // Preserve the TaskNotes-owned status. Record only TaskRPG resolution metadata.
+    // TaskNotes detects the written status value directly, so Task done owns the
+    // completion status: always write `done`, whatever the note held before.
     await files.write(
       file.path,
       utils.updateTaskStatus(original, {
-        status: task.status || "",
+        status: "done",
         completedDate: timestamp,
       }),
     );

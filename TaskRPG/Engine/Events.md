@@ -12,3 +12,6 @@
 {"id":"task-1792577195671-9g0orz6cewb","type":"task_done","timestamp":"2026-10-21T21:06:35+11:00","taskId":"1792566794280kntnt","skill":"vitality","size":"large","planned":true,"important":false,"urgent":false,"roll":[4,4],"lootRoll":5,"outcome":"partial","xp":5,"mp":5}
 {"type":"undo","timestamp":"2026-10-21T21:06:57+11:00","id":"e-13","targetEventId":"task-1792577195671-9g0orz6cewb"}
 {"id":"task-1792577222993-a25ejgrzn1q","type":"task_done","timestamp":"2026-10-21T21:07:02+11:00","taskId":"1792566794280kntnt","skill":"vitality","size":"large","planned":true,"important":false,"urgent":false,"roll":[5,2],"lootRoll":3,"outcome":"partial","xp":5,"mp":5}
+{"type":"undo","timestamp":"2026-10-21T21:24:12+11:00","id":"e-15","targetEventId":"task-1792577222993-a25ejgrzn1q"}
+{"id":"task-1792578256142-17am38x5f53","type":"task_done","timestamp":"2026-10-21T21:24:16+11:00","taskId":"1792566794280kntnt","skill":"vitality","size":"large","planned":true,"important":false,"urgent":false,"roll":[2,3],"lootRoll":3,"outcome":"setback","xp":5,"mp":5}
+{"type":"undo","timestamp":"2026-10-21T21:24:19+11:00","id":"e-17","targetEventId":"task-1792578256142-17am38x5f53"}

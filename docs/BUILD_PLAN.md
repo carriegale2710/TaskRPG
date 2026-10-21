@@ -34,7 +34,7 @@ Done vs not done, per step. This file is the single home for build status; updat
 
 - `completedDate` ownership unverified. Missing-field insertion, frontmatter-only edits, literal `$` values and CRLF are covered by `task-utils.test.js` (issue #14); TaskNotes still needs the manual check.
 - Duplicate-resolution guard end-to-end pending.
-- TaskNotes status ownership: undo writes the plugin default `open` and clears `completedDate`; verified against TaskNotes 4.13.8 (`defaultTaskStatus: "open"`), field preservation still needs the manual Obsidian check.
+- Task note status writes: `Task done` always writes `status: done` (D-024); undo writes the plugin default `open` and clears `completedDate`. Verified against TaskNotes 4.13.8 (`defaultTaskStatus: "open"`, `done` configured with `isCompleted: true`); field preservation verified in Obsidian.
 - The task folder is read from the TaskNotes plugin's `data.json` (`tasksFolder`, fallback `TaskNotes/Tasks`), not hard-coded.
 - Task lookup covers only the configured `tasksFolder`, not subfolders beneath it or task notes moved elsewhere; an undo then corrects the log, leaves the note Done, and the Notice reports that no matching task note was found.
 - Task identity: TaskNotes 4.13.8 identifies tasks by tag (`taskIdentificationMethod: "tag"`, `taskTag: "task"`) and writes no ID. The body template (`TaskNotes/Templates/template.md`, `taskId: {{nano}}`) was verified manually on 2026-10-21: a new task got the `taskId` line and kept its `tags` and `status`.
@@ -134,7 +134,7 @@ The engine takes the event log plus the settings note and returns the new state 
 
 ## 5. Step 3: TaskNotes-wrapped task resolution and undo (Issue #3)
 
-> Github Issue #3 has been redesigned: **TaskNotes owns task creation, planning, statuses, and task fields. TaskRPG owns only task resolution (`Task done`) and undo.** The old `New task` and `Plan task` QuickAdd macros have been removed.
+> Github Issue #3 has been redesigned: **TaskNotes owns task creation, planning, and task fields. TaskRPG owns task resolution (`Task done`), undo, and the `done`/`open` status writes.** The old `New task` and `Plan task` QuickAdd macros have been removed.
 
 ### Substeps:
 

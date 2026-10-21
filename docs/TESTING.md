@@ -4,11 +4,11 @@ Two ways to check the engine: automated tests in a terminal (every rule), and a 
 
 ## Task resolution and undo tests
 
-TaskNotes owns task creation, planning, statuses, and the skill, size, urgent and important user fields. TaskRPG owns only `Task done` and `Undo last`.
+TaskNotes owns task creation, planning, and the skill, size, urgent and important user fields. TaskRPG owns only `Task done` and `Undo last`, including the status values they write: `done` on resolution, `open` on undo.
 
 `task-utils.test.js` tests pure helpers, including the TaskNotes scheduled-date mapping and completion-field updates (missing-field insertion, frontmatter-only edits, literal `$` values, undo reopening the note with `status: open`, CRLF).
 
-`task-done.test.js` runs the real `Scripts/task-done.js` against an in-memory vault whose task note sits in `TaskNotes/Tasks/…` (the folder named by TaskNotes' `data.json`), and checks the logged `task_done` event, the completion-field update, and the rewritten `Engine/Hero.md` (derived HP, MP and skill XP). It also proves the script does not run when a required property is missing: `skill` or `size` absent, empty, or YAML `null`, and `taskId` absent, empty, or `null` — each case must leave the log and the note untouched.
+`task-done.test.js` runs the real `Scripts/task-done.js` against an in-memory vault whose task note sits in `TaskNotes/Tasks/…` (the folder named by TaskNotes' `data.json`), and checks the logged `task_done` event, the completion-field update, and the rewritten `Engine/Hero.md` (derived HP, MP and skill XP). One test starts the note at `status: open` and asserts `Task done` overwrites it with `done`. The file also proves the script does not run when a required property is missing: `skill` or `size` absent, empty, or YAML `null`, and `taskId` absent, empty, or `null` — each case must leave the log and the note untouched.
 
 A note is a task only when it carries TaskNotes' configured `taskTag`.
 
@@ -78,6 +78,7 @@ A good run ends with `# fail 0`. Pass a directory to `--test` and Node 22 fails 
 | Undo-linked task resolution guard           | `task resolution`, `undo is linked`, `duplicate resolution guard`                     |
 | Task folder resolved from TaskNotes data    | `taskFolder`, `configured TaskNotes folder`                                           |
 | Task tag resolved from TaskNotes data       | `taskTag`, `task tag`, `refuses a note`                                               |
+| `Task done` overwrites status with `done`   | `status done over`                                                                    |
 | Back-filling missed blocks                  | `back-fill`                                                                           |
 | Bad logs, bad actions, log text, dice       | `bad logs`, `bad actions`, `event log text`, `localStamp`, `rollDice`, `an empty log` |
 | Terminal gives identical results            | `recalc from the terminal`                                                            |

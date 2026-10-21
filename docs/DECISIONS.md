@@ -9,6 +9,16 @@ Statuses:
 - **Provisional**—reasonable default, explicitly revisable.
 - **Superseded**—no longer active; link to the replacement decision.
 
+## D-024—`Task done` always writes `status: done`
+
+- **Status:** Accepted
+- **Decision:** `task-done.js` overwrites the task note's `status` with `done` and stamps `completedDate`. Prior status is not preserved or restored on resolution.
+- **Context:** Script preserved whatever TaskNotes status the note held, so a task logged as resolved could still read `open`/`in-progress`. User confirmed TaskNotes detects a status value written straight to frontmatter, so no plugin API call needed.
+- **Rationale:** One rule: resolved RPG turn means completed task note. Symmetric with `Undo last`, which already writes `open` (D-021). `done` is a configured TaskNotes status with `isCompleted: true` in this vault.
+- **Alternatives considered:** Keep status untouched (note and log disagree); read `customStatuses` from TaskNotes `data.json` and write whichever entry has `isCompleted: true` (more code, more test surface, same result here).
+- **Implications:** Removes the "TaskRPG preserves TaskNotes status" claim from PRD 3.9, `TESTING.md` and `CHANGELOG.md`. Test `Task done writes status done over the note's current status` starts the note at `open`. Status write stays frontmatter-only via `updateTaskStatus`.
+- **Revisit when:** TaskNotes renames or removes `done` in `customStatuses`, or the user runs a different configured completion value.
+
 ## D-023—Task identity is a `taskId` frontmatter field, not the file path
 
 - **Status:** Accepted

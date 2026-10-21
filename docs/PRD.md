@@ -153,14 +153,14 @@ Full rationale and alternatives are in [`DECISIONS.md`](./DECISIONS.md).
 
 ### 3.9 Tasks, planning, and daily note
 
-- TaskNotes owns task creation, planning, scheduling, statuses, and skill/size/urgent/important user fields.
+- TaskNotes owns task creation, planning, scheduling, and skill/size/urgent/important user fields. TaskRPG writes only the two status values it owns: `done` on resolution and `open` on undo.
 - TaskRPG reads a stable task identity, skill, size, urgency, importance, and TaskNotes scheduled date.
 - Property mappings and configured status values must be confirmed against the installed TaskNotes version.
 - Schedule tasks in TaskNotes. A scheduled date matching today avoids the unplanned MP surcharge.
 - In phase 1, finish work, mark Done in TaskNotes, then run the manual Task done command with the task note open.
 - Task completion status and RPG resolution are distinct. Duplicate protection uses recorded RPG resolution, not TaskNotes status alone.
 - Undo last reverses the newest eligible RPG action with a correcting event, preserving original dice and history.
-- TaskNotes owns task statuses. Undo last writes the verified TaskNotes default status `open` and clears `completedDate` on the matching task note; it keeps no previous-status lookup.
+- TaskRPG owns the status writes it makes. `Task done` always writes `status: done` and stamps `completedDate`, overwriting any prior value; TaskNotes detects the written status directly. `Undo last` writes the verified TaskNotes default status `open` and clears `completedDate` on the matching task note; it keeps no previous-status lookup.
 - A task may optionally link to one campaign for story framing.
 - Resolution records one global game event and awards shared progression once, even if it advances campaign story.
 - Unfinished tasks remain managed in TaskNotes and may be rescheduled without penalty.

@@ -14,7 +14,7 @@ TaskRPG separates responsibilities:
 | Settings note       | Tunable values, skill definitions and configuration            |
 | QuickAdd wrappers   | Call the engine for task resolution, undo and other actions    |
 | Meta Bind           | Buttons, input fields and displays                             |
-| TaskNotes and Bases | Task creation, planning, statuses, task fields and task views  |
+| TaskNotes and Bases | Task creation, planning, task fields and task views           |
 | Dice Roller         | Approved narrative-table draws                                 |
 | Vault Operator      | Narration, personas, story and scoped memory                   |
 
@@ -30,7 +30,7 @@ Rules:
 - Record desktop and mobile integration results in TESTING.md.
 - Build one step at a time and stop for user validation.
 - Buttons, dice and stats must remain usable without AI.
-- **TaskNotes owns task creation, planning, statuses, and task user fields. TaskRPG owns task resolution (`Task done`) and undo.**
+- **TaskNotes owns task creation, planning, and task user fields. TaskRPG owns task resolution (`Task done`), undo, and the `done`/`open` status writes those actions make.**
 
 ## 2. Planned plugin stack
 
@@ -43,7 +43,7 @@ Confirm each plugin is installed, enabled and working before its build step.
 | Lazy Plugin Loader | Step 0      | Startup optimisation where useful                                                 | Do not delay dependencies in a way that breaks startup processing or buttons                         |
 | Meta Bind          | Step 2      | Habit/task buttons, hero panels and settings inputs                               | Verify bindings, command actions and mobile rendering                                                |
 | Fit                | Step 2      | Desktop/phone vault sync                                                          | Verify event-log and note sync, conflict handling and device-local configuration                     |
-| TaskNotes          | Step 3      | Task creation, planning, statuses, task user fields, backlog and task views       | Verify required fields, scheduled dates, completion timestamps and preservation of custom properties |
+| TaskNotes          | Step 3      | Task creation, planning, task user fields, backlog and task views                 | Verify required fields, scheduled dates, completion timestamps and preservation of custom properties |
 | Bases              | Step 3      | Core Obsidian feature used by TaskNotes views                                     | Enable it and verify the installed TaskNotes version's requirements                                  |
 | Dice Roller        | Step 3      | Narrative outcomes from table notes                                               | Verify table syntax, weighting and the supported integration method                                  |
 | Vault Operator     | Step 4      | Narrator, onboarding, character conversations, summaries and briefing             | Verify model connection, agent setup, memory scope and approval controls                             |
@@ -103,7 +103,7 @@ Resources:
 - Repository: https://github.com/callumalpass/tasknotes
 - Documentation: https://tasknotes.dev/obsidian/
 
-Use TaskNotes as the task layer: create tasks, plan or schedule them, manage statuses, and store the TaskRPG user fields.
+Use TaskNotes as the task layer: create tasks, plan or schedule them, and store the TaskRPG user fields.
 
 Task identity: TaskNotes identifies task notes by tag (`taskIdentificationMethod: "tag"`, `taskTag: "task"` in its plugin data), but it does not write a per-task ID. TaskRPG needs one that survives renames, so this vault adds it through a TaskNotes body template.
 

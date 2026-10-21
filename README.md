@@ -67,7 +67,7 @@ TaskRPG splits the work into clear layers, and each part has one job:
 
 | Layer                                        | Does                                                                  | Never does                             |
 | -------------------------------------------- | --------------------------------------------------------------------- | -------------------------------------- |
-| **TaskNotes**                                | Creates, plans and displays tasks; owns statuses and task user fields | Rolls dice or holds game rules         |
+| **TaskNotes**                                | Creates, plans and displays tasks; owns task user fields. TaskRPG writes only `done`/`open` | Rolls dice or holds game rules         |
 | **Plugins** (QuickAdd, Meta Bind, and so on) | Buttons, panels, dice tables, sync                                    | Hold game rules                        |
 | **Engine** (one plain JavaScript module)     | Every rule and number. Reads the event log and settings note          | Depend on Obsidian or any plugin       |
 | **Agents** (the narrator and each character) | Write story, characters and memory, in their own folders              | Change HP, MP, XP or edit task records |
@@ -155,7 +155,7 @@ The vault is organised by ownership and by which story data is shared across cam
 | **Campaign**   | One story log, arcs, quests and outcomes per campaign            | Narrator, with approval                     |
 | **Characters** | Stable hero/companion profiles and character-scoped memories     | User and character agents, with approval    |
 | **Journal**    | Daily notes and a generated "Today's turns" view                 | You and macros (only this folder is pruned) |
-| **TaskNotes**  | Task records, planning, statuses, task fields and starter views  | You and TaskNotes                           |
+| **TaskNotes**  | Task records, planning, task fields and starter views            | You, TaskNotes, TaskRPG status writes       |
 
 Scripts must stay in a visible folder: QuickAdd cannot load them from a hidden one.
 
