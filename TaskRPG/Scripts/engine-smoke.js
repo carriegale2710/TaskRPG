@@ -1,8 +1,8 @@
 // Throwaway Step 1 check: run the engine inside Obsidian (desktop or phone) against a TEST log.
 // It never touches the real log. Delete this file when the Step 2 macros exist.
-const LOG = "Engine/Test Events.md";
-const STATE = "Engine/Test State.md";
-const SETTINGS = "Engine/Settings.md";
+const LOG = "TaskRPG/Engine/Test Events.md";
+const STATE = "TaskRPG/Engine/Test State.md";
+const SETTINGS = "TaskRPG/Engine/Settings.md";
 const ENGINE = "Scripts/engine.js";
 
 module.exports = async ({ app, quickAddApi }) => {

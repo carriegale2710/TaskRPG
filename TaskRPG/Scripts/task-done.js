@@ -1,10 +1,10 @@
 "use strict";
 
 // QuickAdd user script: resolves the active TaskNotes task through the TaskRPG engine.
-const LOG = "Engine/Events.md";
-const SETTINGS = "Engine/Settings.md";
-const ENGINE = "Scripts/engine.js";
-const UTILS = "Scripts/task-utils.js";
+const LOG = "TaskRPG/Engine/Events.md";
+const SETTINGS = "TaskRPG/Engine/Settings.md";
+const ENGINE = "TaskRPG/Scripts/engine.js";
+const UTILS = "TaskRPG/Scripts/task-utils.js";
 
 module.exports = async ({ app }) => {
   const files = app.vault.adapter;

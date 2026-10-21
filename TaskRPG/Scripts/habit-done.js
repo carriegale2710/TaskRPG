@@ -1,16 +1,18 @@
-// QuickAdd user script: run while an Engine/Habits/ note is active.
-const LOG = "Engine/Events.md";
-const SETTINGS = "Engine/Settings.md";
-const HERO = "Engine/Hero.md";
-const ENGINE = "Scripts/engine.js";
+// QuickAdd user script: run while an TaskRPG/Engine/Habits/ note is active.
+const LOG = "TaskRPG/Engine/Events.md";
+const SETTINGS = "TaskRPG/Engine/Settings.md";
+const HERO = "TaskRPG/Engine/Hero.md";
+const ENGINE = "TaskRPG/Scripts/engine.js";
 
 module.exports = async ({ app, quickAddApi }) => {
   const files = app.vault.adapter;
   let committed = false;
   try {
     const file = app.workspace.getActiveFile();
-    if (!file || !/^Engine\/Habits\/[^/]+\.md$/.test(file.path)) {
-      throw new Error("Open a note in Engine/Habits/ before pressing Done.");
+    if (!file || !/^TaskRPG\/Engine\/Habits\/[^/]+\.md$/.test(file.path)) {
+      throw new Error(
+        "Open a note in TaskRPG/Engine/Habits/ before pressing Done.",
+      );
     }
     const habitText = await files.read(file.path);
     const frontmatter = /^---\r?\n([\s\S]*?)\r?\n---/.exec(habitText)?.[1];

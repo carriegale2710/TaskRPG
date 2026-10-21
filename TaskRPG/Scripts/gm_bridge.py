@@ -27,9 +27,9 @@ Model visibility
   consent to sending to that provider.
 
 Usage
-  python Scripts/gm_bridge.py status
-  python Scripts/gm_bridge.py briefing [--dry-run] [--force] [--date YYYY-MM-DD]
-  python Scripts/gm_bridge.py story    [--dry-run]
+  python TaskRPG/Scripts/gm_bridge.py status
+  python TaskRPG/Scripts/gm_bridge.py briefing [--dry-run] [--force] [--date YYYY-MM-DD]
+  python TaskRPG/Scripts/gm_bridge.py story    [--dry-run]
 
 Requires: pip install anthropic pyyaml
 Export:   ANTHROPIC_API_KEY, VAULT_PATH

@@ -1,7 +1,7 @@
 "use strict";
 // TaskRPG engine: plain JavaScript, no dependencies, no Obsidian code.
 //
-// The event log (Engine/Events.jsonl, one JSON object per line) is the source of truth.
+// The event log (TaskRPG/Engine/Events.jsonl, one JSON object per line) is the source of truth.
 // recalculate() replays it with the settings note and returns HP, MP, XP and each result.
 // Events are only ever appended. Undo is a correcting "undo" event, and events are
 // replayed in timestamp order, so back-filled past events just get appended too.

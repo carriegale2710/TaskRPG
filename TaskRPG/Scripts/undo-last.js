@@ -1,10 +1,10 @@
 "use strict";
 
 // QuickAdd user script: undoes the newest task or habit action from today.
-const LOG = "Engine/Events.md";
-const SETTINGS = "Engine/Settings.md";
-const ENGINE = "Scripts/engine.js";
-const UTILS = "Scripts/task-utils.js";
+const LOG = "TaskRPG/Engine/Events.md";
+const SETTINGS = "TaskRPG/Engine/Settings.md";
+const ENGINE = "TaskRPG/Scripts/engine.js";
+const UTILS = "TaskRPG/Scripts/task-utils.js";
 const TASKS_DIR = "TaskNotes";
 
 module.exports = async ({ app }) => {
