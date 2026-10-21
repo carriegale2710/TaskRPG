@@ -158,6 +158,32 @@ describe("task-utils.test.js", () => {
     assert.match(card, /Progress comes at a cost\./);
   });
 
+  test("taskFolder reads TaskNotes' configured folder and falls back to the default", async () => {
+    const files = (text) => ({
+      read: async () => {
+        if (text === null) throw new Error("missing data.json");
+        return text;
+      },
+    });
+    const configured = JSON.stringify({ tasksFolder: "/TaskNotes/Tasks/" });
+    assert.equal(await utils.taskFolder(files(configured)), "TaskNotes/Tasks");
+    assert.equal(await utils.taskFolder(files(null)), "TaskNotes/Tasks");
+    assert.equal(await utils.taskFolder(files("not json")), "TaskNotes/Tasks");
+  });
+
+  test("taskTag reads TaskNotes' configured tag and falls back to 'task'", async () => {
+    const files = (text) => ({
+      read: async () => {
+        if (text === null) throw new Error("missing data.json");
+        return text;
+      },
+    });
+    const configured = JSON.stringify({ taskTag: "#todo" });
+    assert.equal(await utils.taskTag(files(configured)), "todo");
+    assert.equal(await utils.taskTag(files(null)), "task");
+    assert.equal(await utils.taskTag(files("not json")), "task");
+  });
+
   test("updates completion fields without losing other fields", () => {
     const text =
       '---\ntype: task\ntaskId: abc\nstatus: done\ncompletedDate: ""\n---\n# Task';

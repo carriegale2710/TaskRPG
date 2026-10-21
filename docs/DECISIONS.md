@@ -1,6 +1,6 @@
 # TaskRPG Decision Log
 
-**Last Updated**: 2026-10-20
+**Last Updated**: 2026-10-21
 Newest first. A decision remains active until marked `Superseded`.
 
 Statuses:
@@ -8,6 +8,16 @@ Statuses:
 - **Accepted**—settled; agents must follow it.
 - **Provisional**—reasonable default, explicitly revisable.
 - **Superseded**—no longer active; link to the replacement decision.
+
+## D-022—A task note is identified by TaskNotes' tag, not a `type` field
+
+- **Status:** Accepted
+- **Decision:** `Task done` treats a note as a task when it carries TaskNotes' configured `taskTag` (read from `.obsidian/plugins/tasknotes/data.json`, fallback `task`) and has a non-empty `taskId`. The `type: task` requirement is removed.
+- **Context:** `task-done.js` required `type: task`, but TaskNotes 4.13.8 writes no such field and identifies tasks by tag (`taskIdentificationMethod: "tag"`). 0 of 11 real task notes had `type`, so every real note was refused as "not a TaskRPG task" even once `skill`/`size` were filled in.
+- **Rationale:** Uses the plugin's own identification, follows a renamed tag automatically, and needs no template or backfill migration.
+- **Alternatives considered:** Add `type: task` through the body template and backfill every note (duplicates an identity the plugin already keeps and can drift from it); keep the check and ask the user to add the field (breaks all existing notes).
+- **Implications:** `task-utils.taskTag()` mirrors `taskFolder()`. A note with `type: task` but no task tag is now refused. `type` may remain in frontmatter harmlessly. Covered by tests, not yet run against a live note that also has `skill`/`size`.
+- **Revisit when:** TaskNotes writes its own type field or changes `taskIdentificationMethod`.
 
 ## D-021—Undo restores the TaskNotes default `open` status
 

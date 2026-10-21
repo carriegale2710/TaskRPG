@@ -35,6 +35,9 @@ Done vs not done, per step. This file is the single home for build status; updat
 - `completedDate` ownership unverified. Missing-field insertion, frontmatter-only edits, literal `$` values and CRLF are covered by `task-utils.test.js` (issue #14); TaskNotes still needs the manual check.
 - Duplicate-resolution guard end-to-end pending.
 - TaskNotes status ownership: undo writes the plugin default `open` and clears `completedDate`; verified against TaskNotes 4.13.8 (`defaultTaskStatus: "open"`), field preservation still needs the manual Obsidian check.
+- The task folder is read from the TaskNotes plugin's `data.json` (`tasksFolder`, fallback `TaskNotes/Tasks`), not hard-coded.
+- Task lookup covers only the configured `tasksFolder`, not subfolders beneath it or task notes moved elsewhere; an undo then corrects the log, leaves the note Done, and the Notice reports that no matching task note was found.
+- Task identity: TaskNotes 4.13.8 identifies tasks by tag (`taskIdentificationMethod: "tag"`, `taskTag: "task"`) and writes no ID. The body template (`TaskNotes/Templates/template.md`, `taskId: {{nano}}`) was verified manually on 2026-10-21: a new task got the `taskId` line and kept its `tags` and `status`.
 - TaskNotes field mapping unverified for the installed version.
 - Desktop Obsidian unverified (`Task done`, result modal, event log, task updates).
 - Mobile result card unverified.
@@ -210,7 +213,7 @@ node --test Scripts/engine.test.js Scripts/habit-done.test.js Scripts/task-utils
 
 All of these tests pass on this branch.
 
-`Scripts/task-utils.test.js` covers frontmatter parsing (including TaskNotes block-list tags, double-, single- and unquoted scalar values, empty quoted values, values containing a colon or quote, CRLF and BOM), scheduled-date mapping, outcome-table selection, result-card formatting, and completion-field updates. Completion-field tests cover inserting a missing field, editing only the frontmatter (a `status:` line in the body is untouched), literal `$&`/`$1` values, the undo case (`status: open` with `completedDate: ""`), CRLF preservation, and a clear error when there is no frontmatter. It also checks that a fully quoted `type`/`taskId`/`skill`/`size` passes the same checks `task-done.js` applies.
+`Scripts/task-utils.test.js` covers frontmatter parsing (including TaskNotes block-list tags, double-, single- and unquoted scalar values, empty quoted values, values containing a colon or quote, CRLF and BOM), scheduled-date mapping, outcome-table selection, result-card formatting, and completion-field updates. Completion-field tests cover inserting a missing field, editing only the frontmatter (a `status:` line in the body is untouched), literal `$&`/`$1` values, the undo case (`status: open` with `completedDate: ""`), CRLF preservation, and a clear error when there is no frontmatter. It also checks that`taskTag` reads the configured tag with a `task` fallback.
 
 `Scripts/task-undo.test.js` covers the shared `hasUnresolvedTaskDone` guard, `targetEventId` undo linkage, repeat resolution after undo, and preservation of the original `task_done` event. It does **not** exercise the QuickAdd macros end to end, TaskNotes compatibility, Obsidian’s modal, the phone fallback, or hero-state updates.
 

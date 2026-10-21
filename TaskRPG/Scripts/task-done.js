@@ -12,15 +12,18 @@ module.exports = async ({ app }) => {
   try {
     const utils = await loadModule(files, UTILS);
     const engine = await loadModule(files, ENGINE);
+    const folder = await utils.taskFolder(files);
+    const tag = await utils.taskTag(files);
     const file = app.workspace.getActiveFile();
-    if (!file || !/^TaskNotes\/[^/]+\.md$/.test(file.path)) {
+    if (!file || !file.path.startsWith(`${folder}/`)) {
       throw new Error("Open a TaskNotes task before pressing Done.");
     }
 
     const original = await files.read(file.path);
     const task = utils.parseFrontmatter(original);
-    if (task.type !== "task" || !task.taskId)
-      throw new Error("This note is not a TaskRPG task.");
+    // TaskNotes identifies tasks by tag; there is no `type` field to check.
+    if (!utils.hasTag(task.tags, tag) || missing(task.taskId))
+      throw new Error("This note is not a task.");
 
     const settings = engine.parseSettingsNote(await files.read(SETTINGS));
     if (!settings.skills.includes(task.skill))

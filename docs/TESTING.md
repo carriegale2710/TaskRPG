@@ -70,6 +70,8 @@ A good run ends with `# fail 0`. Pass a directory to `--test` and Node 22 fails 
 | Settings changes (prospective, validated)   | `settings change`, `settings are validated`, `lowering max`, `the live Settings.md`   |
 | Undo                                        | `undo`, `pressing Done again`                                                         |
 | Undo-linked task resolution guard           | `task resolution`, `undo is linked`, `duplicate resolution guard`                     |
+| Task folder resolved from TaskNotes data    | `taskFolder`, `configured TaskNotes folder`                                           |
+| Task tag resolved from TaskNotes data       | `taskTag`, `task tag`, `refuses a note`                                               |
 | Back-filling missed blocks                  | `back-fill`                                                                           |
 | Bad logs, bad actions, log text, dice       | `bad logs`, `bad actions`, `event log text`, `localStamp`, `rollDice`, `an empty log` |
 | Terminal gives identical results            | `recalc from the terminal`                                                            |

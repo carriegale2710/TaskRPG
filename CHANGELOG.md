@@ -64,6 +64,7 @@ TaskNotes = task creation, planning, statuses, user fields, while TaskRPG = task
 - `Journal/` folder moved outside of `TaskRPG`/ folder - user-owned content, agents should not touch it.
 - Moves the game content from repository root into `TaskRPG/`: `Engine/`, `Scripts/`, `Story/`, `World/`, `Characters/`, `Campaign/`, `Backlog/`, and assets.
 - Categorize tests with describe blocks to improve terminal readabilty. See `docs/TESTING.md`.
+- `AGENTS.md` owns _where_ existing information lives; `docs/DOCUMENTATION.md` owns _how_ to write documentation and where _new_ documentation goes. No rule was removed, only relocated or dropped where it duplicated `AGENTS.md`.
 
 #### Fixed
 
@@ -75,6 +76,8 @@ TaskNotes = task creation, planning, statuses, user fields, while TaskRPG = task
 - `updateTaskStatus` now edits only the frontmatter block, inserts `status`/`completedDate` when missing, writes `$&`/`$1` literally, preserves CRLF, and throws a clear error when there is no frontmatter (issue #14). This fixes `Task done` silently logging an event without marking the note.
 - `task-done.js`/`task-undo.js` rewrite only the `status` and `completedDate` lines; other frontmatter untouched. `task-done.js` preserves the TaskNotes status.
 - `Undo last` now restores the TaskNotes status to `open` and clears `completedDate`, so the note no longer stays Done after an undo (issue #19). The status value is defined once as `OPEN_TASK_STATUS` in `task-utils.js`; TaskNotes 4.13.8 uses `open` as `defaultTaskStatus`.
+- Task notes identified via the `tasksFolder` in TaskNotes' `data.json` (fallback `TaskNotes/Tasks`) instead of assuming notes sit directly in `TaskNotes/`.
+- Identifies a note is a task by `taskTag` (read from `data.json`, fallback `task`) instead of requiring a `type: task` frontmatter field. Adds `taskTag` to `task-utils.js` and tests that a note without the tag is refused.
 
 #### Removed
 

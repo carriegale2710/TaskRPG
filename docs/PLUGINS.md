@@ -105,6 +105,20 @@ Resources:
 
 Use TaskNotes as the task layer: create tasks, plan or schedule them, manage statuses, and store the TaskRPG user fields.
 
+Task identity: TaskNotes identifies task notes by tag (`taskIdentificationMethod: "tag"`, `taskTag: "task"` in its plugin data), but it does not write a per-task ID. TaskRPG needs one that survives renames, so this vault adds it through a TaskNotes body template.
+
+The template lives at `TaskNotes/Templates/template.md` and TaskNotes' body template setting points at `TaskNotes/Templates/template` (without `.md`):
+
+```markdown
+---
+taskId: { { nano } }
+skill:
+size:
+---
+```
+
+`{{nano}}` is a timestamp plus random string, unique per task. Verified manually on TaskNotes 4.13.8: a new task gets the `taskId` line, and TaskNotes still adds its own `tags: - task` and `status`. The empty `skill`/`size` lines only reserve the properties; TaskRPG still rejects empty values, so each task needs a real skill and size. The `taskId` user field is already defined in TaskNotes' settings, so it appears in the task modal.
+
 TaskRPG needs task metadata for:
 
 - A stable task ID.

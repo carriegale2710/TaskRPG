@@ -150,6 +150,33 @@ function reopenTaskNote(text) {
   });
 }
 
+// TaskNotes stores task notes in the folder configured in its plugin data and
+// identifies a task by a tag, not by a `type` field. Read both instead of
+// guessing, so moving the folder or renaming the tag does not silently break
+// task lookup. Missing or unreadable data falls back to the plugin defaults.
+const TASKNOTES_DATA = ".obsidian/plugins/tasknotes/data.json";
+
+async function tasknotesConfig(files) {
+  try {
+    return JSON.parse(await files.read(TASKNOTES_DATA));
+  } catch {
+    return {};
+  }
+}
+
+async function taskFolder(files) {
+  const folder = String((await tasknotesConfig(files)).tasksFolder ?? "")
+    .replace(/^\/+|\/+$/g, "");
+  return folder || "TaskNotes/Tasks";
+}
+
+async function taskTag(files) {
+  const tag = String((await tasknotesConfig(files)).taskTag ?? "")
+    .trim()
+    .replace(/^#/, "");
+  return tag || "task";
+}
+
 // A task is unresolved when its latest relevant RPG event is task_done.
 // Undo events identify the action they reverse with targetEventId, so follow
 // that link back to the task_done event instead of filtering undo by taskId.
@@ -178,6 +205,8 @@ module.exports = {
   pickTableResult,
   reopenTaskNote,
   scheduled,
+  taskFolder,
+  taskTag,
   today,
   updateTaskStatus,
 };
