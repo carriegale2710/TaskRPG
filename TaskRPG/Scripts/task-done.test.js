@@ -102,6 +102,14 @@ describe("task-done.test.js", () => {
     assert.match(h.notices[0], /Task complete/);
   });
 
+  test("Task done adds a task_done event to the log", async () => {
+    const h = harness();
+
+    await h.press();
+
+    assert.equal(h.data.has(LOG), true);
+  });
+
   // TaskNotes identifies a task by tag, not by a `type` field.
 
   test("Task done refuses a note with no task tag", async () => {

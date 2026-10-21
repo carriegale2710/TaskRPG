@@ -2,8 +2,14 @@
 
 const { test, describe } = require("node:test");
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
 const { hasUnresolvedTaskDone } = require("./task-utils.js");
 const engine = require("./engine.js");
+const undoLast = require("./task-undo.js");
+
+const readRepo = (name) =>
+  fs.readFileSync(path.join(__dirname, "..", name), "utf8");
 
 // Regression tests for TaskNotes-wrapped task resolution and undo.
 
@@ -68,6 +74,78 @@ function taskDoneEvent({ id, taskId, timestamp, roll = [3, 4], lootRoll = 1 }) {
 
 function undoEvent({ id, targetEventId, timestamp }) {
   return { id, type: "undo", timestamp, targetEventId };
+}
+
+const TASKNOTES_DATA = ".obsidian/plugins/tasknotes/data.json";
+const TASKS = {
+  matching: "TaskNotes/Tasks/fix the fence.md",
+  other: "TaskNotes/Tasks/water the plants.md",
+};
+
+function taskNote({
+  taskId,
+  status = "done",
+  completedDate = "2026-10-15T01:00:00+11:00",
+}) {
+  return `---\ntype: task\ntaskId: ${taskId}\nstatus: ${status}\ncompletedDate: "${completedDate}"\n---\n# Task\n\nBody stays.`;
+}
+
+// Runs the real QuickAdd script against an in-memory vault. The seeded log is
+// fixed-shape, but its timestamp must be now so the action lands on today's game day.
+function undoHarness({
+  action,
+  notes = { [TASKS.matching]: "task-1", [TASKS.other]: "task-2" },
+} = {}) {
+  const event =
+    action ??
+    taskDoneEvent({
+      id: "task-event-1",
+      taskId: "task-1",
+      timestamp: engine.localStamp(),
+    });
+  const data = new Map([
+    ["TaskRPG/Scripts/engine.js", readRepo("Scripts/engine.js")],
+    ["TaskRPG/Scripts/task-utils.js", readRepo("Scripts/task-utils.js")],
+    ["TaskRPG/Engine/Settings.md", readRepo("Engine/Settings.md")],
+    ["TaskRPG/Engine/Events.md", `${JSON.stringify(event)}\n`],
+    // Mirrors the vault: TaskNotes stores tasks in its configured tasksFolder,
+    // so the lookup has to leave the TaskNotes root to find one.
+    [TASKNOTES_DATA, JSON.stringify({ tasksFolder: "TaskNotes/Tasks" })],
+    ["TaskNotes/Tasks", ""],
+    ["TaskNotes/Start Here.md", "---\ntype: index\n---\n# TaskNotes"],
+    ...Object.entries(notes).map(([file, taskId]) => [
+      file,
+      taskNote({ taskId }),
+    ]),
+  ]);
+  const notices = [];
+  global.Notice = class {
+    constructor(message) {
+      notices.push(message);
+    }
+  };
+  const adapter = {
+    read: async (p) => {
+      if (!data.has(p)) throw Error(`Missing ${p}`);
+      return data.get(p);
+    },
+    exists: async (p) => data.has(p),
+    write: async (p, text) => {
+      data.set(p, text);
+    },
+    list: async (dir) => {
+      if (dir === "TaskNotes/Tasks")
+        return { files: Object.keys(notes), folders: [] };
+      if (dir === "TaskNotes")
+        return { files: ["TaskNotes/Start Here.md"], folders: ["TaskNotes/Tasks"] };
+      return { files: [], folders: [] };
+    },
+  };
+  return {
+    data,
+    notices,
+    press: () => undoLast({ app: { vault: { adapter } } }),
+  };
 }
 
 describe("task-undo.test.js", () => {
@@ -218,5 +296,58 @@ describe("task-undo.test.js", () => {
       }),
     ];
     assert.equal(hasUnresolvedTaskDone(events, "task-1"), true);
+  });
+
+  test('undoing a task_done event writes status: open and completedDate: "" to the matching note', async () => {
+    const h = undoHarness();
+    const otherBefore = h.data.get(TASKS.other);
+
+    await h.press();
+
+    const note = h.data.get(TASKS.matching);
+    assert.match(note, /^status: open$/m);
+    assert.match(note, /^completedDate: ""$/m);
+    assert.match(note, /^taskId: task-1$/m);
+    assert.equal(note.endsWith("# Task\n\nBody stays."), true);
+    assert.equal(h.data.get(TASKS.other), otherBefore);
+
+    const events = engine.parseEvents(h.data.get("TaskRPG/Engine/Events.md"));
+    assert.equal(events.at(-1).type, "undo");
+    assert.equal(events.at(-1).targetEventId, "task-event-1");
+    assert.match(h.notices[0], /TaskNotes status restored to open/);
+  });
+
+  test("undoing a habit leaves task notes untouched and does not claim a TaskNotes change", async () => {
+    const h = undoHarness({
+      action: {
+        id: "habit-event-1",
+        type: "habit_done",
+        timestamp: engine.localStamp(),
+        habitId: "morning-routine",
+        skill: "vitality",
+        onTime: true,
+      },
+    });
+    const before = [h.data.get(TASKS.matching), h.data.get(TASKS.other)];
+
+    await h.press();
+
+    assert.deepEqual(
+      [h.data.get(TASKS.matching), h.data.get(TASKS.other)],
+      before,
+    );
+    assert.doesNotMatch(h.notices[0], /TaskNotes/);
+    assert.match(h.notices[0], /^Undid the last RPG action\./);
+  });
+
+  test("an undo with no matching note still logs the correction and says so", async () => {
+    const h = undoHarness({ notes: {} });
+
+    await h.press();
+
+    const events = engine.parseEvents(h.data.get("TaskRPG/Engine/Events.md"));
+    assert.equal(events.length, 3);
+    assert.equal(events.at(-1).type, "undo");
+    assert.match(h.notices[0], /no matching task note/);
   });
 });

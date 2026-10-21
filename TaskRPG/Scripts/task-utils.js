@@ -124,22 +124,25 @@ function formatResultCard({
   return lines.join("\n");
 }
 
-function updateTaskStatus(text, { status, completedDate }) {
+function updateFrontmatter(text, values) {
   const match = /^(\uFEFF?---)(\r?\n)([\s\S]*?)(\r?\n---)/.exec(text);
   if (!match) throw new Error("Task note has no frontmatter to update.");
   const [, open, eol, body, close] = match;
   const lines = body ? body.split(eol) : [];
   // Values are written as plain text, never as a String.replace pattern.
-  const values = {
-    status: String(status ?? ""),
-    completedDate: `"${completedDate ?? ""}"`,
-  };
   for (const [key, value] of Object.entries(values)) {
     const index = lines.findIndex((line) => line.split(":")[0].trim() === key);
     if (index === -1) lines.push(`${key}: ${value}`);
     else lines[index] = `${key}: ${value}`;
   }
   return `${open}${eol}${lines.join(eol)}${close}${text.slice(match[0].length)}`;
+}
+
+function updateTaskStatus(text, { status, completedDate }) {
+  return updateFrontmatter(text, {
+    status: String(status ?? ""),
+    completedDate: `"${completedDate ?? ""}"`,
+  });
 }
 
 // Undo restores the TaskNotes status to the plugin default and clears completion.
@@ -208,5 +211,6 @@ module.exports = {
   taskFolder,
   taskTag,
   today,
+  updateFrontmatter,
   updateTaskStatus,
 };

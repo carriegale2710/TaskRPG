@@ -233,7 +233,7 @@ describe("task-utils.test.js", () => {
     assert.equal(fields.completedDate, "$1 and $&");
   });
 
-  test("undo writes an empty completedDate and preserves the existing status", () => {
+  test("updateTaskStatus writes an empty completedDate and keeps the status it is given", () => {
     const text = "---\ntype: task\ntaskId: abc\nstatus: done\n---\n# Task";
     const updated = utils.updateTaskStatus(text, {
       status: "done",

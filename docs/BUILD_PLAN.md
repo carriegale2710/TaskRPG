@@ -38,6 +38,7 @@ Done vs not done, per step. This file is the single home for build status; updat
 - The task folder is read from the TaskNotes plugin's `data.json` (`tasksFolder`, fallback `TaskNotes/Tasks`), not hard-coded.
 - Task lookup covers only the configured `tasksFolder`, not subfolders beneath it or task notes moved elsewhere; an undo then corrects the log, leaves the note Done, and the Notice reports that no matching task note was found.
 - Task identity: TaskNotes 4.13.8 identifies tasks by tag (`taskIdentificationMethod: "tag"`, `taskTag: "task"`) and writes no ID. The body template (`TaskNotes/Templates/template.md`, `taskId: {{nano}}`) was verified manually on 2026-10-21: a new task got the `taskId` line and kept its `tags` and `status`.
+- `Task done` still needs `skill` and `size` on the note. The template reserves both as empty properties, but TaskRPG rejects empty values. TaskRPG cannot resolve any current task until those are filled in.
 - TaskNotes field mapping unverified for the installed version.
 - Desktop Obsidian unverified (`Task done`, result modal, event log, task updates).
 - Mobile result card unverified.

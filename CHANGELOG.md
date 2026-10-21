@@ -54,6 +54,7 @@ TaskNotes = task creation, planning, statuses, user fields, while TaskRPG = task
   - `targetEventId` undo linkage
   - repeat resolution after undo
   - preserved original `task_done` event
+  - end-to-end `Undo last` run against a stubbed vault adapter: the matching note gets `status: open` and `completedDate: ""`, and a second Done note is left untouched (test-only; behaviour already shipped)
 
 #### Changed
 
@@ -80,7 +81,7 @@ TaskNotes = task creation, planning, statuses, user fields, while TaskRPG = task
 - Identifies a note is a task by `taskTag` (read from `data.json`, fallback `task`) instead of requiring a `type: task` frontmatter field. Adds `taskTag` to `task-utils.js` and tests that a note without the tag is refused.
 - Task identity: Adds `taskId` as the stable identity (decision D-023), a TaskNotes body template (`TaskNotes/Templates/template.md`: `taskId: {{nano}}`) for new notes. Template verified manually on 2026-10-21 (taskId written, tags/status preserved).
 - `Task done` now treats `taskId: null`, `taskId: ~` and `taskId: undefined` as missing instead of accepting the literal word as an ID. `task-done.test.js` adds negative cases for missing, empty and `null` `taskId`, `skill` and `size`: no event is logged and the note is untouched (test-only coverage for the skill/size checks, which the engine also enforces).
-
+- `Undo last`'s Notice now matches what happened: "TaskNotes status restored to open" only after a task note was actually rewritten; a task undo with no matching note says so instead; a habit undo does not mention TaskNotes. Tests cover all three paths.
 
 #### Removed
 

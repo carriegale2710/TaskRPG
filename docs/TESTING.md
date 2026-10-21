@@ -4,9 +4,13 @@ Two ways to check the engine: automated tests in a terminal (every rule), and a 
 
 ## Task resolution and undo tests
 
-TaskNotes owns task creation, planning, statuses, and the skill, size, urgent and important user fields. TaskRPG owns only `Task done` and `Undo last`. The old `New task` and `Plan task` macros have been removed.
+TaskNotes owns task creation, planning, statuses, and the skill, size, urgent and important user fields. TaskRPG owns only `Task done` and `Undo last`.
 
 `task-utils.test.js` tests pure helpers, including the TaskNotes scheduled-date mapping and completion-field updates (missing-field insertion, frontmatter-only edits, literal `$` values, undo reopening the note with `status: open`, CRLF).
+
+`task-done.test.js` runs the real `Scripts/task-done.js` against an in-memory vault whose task note sits in `TaskNotes/Tasks/…` (the folder named by TaskNotes' `data.json`), and checks the logged `task_done` event and the completion-field update. It also proves the script does not run when a required property is missing: `skill` or `size` absent, empty, or YAML `null`, and `taskId` absent, empty, or `null` — each case must leave the log and the note untouched.
+
+A note is a task only when it carries TaskNotes' configured `taskTag`.
 
 `task-undo.test.js` tests the shared duplicate-resolution guard:
 
@@ -16,8 +20,10 @@ TaskNotes owns task creation, planning, statuses, and the skill, size, urgent an
 - An undo targeting another task does not release this task’s guard.
 - Resolve → undo → resolve produces a fresh resolution marked `repeat` by the engine.
 - The original `task_done` event remains in the log; undo appends a correction.
+- Running the real `Scripts/task-undo.js` against an in-memory vault adapter writes `status: open` and `completedDate: ""` to the matching TaskNotes note, leaves a second Done note untouched, and appends the `undo` event.
+- Undoing a habit leaves task notes untouched and the Notice does not mention TaskNotes; a task undo with no matching note still logs the correction and the Notice says so.
 
-These tests import `hasUnresolvedTaskDone` from `Scripts/task-utils.js`, the same implementation used by `Scripts/task-done.js`. They are not evidence that the QuickAdd scripts work inside Obsidian or that TaskNotes preserves the required fields. To verify the integration, create and schedule a task in TaskNotes, mark it Done, run `Task done`, inspect the result, then run `Undo last`; check the result card or Notice on desktop and phone. Never point this check at an important task or concurrent synced devices: the Step 3 QuickAdd scripts write the live `Engine/Events.md`, while the Step 1 smoke test below uses `Engine/Test Events.md`.
+These tests import `hasUnresolvedTaskDone` from `Scripts/task-utils.js`, the same implementation used by `Scripts/task-done.js`. The stubbed-vault test runs the actual `task-undo.js` code path, but it is still not evidence that QuickAdd runs the script inside Obsidian or that TaskNotes preserves the required fields. To verify the integration, create and schedule a task in TaskNotes, mark it Done, run `Task done`, inspect the result, then run `Undo last`; check the result card or Notice on desktop and phone. Never point this check at an important task or concurrent synced devices: the Step 3 QuickAdd scripts write the live `Engine/Events.md`, while the Step 1 smoke test below uses `Engine/Test Events.md`.
 
 Run from the vault folder with Node.js 22 or newer:
 

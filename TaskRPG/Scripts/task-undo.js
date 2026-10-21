@@ -5,7 +5,6 @@ const LOG = "TaskRPG/Engine/Events.md";
 const SETTINGS = "TaskRPG/Engine/Settings.md";
 const ENGINE = "TaskRPG/Scripts/engine.js";
 const UTILS = "TaskRPG/Scripts/task-utils.js";
-const TASKS_DIR = "TaskNotes";
 
 module.exports = async ({ app }) => {
   const files = app.vault.adapter;
@@ -38,18 +37,29 @@ module.exports = async ({ app }) => {
     );
     committed = true;
 
+    let reopened = false;
     if (target?.type === "task_done" && target.taskId) {
-      const path = await findTaskPath(files, utils, target.taskId);
+      const path = await findTaskPath(
+        files,
+        utils,
+        await utils.taskFolder(files),
+        target.taskId,
+      );
       if (path) {
         const text = await files.read(path);
         // TaskNotes owns task status. Undo restores its default open status and
         // clears the completion date, editing only the frontmatter block.
         await files.write(path, utils.reopenTaskNote(text));
+        reopened = true;
       }
     }
 
     new Notice(
-      "Undid the last RPG action. TaskNotes status restored to open.",
+      target?.type === "task_done"
+        ? reopened
+          ? "Undid the last RPG action. TaskNotes status restored to open."
+          : "Undid the last RPG action, but no matching task note was found. Check TaskNotes' tasks folder."
+        : "Undid the last RPG action. Habit notes are unchanged.",
       8000,
     );
   } catch (error) {
@@ -69,12 +79,13 @@ async function loadModule(files, path) {
   return module.exports;
 }
 
-async function findTaskPath(files, utils, taskId) {
-  if (!(await files.exists(TASKS_DIR))) return "";
-  for (const file of (await files.list(TASKS_DIR)).files || []) {
-    if (!file.endsWith(".md")) continue;
-    if (utils.parseFrontmatter(await files.read(file)).taskId === taskId)
-      return file;
+async function findTaskPath(files, utils, folder, taskId) {
+  if (!(await files.exists(folder))) return "";
+  const { files: names = [] } = await files.list(folder);
+  for (const name of names) {
+    if (!name.endsWith(".md")) continue;
+    if (utils.parseFrontmatter(await files.read(name)).taskId === taskId)
+      return name;
   }
   return "";
 }
