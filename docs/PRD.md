@@ -3,9 +3,9 @@
 **Status:** Ready to build (v2)  
 **Source of truth for:** product behavior, game rules, v1 scope, and settled decisions  
 **Related:** [ARCHITECTURE.md](./ARCHITECTURE.md) · [DECISIONS.md](./DECISIONS.md) · [BUILD_PLAN.md](./BUILD_PLAN.md) · [PLUGINS.md](./PLUGINS.md) · [TESTING.md](./TESTING.md)
-**Last Updated**: 2026-10-18
+**Last Updated**: 2026-10-21
 
-Decision rationale, rejected alternatives, and historical context live in [`docs/DECISIONS.md`](./DECISIONS.md). Technical structure, ownership, data, and integration boundaries live in [`docs/ARCHITECTURE.md`](./ARCHITECTURE.md).
+Rationale, rejected alternatives and history: [`docs/DECISIONS.md`](./DECISIONS.md). Structure, ownership and integration boundaries: [`docs/ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 ## 1. Overview
 
@@ -153,14 +153,13 @@ Full rationale and alternatives are in [`DECISIONS.md`](./DECISIONS.md).
 
 ### 3.9 Tasks, planning, and daily note
 
-- TaskNotes owns task creation, planning, scheduling, and skill/size/urgent/important user fields. TaskRPG writes only the two status values it owns: `done` on resolution and `open` on undo.
+- TaskNotes owns task creation, planning, scheduling, and skill/size/urgent/important user fields. TaskRPG writes only the two status values it owns: `done` on resolution (overwriting any prior value, with `completedDate`) and `open` on undo (clearing `completedDate`, no previous-status lookup). TaskNotes detects the written value.
 - TaskRPG reads a stable task identity, skill, size, urgency, importance, and TaskNotes scheduled date.
 - Property mappings and configured status values must be confirmed against the installed TaskNotes version.
 - Schedule tasks in TaskNotes. A scheduled date matching today avoids the unplanned MP surcharge.
 - In phase 1, finish work, mark Done in TaskNotes, then run the manual Task done command with the task note open.
 - Task completion status and RPG resolution are distinct. Duplicate protection uses recorded RPG resolution, not TaskNotes status alone.
 - Undo last reverses the newest eligible RPG action with a correcting event, preserving original dice and history.
-- TaskRPG owns the status writes it makes. `Task done` always writes `status: done` and stamps `completedDate`, overwriting any prior value; TaskNotes detects the written status directly. `Undo last` writes the verified TaskNotes default status `open` and clears `completedDate` on the matching task note; it keeps no previous-status lookup.
 - A task may optionally link to one campaign for story framing.
 - Resolution records one global game event and awards shared progression once, even if it advances campaign story.
 - Unfinished tasks remain managed in TaskNotes and may be rescheduled without penalty.
@@ -259,10 +258,7 @@ Full rationale and alternatives are in [`DECISIONS.md`](./DECISIONS.md).
 - Projects are the hero’s epic stories.
 - The hero has a persona file like other characters.
 - Companions speak to the hero in character; narrator real-talk speaks to the user directly.
-- The party starts with one companion.
-- New companions join through story after an arc or boss challenge.
-- Maximum 5 companions, one per skill by default.
-- Additional characters can be added as NPCs without progression systems.
+- Party size and joining follow 3.12.
 
 ### 3.17 Undo
 
@@ -331,7 +327,7 @@ Full rationale and alternatives are in [`DECISIONS.md`](./DECISIONS.md).
 ### 3.24 Finished tasks and low points
 
 - After 30 days, finished tasks are folded into one monthly archive note.
-- Each archive line records date done, name, skill, size, project, and completion date.
+- Each archive line records date done, name, skill, size and project.
 - Individual task notes are removed after archiving; originals remain in GitHub history.
 - Cleanup runs alongside daily-note pruning when the vault opens.
 - Tasks in unfinished arcs remain until the arc completes.
@@ -401,7 +397,7 @@ These are aspirational targets, not pass/fail requirements.
 - Tutorial arc with staged unlocks
 - Trial week and one-minute end-of-week check
 - One tested engine script used by all macros
-- TaskNotes task creation, planning, statuses, and user fields
+- TaskNotes task creation, planning and user fields
 - QuickAdd wrappers: Task done, habit Done, rest day, pause/resume, Undo last, recalculate
 - Event log and hero note with Meta Bind panels
 - Settings note for mechanics and preferences

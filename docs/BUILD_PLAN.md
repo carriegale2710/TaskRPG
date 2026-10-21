@@ -8,16 +8,15 @@
 4. **Visibility** — morning briefing, quest board, reminders
 5. **Polish and release** — settings, edge cases, documentation, validation
 
-The detailed build order below is the source of truth for implementation sequence.
+Build order below is the source of truth for implementation sequence.
 
 ## Objective
 
-Build TaskRPG v1 according to `docs/PRD.md`, using the architecture in
-`docs/ARCHITECTURE.md` and respecting decisions in `docs/DECISIONS.md`.
+Build TaskRPG v1 per `docs/PRD.md`, `docs/ARCHITECTURE.md` and `docs/DECISIONS.md`.
 
 ## Build status
 
-Done vs not done, per step. This file is the single home for build status; update it as steps change. Change history belongs in `CHANGELOG.md`; test procedures belong in `docs/TESTING.md`.
+Single home for build status. Change history: `CHANGELOG.md`. Test procedures: `docs/TESTING.md`.
 
 | Step                                    | Status                                                                                          |
 | --------------------------------------- | ----------------------------------------------------------------------------------------------- |
@@ -32,23 +31,22 @@ Done vs not done, per step. This file is the single home for build status; updat
 
 ### Known gaps and validation status
 
-- `completedDate` ownership unverified. Missing-field insertion, frontmatter-only edits, literal `$` values and CRLF are covered by `task-utils.test.js` (issue #14); TaskNotes still needs the manual check.
+- `completedDate` ownership unverified. Missing-field insertion, frontmatter-only edits, literal `$` and CRLF are covered by `task-utils.test.js` (issue #14); TaskNotes manual check pending.
 - Duplicate-resolution guard end-to-end pending.
-- Task note status writes: `Task done` always writes `status: done` (D-024); undo writes the plugin default `open` and clears `completedDate`. Verified against TaskNotes 4.13.8 (`defaultTaskStatus: "open"`, `done` configured with `isCompleted: true`); field preservation verified in Obsidian.
-- The task folder is read from the TaskNotes plugin's `data.json` (`tasksFolder`, fallback `TaskNotes/Tasks`), not hard-coded.
-- Task lookup covers only the configured `tasksFolder`, not subfolders beneath it or task notes moved elsewhere; an undo then corrects the log, leaves the note Done, and the Notice reports that no matching task note was found.
-- Task identity: TaskNotes 4.13.8 identifies tasks by tag (`taskIdentificationMethod: "tag"`, `taskTag: "task"`) and writes no ID. The body template (`TaskNotes/Templates/template.md`, `taskId: {{nano}}`) was verified manually on 2026-10-21: a new task got the `taskId` line and kept its `tags` and `status`.
-- `Task done` still needs `skill` and `size` on the note. The template reserves both as empty properties, but TaskRPG rejects empty values. TaskRPG cannot resolve any current task until those are filled in.
+- Task note status writes: `Task done` always writes `status: done` (D-024); undo writes the plugin default `open` and clears `completedDate`. Verified against TaskNotes 4.13.8 (`defaultTaskStatus: "open"`, `done` configured `isCompleted: true`); field preservation pending the manual check.
+- Task folder read from TaskNotes `data.json` (`tasksFolder`, fallback `TaskNotes/Tasks`), not hard-coded.
+- Task lookup covers only the configured `tasksFolder`, not subfolders or notes moved elsewhere. An undo then corrects the log, leaves the note Done, and the Notice says no matching note was found.
+- Task identity: TaskNotes 4.13.8 identifies tasks by tag (`taskIdentificationMethod: "tag"`, `taskTag: "task"`) and writes no ID. Body template (`TaskNotes/Templates/template.md`, `taskId: {{nano}}`) verified manually 2026-10-21: new task got `taskId`, kept `tags` and `status`.
+- `Task done` needs `skill` and `size` on the note. The template reserves both empty; TaskRPG rejects empty values.
 - TaskNotes field mapping unverified for the installed version.
-- Desktop Obsidian unverified (`Task done`, result modal, event log, task updates).
+- Desktop Obsidian unverified: `Task done`, result modal, event log, task updates.
 - Mobile result card unverified.
-- `Hero.md` not rewritten by Task Done or Undo.
 - Habit undo does not remove habit-note history.
-- Result modal QuickAdd `obsidian.Modal` untested; Notice fallback in use.
+- Result modal via QuickAdd `obsidian.Modal` untested; Notice fallback in use.
 - Outcome table uses the loot die, not a separate table draw.
-- Automatic TaskNotes Workflows trigger not built (Phase 2 only).
+- Automatic TaskNotes Workflows trigger not built (phase 2 only).
 - Step 2 event-log/Hero repair gap and engine CLI default to `Engine/Events.jsonl` remain.
-- Carried from 0.1.0: an event dated before the first `settings_changed` gets today's rules; engine bug and missing regression test remain.
+- Carried from 0.1.0: an event dated before the first `settings_changed` gets today's rules. Engine bug and missing regression test remain.
 - Missed habit blocks not back-filled in the vault; block times undefined.
 - Each press rewrites the whole log note; a sync conflict mid-press can lose lines.
 - Meta Bind button hard-codes the QuickAdd choice command ID; the phone needs the choice and ID present.
@@ -56,108 +54,102 @@ Done vs not done, per step. This file is the single home for build status; updat
 
 ## Build order
 
-### Milestone 1 — Engine foundation
-
-...
-
 ## 1. Ground rules
 
-Follow `./AGENTS.md` for how to work in this repo. This section lists only what is specific to the build.
+`AGENTS.md` governs how to work. Build-specific rules:
 
-- **Work in small steps.** Finish a step, say what to press to try it, and wait.
-- **Don't change rules without asking.** Items marked "Placeholder" below are starting values, not final rules. If a rule is unclear, ask the user.
-- **Tests:** write the test first and prove it can fail. The workflow, the branch and `main` policy, and the manual-check format are in `TESTING.md`.
-- **Changelog and docs:** update `CHANGELOG.md` and any affected docs on every commit (see `AGENTS.md`, Documentation).
-- **Architecture:** the engine stays standalone plain JavaScript, every number lives in the settings note, and wrappers never restate a rule. See PRD 4.23, 4.35 and 4.39. Scripts stay in a visible folder (PRD 4.15, `PLUGINS.md`).
-- **Folders:** use the layout in PRD 4.15.
-- **Plugins:** confirm each one before its step, per `PLUGINS.md` section 2.
+- **Small steps.** Finish one step, say what to press, wait.
+- **No rule changes without asking.** Items marked "Placeholder" are starting values, not final rules.
+- **Tests:** test first, prove it fails. Workflow and manual-check format: `TESTING.md`.
+- **Docs:** update `CHANGELOG.md` and affected docs on every commit.
+- **Architecture:** standalone plain JavaScript engine, every number in the settings note, wrappers never restate a rule (PRD 4.23, 4.35, 4.39). Scripts in a visible folder (PRD 4.15, `PLUGINS.md`).
+- **Folders:** layout in PRD 4.15.
+- **Plugins:** confirm each before its step, per `PLUGINS.md` §2.
 
 ## 2. ~~Step 0: Setup~~
 
-- [x] Create the folders and a stub settings note, confirm the plugins above are installed, and check that QuickAdd can run a script from the scripts folder.
+- [x] Create folders, stub settings note, confirm plugins, check QuickAdd runs a script.
 - [x] **Done when:** a QuickAdd macro runs a "hello" script on desktop.
 
 ## 3. ~~Step 1: The engine and its tests~~
 
-The engine takes the event log plus the settings note and returns the new state and the result of an action.
+The engine takes event log plus settings note and returns new state and action result.
 
-- [x] **Time:** the day rolls over at 4:00 AM.
+- [x] **Time:** day rolls over at 4:00 AM.
 
 **MP**
 
-- [x] Maximum 10, refilled each morning.
-- [x] Task cost by size: small 1, medium 3, large 5. An unplanned task costs +1. When Wounded, every task costs +1. At skill levels 5 and 10, tasks in that skill cost 1 less each. A task never costs less than 1.
-- [x] Past 0 MP you can keep going, but XP is halved (rounded up) and the roll gets a −1 "Tired" penalty. HP is unaffected.
-- [x] Habit cost depends on the share of eligible days in the last 30 that the habit was done on time. Under one third: 2 MP. One third to under two thirds: 1 MP. Two thirds or more: 0 MP. A new habit starts at 2 MP.
-- [x] Eligible days are weekdays that are not rest or pause days. A weekend, rest or pause day counts only if the habit was done.
+- [x] Max 10, refilled each morning.
+- [x] Task cost by size: small 1, medium 3, large 5. Unplanned +1. Wounded +1. Skill levels 5 and 10: 1 less each. Never below 1.
+- [x] Past 0 MP: XP halved (rounded up), roll −1 "Tired". HP unaffected.
+- [x] Habit cost from on-time share of last 30 eligible days: under one third 2 MP, one third to under two thirds 1 MP, two thirds or more 0 MP. New habit starts at 2 MP.
+- [x] Eligible days are weekdays not rest or pause days. A weekend, rest or pause day counts only if the habit was done.
 
 **XP and levels**
 
-- [x] Task XP equals its size (1, 3 or 5), plus 50% if important, plus 50% if urgent, plus 25% if it belongs to the weekly focus project. The bonuses add together. Placeholder: round up to a whole number.
-- [x] Habit XP is 1 per press, including at 0 MP.
-- [x] Each of the five skills has 10 levels. Placeholder XP thresholds: level 2 at 10, 3 at 25, 4 at 45, 5 at 70, 6 at 100, 7 at 140, 8 at 190, 9 at 250, 10 at 320. Keep them in the settings note.
-- [x] The dice bonus is +1 at levels 2, 4, 6, 8 and 10.
+- [x] Task XP = size (1, 3 or 5) + 50% important + 50% urgent + 25% weekly focus project. Bonuses add. Placeholder: round up.
+- [x] Habit XP 1 per press, including at 0 MP.
+- [x] Five skills, 10 levels each. Placeholder thresholds: 10, 25, 45, 70, 100, 140, 190, 250, 320. Kept in settings.
+- [x] Dice bonus +1 at levels 2, 4, 6, 8, 10.
 
 **The roll**
 
-- [x] Roll 2d6, add the skill's dice bonus, and subtract the HP penalty and the Tired penalty. Each project has a threat level that raises every threshold: +1 per finished arc, capped at +4.
-- [x] Base thresholds: success at 9 or more, partial success at 6 to 8, setback at 5 or less. With threat T, success is 9+T or more, partial success is 6+T to 8+T, and setback is 5+T or less. Tasks that don't belong to a project use T = 0.
-- [x] A success has a one-in-three chance of loot (a die roll where a 5 or 6 drops). The engine only flags the drop. The narrator names it later.
-- [x] A roll never changes the XP or MP of the real task.
+- [x] 2d6 + skill dice bonus − HP penalty − Tired penalty. Project threat raises every threshold: +1 per finished arc, cap +4.
+- [x] Base thresholds: success 9+, partial 6–8, setback 5 or less. With threat T: 9+T+, 6+T–8+T, 5+T or less. Non-project tasks use T = 0.
+- [x] Success has one-in-three loot chance (loot die 5 or 6). Engine only flags the drop; narrator names it later.
+- [x] A roll never changes the task's XP or MP.
 
 **HP**
 
-- [x] Maximum 10. An on-time core habit restores 1. A late press earns XP but no HP and doesn't count as an on-time day.
-- [x] A missed block deadline costs 1 HP, capped at 2 HP lost per day. Rest days, pause and weekends are exempt.
-- [x] Dice penalty by HP: 7 to 10 is 0, 4 to 6 is −1, 1 to 3 is −2, and 0 is −3. At 0 HP you are Wounded: tasks cost +1 MP and boss challenges are blocked.
-- [x] Missed blocks are back-filled when the vault opens.
+- [x] Max 10. On-time core habit +1. Late press earns XP, no HP, not an on-time day.
+- [x] Missed block: −1 HP, cap 2 HP lost per day. Rest days, pause and weekends exempt.
+- [x] Dice penalty by HP: 7–10 = 0, 4–6 = −1, 1–3 = −2, 0 = −3. At 0 HP (Wounded): tasks +1 MP, boss challenges blocked.
+- [x] Missed blocks back-filled when the vault opens.
 
 **Rest and pause**
 
-- [x] Rest day: a one-day pass, 4 a month, no HP loss, no plan needed.
-- [x] Pause: freezes the game, with no HP loss. Paused days are left out of every habit's measure.
+- [x] Rest day: one-day pass, 4 a month, no HP loss, no plan needed.
+- [x] Pause: freezes the game, no HP loss. Paused days excluded from every habit measure.
 
 **Settings changes and undo**
 
-- [x] A settings change is logged with its date. The engine uses the rules in force on each day and never rewrites the past.
-- [x] Undo reverses the last action from the same day by adding a correcting line to the log. Nothing is deleted, and an undo can't be used to re-roll.
-- [x] **Event log:** one shared plain-text file, one line per action (date, time, type, skill, size, roll, outcome, XP, MP). The hero note is a saved copy that a recalculate command can rebuild from the log.
-- [x] **Tests:** one automated test per rule above, plus tests for settings changes, undo, the day boundary and back-filling.
-- [x] **Done when:** all tests pass, and the same inputs give the same results when run from the terminal, for example `node engine.js recalc`.
+- [x] Settings change logged with its date. Rules in force on each day; the past is never rewritten.
+- [x] Undo reverses the last same-day action with a correcting line. Nothing deleted; no re-roll.
+- [x] **Event log:** one shared plain-text file, one line per action (date, time, type, skill, size, roll, outcome, XP, MP). Hero note is a saved copy that recalculate rebuilds.
+- [x] **Tests:** one automated test per rule, plus settings changes, undo, day boundary, back-filling.
+- [x] **Done when:** all tests pass and terminal replay gives identical results, e.g. `node engine.js recalc`.
 
 ## 4. ~~Step 2: The habit button~~
 
-- [x] Build a QuickAdd macro for "Done" on a habit, with one note per habit, the hero note and Meta Bind panels showing HP, MP and skill XP.
-- [x] Pressing Done stamps the time, adds a line to the event log and the habit's note, and shows a one-line toast, for example: "Morning routine complete! +1 HP, +1 XP, −2 MP (MP 8/10)".
+- [x] QuickAdd macro for habit "Done", one note per habit, hero note and Meta Bind panels showing HP, MP and skill XP.
+- [x] Done stamps the time, adds an event log line and a habit note line, shows a one-line toast: "Morning routine complete! +1 HP, +1 XP, −2 MP (MP 8/10)".
 - [x] Habits get no dice roll and no story beat.
-- [x] **Done when:** you press Done on a habit and see the toast, the log line and the changed HP. Test the same press **on the phone** and record the result. If it fails, log on desktop and use a catch-up button instead, and tell the user.
+- [x] **Done when:** Done shows the toast, log line and changed HP. Repeat **on the phone** and record the result. If it fails, log on desktop, use a catch-up button, tell the user.
 
 ## 5. Step 3: TaskNotes-wrapped task resolution and undo (Issue #3)
 
-> Github Issue #3 has been redesigned: **TaskNotes owns task creation, planning, and task fields. TaskRPG owns task resolution (`Task done`), undo, and the `done`/`open` status writes.** The old `New task` and `Plan task` QuickAdd macros have been removed.
+> Issue #3 redesign: **TaskNotes owns task creation, planning and task fields. TaskRPG owns task resolution (`Task done`), undo, and the `done`/`open` status writes.** Old `New task` and `Plan task` QuickAdd macros removed.
 
-### Substeps:
+Substeps:
 
-- [ ] Configure TaskNotes task fields: `taskId`, `skill`, `size`, `urgent`, `important`, status, and a scheduled date. Verify the installed TaskNotes version preserves these fields.
-- [ ] **Task done** (`Scripts/task-done.js`): with a TaskNotes task open, read its mapped fields and scheduled date, deduct MP, roll 2d6, pick a result from a placeholder table, apply XP, write the engine event to `Engine/Events.md`, and show the result card (roll, outcome, table result, XP and MP changes, and any loot). The user taps to dismiss it.
-- [ ] A task scheduled for today avoids the unplanned MP surcharge; a task without today’s scheduled date receives it.
-- [ ] **Undo last** (`Scripts/task-undo.js`): append a correcting engine event for the newest same-game-day task or habit action. On the matching TaskNotes task note, write `status: open` (the plugin default) and clear the completion field, editing only the frontmatter block; leave other plugin-owned fields alone. Never delete history or enable a re-roll.
-- [ ] Regression tests for resolution and undo: the duplicate-resolution guard follows `undo.targetEventId`, a valid undo allows the same task to be resolved again as a repeat, and the original `task_done` event is preserved.
-- [ ] Optional phase 2, later: TaskNotes Workflows fires `/task-done` automatically when a task moves from In Progress to Done. Do not build or claim this until it is separately approved and validated.
-- [ ] **Done when:** you create and schedule a task in TaskNotes, mark it Done there, run **Task done**, get the result card, and then undo it. Check the card on the phone and use a short notice if pop-ups misbehave. Record TaskNotes field mapping and any limitations.
+- [ ] Configure TaskNotes fields: `taskId`, `skill`, `size`, `urgent`, `important`, status, scheduled date. Verify the installed version preserves them.
+- [ ] **Task done** (`Scripts/task-done.js`): with a TaskNotes task open, read mapped fields and scheduled date, deduct MP, roll 2d6, pick from the placeholder table, apply XP, append the engine event to `Engine/Events.md`, show the result card (roll, outcome, table result, XP/MP, loot). Tap to dismiss. Always writes `status: done` and `completedDate`.
+- [ ] A task scheduled for today avoids the unplanned surcharge.
+- [ ] **Undo last** (`Scripts/task-undo.js`): append a correcting event for the newest same-game-day task or habit action. On the matching task note, write `status: open` and clear the completion field, frontmatter only; leave other fields alone. Never delete history or enable a re-roll.
+- [ ] Regression tests: duplicate guard follows `undo.targetEventId`, valid undo allows a repeat resolution, original `task_done` stays.
+- [ ] Optional phase 2: TaskNotes Workflows fires `/task-done` on In Progress → Done. Not built or claimed.
+- [ ] **Done when:** create and schedule a task in TaskNotes, mark it Done, run **Task done**, get the card, undo it. Check the card on phone; use a Notice if pop-ups misbehave. Record field mapping and limitations.
 
-## ~~TaskNotes setup~~
+## TaskNotes setup
 
-Configure TaskNotes so each task note has:
+Each task note:
 
-- [x] A stable `taskId`.
-- [x] A `skill` user field matching `Engine/Settings.md`.
-- [x] A `size` user field matching `taskSizes` in settings.
-- [x] Uses `urgent` and `important` tags.
-- [x] A scheduled date field used for planning.
-- [x] Status values that include an open/planned state and a completed state. Installed TaskNotes 4.13.8 uses `open` as `defaultTaskStatus`, with `in-progress` and `done` as the other non-completed/completed statuses.
-
-Example TaskNotes note configuration:
+- [x] Stable `taskId`.
+- [x] `skill` matching `Engine/Settings.md`.
+- [x] `size` matching `taskSizes`.
+- [x] `urgent` and `important` tags.
+- [x] Scheduled date for planning.
+- [x] Status values for open/planned and completed. TaskNotes 4.13.8 uses `open` (`defaultTaskStatus`), `in-progress`, `done`.
 
 ```yaml
 status: open
@@ -175,94 +167,95 @@ size: small
 taskId: "1"
 ```
 
-## ~~QuickAdd macros~~
+## QuickAdd macros
 
-Configure two QuickAdd **Macro** choices, each with one **User Script** action. Enable their lightning-bolt commands. QuickAdd configuration is device-local unless explicitly synced.
+Two **Macro** choices, one **User Script** action each. Enable the lightning-bolt commands. QuickAdd configuration is device-local unless synced.
 
-| QuickAdd choice | Script                 | Action                                                                                                                                                   |
-| --------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Task done       | `Scripts/task-done.js` | With a TaskNotes task open, records an engine `task_done` event, rolls 2d6 and a loot die, applies XP/MP, marks the note completed, and shows the result |
-| Undo last       | `Scripts/task-undo.js` | Appends a correcting engine event for today’s newest task or habit action and restores a matching task note if found                                     |
+| Choice    | Script                 | Action                                                                                                    |
+| --------- | ---------------------- | --------------------------------------------------------------------------------------------------------- |
+| Task done | `Scripts/task-done.js` | With a task open: `task_done` event, 2d6 + loot die, XP/MP, note marked done, result card                 |
+| Undo last | `Scripts/task-undo.js` | Correcting event for today's newest task or habit; restores a matching task note if found                 |
 
 ## Phase 1 trigger
 
-~~1. Create and plan the task in TaskNotes.~~
-~~2. When the work is finished, mark it Done in TaskNotes.~~ 3. Run **Task done** while that task note is open. #FIXME 4. If needed, run **Undo last** to reverse the RPG event. 5. If the undo was intentional, run **Task done** again to make a fresh resolution. The engine records it as a repeat.
+1. Create and plan the task in TaskNotes.
+2. Mark it Done in TaskNotes.
+3. Run **Task done** with that note open.
+4. **Undo last** to reverse the RPG event.
+5. Run **Task done** again for a fresh resolution; the engine marks it a repeat.
 
-TaskRPG does not create tasks or plan them in this phase.
+TaskRPG does not create or plan tasks in this phase.
 
 ## Phase 2 trigger: optional
 
-Later, TaskNotes Workflows may invoke `/task-done` automatically when a task moves from In Progress to Done. This is not implemented or validated in this branch. Until then, use the manual **Task done** command.
+TaskNotes Workflows may call `/task-done` on In Progress → Done. Not implemented or validated. Use manual **Task done** until then.
 
 ## What the scripts do
 
-- **Task done** requires an open note in `TaskNotes/`. It reads the task’s mapped fields, validates skill and size against settings, determines whether the TaskNotes scheduled date is today, rolls through the engine, appends the event to `Engine/Events.md`, then updates the note’s completion fields.
-- A task scheduled for today avoids the unplanned MP surcharge. A task without today’s scheduled date receives the engine’s unplanned cost.
-- The result card uses the same loot die to select from a six-entry placeholder outcome table. This is not a Dice Roller table integration.
-- **Undo last** uses the engine’s same-game-day newest-action rule. It appends an `undo` event without removing the original roll. For a task, it clears `completedDate` and sets the TaskNotes status to `open`; a habit undo does not touch task notes.
-- The duplicate-resolution guard follows `undo.targetEventId` back to the original `task_done` event. After a valid undo, the same task can be resolved again; the engine marks that later resolution as a repeat. An undo for a different task does not release this task’s guard.
-- Undo does not rebuild `Engine/Hero.md` and does not remove habit-note history. **Do not use undo to re-roll.**
+- **Task done** requires an open note in `TaskNotes/`. Reads mapped fields, validates skill and size, checks whether the scheduled date is today, rolls through the engine, appends to `Engine/Events.md`, then sets `status: done` and `completedDate`.
+- Today-scheduled tasks avoid the unplanned surcharge.
+- The result card uses the same loot die for a six-entry placeholder table. Not a Dice Roller integration.
+- **Undo last** uses the newest same-day action rule. Appends an `undo` event; original roll stays. For a task: clears `completedDate`, sets `open`. Habit undo leaves task notes alone.
+- Duplicate guard follows `undo.targetEventId`. After a valid undo the task can be resolved again; engine marks it a repeat. An undo for another task does not release this guard.
+- Undo does not remove habit-note history. **Do not use undo to re-roll.**
 
 ## Automated checks
 
-From the vault root with Node.js 22 or newer:
+From the vault root, Node.js 22+:
 
 ```sh
-node --test Scripts/engine.test.js Scripts/habit-done.test.js Scripts/task-utils.test.js Scripts/task-undo.test.js
+node --test
 ```
 
-All of these tests pass on this branch.
+`task-utils.test.js`: frontmatter parsing (block-list tags, quoted/unquoted values, empty quoted, colon/quote values, CRLF, BOM), scheduled-date mapping, outcome table, result card, completion fields (missing-field insert, frontmatter-only edit, literal `$&`/`$1`, undo case, CRLF, no-frontmatter error), quoted `taskId`/`skill`/`size` pass `task-done.js`, `taskTag` configured tag with `task` fallback.
 
-`Scripts/task-utils.test.js` covers frontmatter parsing (including TaskNotes block-list tags, double-, single- and unquoted scalar values, empty quoted values, values containing a colon or quote, CRLF and BOM), scheduled-date mapping, outcome-table selection, result-card formatting, and completion-field updates. Completion-field tests cover inserting a missing field, editing only the frontmatter (a `status:` line in the body is untouched), literal `$&`/`$1` values, the undo case (`status: open` with `completedDate: ""`), CRLF preservation, and a clear error when there is no frontmatter. It also checks that fully quoted `taskId`/`skill`/`size` values pass `task-done.js`'s checks, that `taskTag` reads the configured tag with a `task` fallback.
-
-`Scripts/task-undo.test.js` covers the shared `hasUnresolvedTaskDone` guard, `targetEventId` undo linkage, repeat resolution after undo, and preservation of the original `task_done` event. It does **not** exercise the QuickAdd macros end to end, TaskNotes compatibility, Obsidian’s modal, the phone fallback, or hero-state updates.
+`task-undo.test.js`: `hasUnresolvedTaskDone`, `targetEventId` linkage, repeat after undo, original event preserved. It does not exercise QuickAdd, TaskNotes compatibility, the modal, the phone fallback or hero-state updates.
 
 ## Manual validation gate
 
-1. Confirm issue #2’s habit-button desktop/phone validation first.
-2. Configure TaskNotes fields and create a disposable test task.
-3. Create and schedule the task using TaskNotes only. Verify that TaskNotes preserves the `taskId`, `skill`, `size`, `urgent`, `important`, status, and scheduled-date fields.
-4. Mark the task Done in TaskNotes, run **Task done**, and inspect `Engine/Events.md`, XP/MP, the result card or Notice, and the task note.
-5. Run **Task done** again without undo. Confirm the duplicate-resolution guard blocks it.
-6. Run **Undo last** once. Confirm an `undo` line was appended, the task note returned to an open state, and the original dice remained in the log.
-7. Run **Task done** again. Confirm a fresh `task_done` event is appended and marked as a repeat.
-8. Repeat the result-card check on phone after syncing scripts and QuickAdd configuration. Record device and plugin versions, whether the modal or Notice appeared, and any exact error.
+1. Confirm Step 2 desktop/phone validation.
+2. Configure TaskNotes fields; create a disposable task.
+3. Create and schedule with TaskNotes only. Verify `taskId`, `skill`, `size`, `urgent`, `important`, status, scheduled date survive.
+4. Mark Done, run **Task done**, inspect `Engine/Events.md`, XP/MP, the card or Notice, the note.
+5. Run **Task done** again without undo. Confirm the duplicate guard blocks it.
+6. Run **Undo last**. Confirm an `undo` line, the open state, original dice intact.
+7. Run **Task done** again. Confirm a fresh `task_done` marked repeat.
+8. Repeat the card check on phone. Record device and plugin versions, modal or Notice, exact errors.
 
-Record observations in `TESTING.md`. Leave PR #10 draft until blockers and manual validation are resolved. An issue checkbox should not be checked just because a script exists.
+Record observations in `TESTING.md`. PR #10 stays draft until blockers and validation resolve. A script's existence does not check an issue box.
 
-## 6. Step 4: The quiz, the narrator and the tables
+## 6. Step 4: Quiz, narrator and tables
 
-Set up these in Vault Operator, as agents and skills:
+Set up in Vault Operator as agents and skills:
 
-- [ ] The **onboarding quiz** (pausable), run by the narrator as the user's first interaction.
-- [ ] The **narrator persona** and a GM-only preferences note.
-- [ ] The **hero persona** (an alter ego the narrator proposes and the user edits), with a portrait in the profile.
-- [ ] About 5 **starter random tables**, written by the narrator from the quiz answers, one note per table with one weighted line per entry. The user approves them before they go live. The "not for me" button adds an entry to a retired list.
-- [ ] **Done when:** the quiz is finished, the hero is proposed and edited, and Dice Roller draws from the new tables when a task is done.
+- [ ] Pausable **onboarding quiz**, the narrator's first interaction.
+- [ ] **Narrator persona** and GM-only preferences note.
+- [ ] **Hero persona** (narrator proposes, user edits) with a portrait.
+- [ ] About 5 **starter random tables** from quiz answers, one note per table, one weighted line per entry. User approves before live. "Not for me" adds to a retired list.
+- [ ] **Done when:** quiz finished, hero proposed and edited, Dice Roller draws from the tables on task completion.
 
 ## 7. Step 5: One companion and the morning briefing
 
-- [ ] One **companion** as a Vault Operator agent that you open in the sidebar, for example "talk to Elara". It loads her persona, relevant character-scoped memory and the selected campaign's story log. At the end of a session it writes a summary and the extracted changes. The core facts note stays under about a page. Check that Vault Operator keeps character and campaign context separate, and that its write approvals limit writes to the Story, Campaign, World and Characters areas.
-- [ ] A **morning briefing** button in Obsidian that starts Vault Operator through a QuickAdd macro and an Obsidian command. It writes a briefing note and a "Today's quests" note, with each quest linked to its real task. If the button can't start Vault Operator with a prepared prompt, the fallback is pasting the prompt into narrator chat or saving it as a Vault Operator skill.
-- [ ] **Done when:** you plan a day, press the briefing button, get the quests and have a first conversation that is remembered in the next one.
+- [ ] One **companion** as a Vault Operator agent opened in the sidebar ("talk to Elara"). Loads persona, character-scoped memory and the selected campaign log. Session end: summary plus extracted changes. Core facts note under about a page. Verify character/campaign context separation and write approvals limited to Story, Campaign, World and Characters.
+- [ ] **Morning briefing** button: QuickAdd macro plus Obsidian command starts Vault Operator, writes a briefing note and "Today's quests" note with each quest linked to its task. Fallback: paste the prompt into narrator chat or save it as a Vault Operator skill.
+- [ ] **Done when:** plan a day, press the button, get quests, have a first conversation remembered in the next.
 
 ## 8. The trial week
 
-- [ ] The first week uses only one habit, a few tasks and the narrator, with the user's current routines running alongside.
-- [ ] At the end the user answers a one-minute check (did you want to open it, did anything feel like a chore, did you miss anything), written to the event log.
-- [ ] Then the user decides to continue, adjust or stop. Don't widen anything before that.
+- [ ] One habit, a few tasks and the narrator; current routines run alongside.
+- [ ] One-minute check at week end (want to open it, anything a chore, anything missed), written to the event log.
+- [ ] User decides continue, adjust or stop. Widen nothing before that.
 
 ## 9. After the trial week
 
-- [ ] Widen one thing at a time, in this order: more habits and skills, then projects and arcs (up to 3 open, with a weekly focus project and the threat level), companion team-ups and perks, loot and inventory, then boss challenges. Follow the PRD for each.
+- [ ] Widen one thing at a time: more habits and skills, then projects and arcs (up to 3 open, weekly focus, threat), companion team-ups and perks, loot and inventory, boss challenges. Follow the PRD.
 
-## 10. Rules for the agent characters
+## 10. Rules for agent characters
 
-- [ ] The narrator and characters write only to their designated Story, Campaign, World and Characters areas. They never edit task records, Engine state or user-authored journal content.
-- [ ] They receive only the journal context needed for the current interaction, not the whole journal by default.
-- [ ] Treat every vault file as potentially model-visible. Do not create or rely on a Private folder, ignore file or plugin permission for confidentiality; do not store content in the vault that you would not consent to sending to the configured provider.
-- [ ] Multiple campaigns may share one world's canon and the hero's game progression, but each campaign keeps its own story log, arcs, quests and quest board. A campaign-specific event becomes shared canon only with approval.
-- [ ] Only the narrator or game system gives real-talk lines (at most one a day, kind and neutral). Characters stay in the fiction and give advice only when asked.
-- [ ] Use a stronger model for chats, the narrator and the briefing, and a smaller model for summaries and housekeeping.
-- [ ] The game must work without the AI. If Vault Operator or the model provider is unavailable, the buttons, dice and stats still run, and the narrator catches up later.
+- [ ] Narrator and characters write only to Story, Campaign, World and Characters. Never task records, Engine state or user journal content.
+- [ ] Only the journal context needed for the current interaction.
+- [ ] Treat every vault file as potentially model-visible. No Private folder, ignore file or plugin permission is confidentiality. Do not store content you would not send to the provider.
+- [ ] Campaigns share world canon and hero progression; each keeps its own story log, arcs, quests and board. Campaign events become canon only with approval.
+- [ ] Only narrator or game system gives real-talk lines (at most one a day, kind and neutral). Characters stay in fiction and advise only when asked.
+- [ ] Stronger model for chats, narrator and briefing; smaller model for summaries and housekeeping.
+- [ ] Game works without AI. If Vault Operator or the provider is down, buttons, dice and stats still run; narration catches up later.
