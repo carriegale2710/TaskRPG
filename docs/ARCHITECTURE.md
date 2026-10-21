@@ -3,7 +3,7 @@
 **Status:** v2  
 **Source of truth for:** system structure, data ownership, module boundaries, integrations, and technical invariants  
 **Related:** [PRD.md](./PRD.md) · [DECISIONS.md](./DECISIONS.md) · [BUILD_PLAN.md](./BUILD_PLAN.md) · [PLUGINS.md](./PLUGINS.md) · [TESTING.md](./TESTING.md)
-**Last Updated**: 2026-10-18
+**Last Updated**: 2026-10-21
 
 ## 1. System overview
 
@@ -125,13 +125,20 @@ These boundaries are requirements. They keep a future Obsidian plugin a swap rat
 
 ## 5. Vault folders
 
-| Folder       | Contents                                                                   | Writer                        |
-| ------------ | -------------------------------------------------------------------------- | ----------------------------- |
-| `Engine/`    | Shared event log, derived hero state, habit records, settings              | QuickAdd macros only          |
-| `Scripts/`   | Standalone engine and thin QuickAdd scripts                                | Coding agent                  |
-| `Journal/`   | Daily notes and “Today’s turns”; only this folder is pruned after backup   | User and macros               |
-| `TaskNotes/` | Task records, scheduling, statuses, user fields                            | User and TaskNotes            |
-| `D&D-Vault/` | Dashboard, Campaigns, VTT, Asset Library, Rules, Templates, Inbox, Archive | User and Game Master AI agent |
+Paths are relative to the `TaskRPG/` project folder.
+
+| Folder         | Contents                                                                 | Writer                            |
+| -------------- | ------------------------------------------------------------------------ | --------------------------------- |
+| `Engine/`      | Shared event log, derived hero state, habit records, settings             | QuickAdd wrappers only            |
+| `Scripts/`     | Standalone engine and thin QuickAdd scripts                               | Coding agent                      |
+| `Journal/`     | Daily notes and “Today’s turns”; only this folder is pruned after backup  | User and macros                   |
+| `TaskNotes/`   | Task records, scheduling, statuses, user fields                           | User and TaskNotes                |
+| `Campaign/`    | Current campaign story state (`00 Hero`, rules, story so far, quest board) | User and Game Master AI agent     |
+| `Story/`       | Cross-campaign canon, approved by the user                                | Game Master AI agent              |
+| `World/`       | NPCs, quests, regions                                                     | User and Game Master AI agent     |
+| `Characters/`  | Character persona files                                                   | User and Game Master AI agent     |
+| `Assets/`      | Banners and character art                                                 | User                              |
+| `Backlog/`     | Reserved; unused in v1                                                    | —                                 |
 
 ### Rules
 
