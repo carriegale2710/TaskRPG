@@ -8,3 +8,7 @@
 {"id":"task-1792574330368-jozoi4ytbd","type":"task_done","timestamp":"2026-10-21T20:18:50+11:00","taskId":"1792566794280kntnt","skill":"vitality","size":"large","planned":true,"important":false,"urgent":false,"roll":[5,3],"lootRoll":2,"outcome":"partial","xp":5,"mp":5}
 {"type":"undo","timestamp":"2026-10-21T20:20:08+11:00","id":"e-9","targetEventId":"task-1792574330368-jozoi4ytbd"}
 {"id":"task-1792574419313-jmtf7u9f8p","type":"task_done","timestamp":"2026-10-21T20:20:19+11:00","taskId":"1792566794280kntnt","skill":"vitality","size":"large","planned":true,"important":false,"urgent":false,"roll":[6,1],"lootRoll":3,"outcome":"partial","xp":5,"mp":5}
+{"type":"undo","timestamp":"2026-10-21T21:06:16+11:00","id":"e-11","targetEventId":"task-1792574419313-jmtf7u9f8p"}
+{"id":"task-1792577195671-9g0orz6cewb","type":"task_done","timestamp":"2026-10-21T21:06:35+11:00","taskId":"1792566794280kntnt","skill":"vitality","size":"large","planned":true,"important":false,"urgent":false,"roll":[4,4],"lootRoll":5,"outcome":"partial","xp":5,"mp":5}
+{"type":"undo","timestamp":"2026-10-21T21:06:57+11:00","id":"e-13","targetEventId":"task-1792577195671-9g0orz6cewb"}
+{"id":"task-1792577222993-a25ejgrzn1q","type":"task_done","timestamp":"2026-10-21T21:07:02+11:00","taskId":"1792566794280kntnt","skill":"vitality","size":"large","planned":true,"important":false,"urgent":false,"roll":[5,2],"lootRoll":3,"outcome":"partial","xp":5,"mp":5}

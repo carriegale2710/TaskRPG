@@ -317,6 +317,17 @@ describe("task-undo.test.js", () => {
     assert.match(h.notices[0], /TaskNotes status restored to open/);
   });
 
+  test("undoing a task_done event rewrites derived Hero.md from the corrected state", async () => {
+    const h = undoHarness();
+
+    await h.press();
+
+    const hero = h.data.get("TaskRPG/Engine/Hero.md");
+    assert.match(hero, /^---\ntype: hero-state\nhp: 10\nmaxHP: 10\nmp: 10\nmaxMP: 10\n/m);
+    assert.match(hero, /xp_mind: 0$/m);
+    assert.match(hero, /VIEW\[\{mp\}\]\[text\]/);
+  });
+
   test("undoing a habit leaves task notes untouched and does not claim a TaskNotes change", async () => {
     const h = undoHarness({
       action: {

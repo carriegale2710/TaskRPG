@@ -3,6 +3,7 @@
 // QuickAdd user script: undoes the newest task or habit action from today.
 const LOG = "TaskRPG/Engine/Events.md";
 const SETTINGS = "TaskRPG/Engine/Settings.md";
+const HERO = "TaskRPG/Engine/Hero.md";
 const ENGINE = "TaskRPG/Scripts/engine.js";
 const UTILS = "TaskRPG/Scripts/task-utils.js";
 
@@ -36,6 +37,7 @@ module.exports = async ({ app }) => {
       `${previous.trimEnd()}${previous.trim() ? "\n" : ""}${lines}`,
     );
     committed = true;
+    const state = engine.recalculate(out.events, settings, timestamp).state;
 
     let reopened = false;
     if (target?.type === "task_done" && target.taskId) {
@@ -53,6 +55,8 @@ module.exports = async ({ app }) => {
         reopened = true;
       }
     }
+
+    await files.write(HERO, utils.renderHero(state));
 
     new Notice(
       target?.type === "task_done"

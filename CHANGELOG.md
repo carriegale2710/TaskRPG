@@ -82,6 +82,7 @@ TaskNotes = task creation, planning, statuses, user fields, while TaskRPG = task
 - Task identity: Adds `taskId` as the stable identity (decision D-023), a TaskNotes body template (`TaskNotes/Templates/template.md`: `taskId: {{nano}}`) for new notes. Template verified manually on 2026-10-21 (taskId written, tags/status preserved).
 - `Task done` now treats `taskId: null`, `taskId: ~` and `taskId: undefined` as missing instead of accepting the literal word as an ID. `task-done.test.js` adds negative cases for missing, empty and `null` `taskId`, `skill` and `size`: no event is logged and the note is untouched (test-only coverage for the skill/size checks, which the engine also enforces).
 - `Task done` now rewrites the derived `Engine/Hero.md` after resolution, so HP, MP and skill XP in the Meta Bind panels match the new event (previously only `Habit Done` refreshed it). The hero template moved to `renderHero()` in `task-utils.js` and both wrappers use it, so the two copies cannot drift. `task-done.test.js` asserts the written hero state; `habit-done.test.js` covers the shared helper.
+- `Undo last` also rewrites `Engine/Hero.md` from the corrected state, for task and habit undos. `task-undo.test.js` asserts the restored MP and skill XP.
 - `Undo last`'s Notice now matches what happened: "TaskNotes status restored to open" only after a task note was actually rewritten; a task undo with no matching note says so instead; a habit undo does not mention TaskNotes. Tests cover all three paths.
 
 #### Removed

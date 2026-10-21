@@ -20,7 +20,7 @@ A note is a task only when it carries TaskNotes' configured `taskTag`.
 - An undo targeting another task does not release this task’s guard.
 - Resolve → undo → resolve produces a fresh resolution marked `repeat` by the engine.
 - The original `task_done` event remains in the log; undo appends a correction.
-- Running the real `Scripts/task-undo.js` against an in-memory vault adapter writes `status: open` and `completedDate: ""` to the matching TaskNotes note, leaves a second Done note untouched, and appends the `undo` event.
+- Running the real `Scripts/task-undo.js` against an in-memory vault adapter writes `status: open` and `completedDate: ""` to the matching TaskNotes note, leaves a second Done note untouched, appends the `undo` event, and rewrites `Engine/Hero.md` with the corrected MP and skill XP.
 - Undoing a habit leaves task notes untouched and the Notice does not mention TaskNotes; a task undo with no matching note still logs the correction and the Notice says so.
 
 These tests import `hasUnresolvedTaskDone` from `Scripts/task-utils.js`, the same implementation used by `Scripts/task-done.js`. The stubbed-vault test runs the actual `task-undo.js` code path, but it is still not evidence that QuickAdd runs the script inside Obsidian or that TaskNotes preserves the required fields. To verify the integration, create and schedule a task in TaskNotes, mark it Done, run `Task done`, inspect the result, then run `Undo last`; check the result card or Notice on desktop and phone. Never point this check at an important task or concurrent synced devices: the Step 3 QuickAdd scripts write the live `Engine/Events.md`, while the Step 1 smoke test below uses `Engine/Test Events.md`.
