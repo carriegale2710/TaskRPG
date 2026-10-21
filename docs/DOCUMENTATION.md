@@ -1,38 +1,10 @@
-# TaskRPG Documentation Structure
+# TaskRPG Documentation Guide
 
-## Decision
+## Scope
 
-Use this documentation structure:
+This file governs **how** documentation is written: each file's job, what belongs in it, and the templates to follow. It also governs where **new** documentation goes.
 
-- `README.md` — main landing page, project introduction, and setup guide
-- `AGENTS.md` — agent working rules, authority order, file map, safety rules
-- `CHANGELOG.md` — change history only
-- `docs/BUILD_PLAN.md` — mini roadmap, full implementation plan, milestones, build order, acceptance criteria, and build status (done vs not done)
-- `docs/PRD.md` — product behavior, game rules, scope, settled decisions, success criteria
-- `docs/ARCHITECTURE.md` — system structure, data model, ownership, boundaries, invariants
-- `docs/DECISIONS.md` — decision log, rationale, alternatives, implications, status
-- `docs/PLUGINS.md` — plugin and integration boundaries
-- `docs/TESTING.md` — test commands, layout, rule-to-test mapping, manual checks
-
-## Repository layout
-
-```text
-/
-├── AGENTS.md
-├── README.md
-├── CHANGELOG.md
-├── LICENSE
-├── docs/
-│   ├── PRD.md
-│   ├── ARCHITECTURE.md
-│   ├── DECISIONS.md
-│   ├── BUILD_PLAN.md
-│   ├── PLUGINS.md
-│   └── TESTING.md
-└── TaskRPG/
-    ├── Scripts/
-    └── Engine/
-```
+It does not list where to find existing information. That is in `AGENTS.md` ("Repository map" and "Where to find information").
 
 ## File responsibilities
 
@@ -47,6 +19,20 @@ Use this documentation structure:
 | `docs/DECISIONS.md`    | Why choices were made                   | Accepted/provisional/superseded decisions, rationale, alternatives, implications                                                      | Current status or implementation steps                                |
 | `docs/PLUGINS.md`      | Plugin integration reference            | Plugin stack, responsibilities, permissions, integration constraints                                                                  | General architecture or product behavior                              |
 | `docs/TESTING.md`      | How to verify the build                 | Commands, test layout, rule-to-test mapping, boundary cases, manual checks                                                            | Product rules, architecture decisions, status updates                 |
+| `docs/DOCUMENTATION.md`| How documentation is written            | File responsibilities, writing rules, templates, placement of new documentation                                                       | Any project content (rules, status, design, history)                  |
+
+## Where to place new documentation
+
+Reuse before creating. Most documentation work belongs in a file that already exists.
+
+1. **Match the content to an existing responsibility.** If the new material is a rule, status, test note, decision, or change, add it to that file (see the table above). Do not create a new file.
+2. **One responsibility per file.** Create a new file only when the content has a job no current file owns.
+3. **Put it in `docs/`** when it is a specification, contract, decision log, or test/verification guide. Repository-level guides (`README.md`, `AGENTS.md`, `CHANGELOG.md`) stay at the root. Narrative and vault-area content stays under `TaskRPG/` per the PRD ownership rules.
+4. **Name for the job.** `docs/` files use `UPPER_SNAKE.md` and a name that states the responsibility (`PRD`, `ARCHITECTURE`, `DECISIONS`, `BUILD_PLAN`, `PLUGINS`, `TESTING`). Do not add version, date, or author suffixes.
+5. **Give every new file a purpose line.** Title, then one sentence stating what it is for and what it is not for.
+6. **Register it in `AGENTS.md` in the same change.** Add the file to the "Repository map" tree and to the "Where to find information" table. A document no one is pointed to does not exist.
+7. **Link, do not copy.** Point to the owning file instead of restating its content elsewhere.
+8. **Do not create a document for a one-off note.** Park disposable material in `TaskRPG/Backlog/` or record the change in `CHANGELOG.md`.
 
 ## README.md
 
@@ -270,78 +256,4 @@ Users gain MP from completed tasks and spend it on rewards.
 **Settled:** MP is earned only through completed tasks.
 
 Rationale: see [D-004 — MP economy](./DECISIONS.md#d-004--mp-economy).
-```
-
-## AGENTS.md file map
-
-```md
-## File map
-
-Open the relevant file before working on that area.
-
-| Need                                            | File(s)                                                                              |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------ |
-| Project introduction and setup                  | `README.md`                                                                          |
-| Product behavior, scope, settled decisions      | `docs/PRD.md`                                                                        |
-| System structure, data, ownership, invariants   | `docs/ARCHITECTURE.md`                                                               |
-| Why a decision was made; alternatives; status   | `docs/DECISIONS.md`                                                                  |
-| Build roadmap, implementation plan, build order | `docs/BUILD_PLAN.md`                                                                 |
-| Current status, done/not-done steps             | `docs/BUILD_PLAN.md`                                                                 |
-| Change history                                  | `CHANGELOG.md`                                                                       |
-| Plugin and integration boundaries               | `docs/PLUGINS.md`                                                                    |
-| Test commands, layout, manual checks            | `docs/TESTING.md`                                                                    |
-| Engine implementation and tests                 | `TaskRPG/Scripts/engine.js`, `engine.test.js`, `task-utils.js`, `task-utils.test.js` |
-| Live vault state                                | `TaskRPG/Engine/Settings.md`, `Hero.md`, `Events.md`, `State.json`                   |
-| Macros and integrations                         | `TaskRPG/Scripts/task-done.js`, `habit-done.js`, `task-undo.js`, `gm_bridge.py`      |
-| Vault-area rules                                | `AGENTS.md` in `TaskRPG/Campaign/`, `TaskRPG/Journal/`, `TaskRPG/World/`             |
-```
-
-## AGENTS.md build workflow
-
-```md
-## Build workflow
-
-Before starting or resuming implementation:
-
-1. Read `docs/PRD.md`.
-2. Read `docs/ARCHITECTURE.md`.
-3. Read relevant entries in `docs/DECISIONS.md`.
-4. Read `docs/BUILD_PLAN.md` for the roadmap, milestone sequence, detailed build order, and Build status.
-5. Read `CHANGELOG.md` for recent changes.
-6. Read `docs/TESTING.md` before writing or changing tests.
-
-After completing a unit of work:
-
-- Update the **Build status** section of `docs/BUILD_PLAN.md` with progress, known gaps, and validation status.
-- Update `CHANGELOG.md` with the change.
-```
-
-## AGENTS.md engine-change rule
-
-```md
-## Engine changes
-
-Before changing engine behavior, read:
-
-1. `docs/PRD.md`
-2. `docs/ARCHITECTURE.md`
-3. Relevant entries in `docs/DECISIONS.md`
-4. `docs/BUILD_PLAN.md`
-5. `CHANGELOG.md`
-6. `docs/TESTING.md`
-
-Do not change architecture boundaries or supersede a decision without user confirmation.
-```
-
-## AGENTS.md README rule
-
-```md
-## README
-
-`README.md` is the first-time reader landing page.
-
-- Use it to explain what TaskRPG is, who it is for, and how to set it up.
-- Do not use it for agent rules, detailed product rules, architecture, testing procedures, or current build status.
-- Link to `docs/PRD.md`, `docs/ARCHITECTURE.md`, `docs/DECISIONS.md`, `docs/PLUGINS.md`, `docs/TESTING.md`, and `CHANGELOG.md`.
-- Update it only when installation, usage, project purpose, or linked documentation changes.
 ```

@@ -9,6 +9,59 @@
 5. If sources conflict: PRD > this file > `docs/TESTING.md` > skills.
 6. Safety, confirmation, test-evidence, and decision-request rules always use clear prose.
 
+## Repository map
+
+Where things live. Open the relevant file before working on that area.
+
+```text
+/
+├── AGENTS.md                  agent working contract (this file)
+├── README.md                  landing page and setup
+├── CHANGELOG.md               change history
+├── CLAUDE.md                  pointer file for Claude-based agents
+├── .github/workflows/         CI (tests.yml)
+├── docs/                      specification and contracts
+│   ├── PRD.md
+│   ├── ARCHITECTURE.md
+│   ├── DECISIONS.md
+│   ├── BUILD_PLAN.md
+│   ├── PLUGINS.md
+│   ├── TESTING.md
+│   └── DOCUMENTATION.md
+├── Journal/                   vault-level daily notes and templates
+├── TaskNotes/                 vault-level task views
+└── TaskRPG/                   the game layer
+    ├── Engine/                live state: Events.md, Hero.md, Settings.md, State.json, Habits/
+    ├── Scripts/               engine, QuickAdd macros, terminal tests
+    ├── Story/                 cross-campaign canon, tables, briefings
+    ├── World/                 shared canon: NPCs, Quests, Regions
+    ├── Campaign/              current campaign (legacy location)
+    ├── Characters/            hero and companion profiles
+    ├── Assets/                banners and character art
+    └── Backlog/               parked material
+```
+
+## Where to find information
+
+This table is the canonical index of where things live. Open the relevant file before working on that area. When a document is added, renamed, or moved, update this table and the repository map in the same change.
+
+| Need                                                        | File(s)                                                                                          |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Project introduction, requirements, setup                   | `README.md`                                                                                      |
+| Product behavior, game rules, scope, settled decisions      | `docs/PRD.md`                                                                                    |
+| System structure, data model, ownership, invariants         | `docs/ARCHITECTURE.md`                                                                           |
+| Why a choice was made; alternatives; decision status        | `docs/DECISIONS.md`                                                                              |
+| Build roadmap, build order, done/not-done status            | `docs/BUILD_PLAN.md`                                                                             |
+| Plugin and integration boundaries                           | `docs/PLUGINS.md`                                                                                |
+| Test commands, layout, rule-to-test map, manual checks      | `docs/TESTING.md`                                                                                |
+| How to write documentation; where new documentation goes    | `docs/DOCUMENTATION.md`                                                                          |
+| Change history                                              | `CHANGELOG.md`                                                                                   |
+| Engine rules and terminal tests                             | `TaskRPG/Scripts/engine.js`, `engine.test.js`                                                    |
+| QuickAdd macros, shared helpers, smoke check                | `TaskRPG/Scripts/task-done.js`, `task-undo.js`, `habit-done.js`, `task-utils.js`, `engine-smoke.js` |
+| Terminal narrator fallback                                  | `TaskRPG/Scripts/gm_bridge.py`                                                                   |
+| Live vault state (never hand-edit)                          | `TaskRPG/Engine/Events.md`, `Hero.md`, `Settings.md`, `State.json`                               |
+| Narrative content                                           | `TaskRPG/Story/`, `TaskRPG/World/`, `TaskRPG/Campaign/`, `TaskRPG/Characters/`                    |
+
 ## Session skills
 
 If the agent supports project skills:
@@ -62,7 +115,7 @@ Skills never override the PRD, this file, safety rules, test evidence, or confir
 
 ## Documentation
 
-- Read `docs/DOCUMENTATION.md` for details on repository structure, where information belongs, doc file responsibilities, clear separation of concerns, and doc file starter templates.
+- Read `docs/DOCUMENTATION.md` for how to write documentation and where new documentation goes: file responsibilities, separation of concerns, starter templates, placement rules.
 - Run `/log-decision` when a new decision should be recorded in the PRD.
 - Run `/update-docs` before every release and before opening a PR.
 - Update directly related documentation in the same change.
