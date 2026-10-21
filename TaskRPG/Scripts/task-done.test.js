@@ -110,6 +110,19 @@ describe("task-done.test.js", () => {
     assert.equal(h.data.has(LOG), true);
   });
 
+  // Hero.md is a derived display cache: after resolving a task it must show the
+  // state recalculated from the log, not the state before this turn.
+  test("Task done rewrites derived Hero.md from the new state", async () => {
+    const h = harness();
+
+    await h.press();
+
+    const hero = h.data.get("TaskRPG/Engine/Hero.md");
+    assert.match(hero, /^---\ntype: hero-state\nhp: 10\nmaxHP: 10\nmp: 9\nmaxMP: 10\n/m);
+    assert.match(hero, /xp_mind: 1$/m);
+    assert.match(hero, /VIEW\[\{hp\}\]\[text\]/);
+  });
+
   // TaskNotes identifies a task by tag, not by a `type` field.
 
   test("Task done refuses a note with no task tag", async () => {

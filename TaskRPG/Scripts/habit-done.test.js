@@ -14,6 +14,7 @@ function harness(
 ) {
   const data = new Map([
     ["TaskRPG/Scripts/engine.js", readRepo("Scripts/engine.js")],
+    ["TaskRPG/Scripts/task-utils.js", readRepo("Scripts/task-utils.js")],
     ["TaskRPG/Engine/Settings.md", readRepo("Engine/Settings.md")],
     [
       "TaskRPG/Engine/Habits/Morning routine.md",

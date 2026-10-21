@@ -3,6 +3,7 @@ const LOG = "TaskRPG/Engine/Events.md";
 const SETTINGS = "TaskRPG/Engine/Settings.md";
 const HERO = "TaskRPG/Engine/Hero.md";
 const ENGINE = "TaskRPG/Scripts/engine.js";
+const UTILS = "TaskRPG/Scripts/task-utils.js";
 
 module.exports = async ({ app, quickAddApi }) => {
   const files = app.vault.adapter;
@@ -35,6 +36,9 @@ module.exports = async ({ app, quickAddApi }) => {
     const m = { exports: {} };
     new Function("module", "exports", await files.read(ENGINE))(m, m.exports);
     const E = m.exports;
+    const u = { exports: {} };
+    new Function("module", "exports", await files.read(UTILS))(u, u.exports);
+    const utils = u.exports;
     const settings = E.parseSettingsNote(await files.read(SETTINGS));
     const previous = (await files.exists(LOG)) ? await files.read(LOG) : "";
     const events = E.parseEvents(previous);
@@ -61,17 +65,7 @@ module.exports = async ({ app, quickAddApi }) => {
       file.path,
       `${habitText.trimEnd()}\n- ${timestamp} | ${onTime ? "on time" : "late"} | ${status}\n`,
     );
-    const xp = Object.entries(state.skillXP)
-      .map(([name, value]) => `xp_${name}: ${value}`)
-      .join("\n");
-    await files.write(
-      HERO,
-      `---\ntype: hero-state\nhp: ${state.HP}\nmaxHP: ${state.maxHP}\nmp: ${state.MP}\nmaxMP: ${state.maxMP}\n${xp}\n---\n# Hero state\n\nDerived from [[Events]]; do not edit these numbers by hand.\n\nHP: \`VIEW[{hp}][text]\` / \`VIEW[{maxHP}][text]\`  \nMP: \`VIEW[{mp}][text]\` / \`VIEW[{maxMP}][text]\`\n\n## Skill XP\n\n${Object.keys(
-        state.skillXP,
-      )
-        .map((name) => `- ${name}: \`VIEW[{xp_${name}}][text]\``)
-        .join("\n")}\n`,
-    );
+    await files.write(HERO, utils.renderHero(state));
     new Notice(status, 8000);
   } catch (error) {
     new Notice(

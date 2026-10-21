@@ -124,6 +124,18 @@ function formatResultCard({
   return lines.join("\n");
 }
 
+// Hero.md is derived display state; wrappers rewrite it after every action.
+function renderHero(state) {
+  const xp = Object.entries(state.skillXP)
+    .map(([name, value]) => `xp_${name}: ${value}`)
+    .join("\n");
+  return `---\ntype: hero-state\nhp: ${state.HP}\nmaxHP: ${state.maxHP}\nmp: ${state.MP}\nmaxMP: ${state.maxMP}\n${xp}\n---\n# Hero state\n\nDerived from [[Events]]; do not edit these numbers by hand.\n\nHP: \`VIEW[{hp}][text]\` / \`VIEW[{maxHP}][text]\`  \nMP: \`VIEW[{mp}][text]\` / \`VIEW[{maxMP}][text]\`\n\n## Skill XP\n\n${Object.keys(
+    state.skillXP,
+  )
+    .map((name) => `- ${name}: \`VIEW[{xp_${name}}][text]\``)
+    .join("\n")}\n`;
+}
+
 function updateFrontmatter(text, values) {
   const match = /^(\uFEFF?---)(\r?\n)([\s\S]*?)(\r?\n---)/.exec(text);
   if (!match) throw new Error("Task note has no frontmatter to update.");
@@ -207,6 +219,7 @@ module.exports = {
   parseTags,
   pickTableResult,
   reopenTaskNote,
+  renderHero,
   scheduled,
   taskFolder,
   taskTag,

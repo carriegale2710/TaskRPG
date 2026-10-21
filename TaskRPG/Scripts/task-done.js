@@ -3,6 +3,7 @@
 // QuickAdd user script: resolves the active TaskNotes task through the TaskRPG engine.
 const LOG = "TaskRPG/Engine/Events.md";
 const SETTINGS = "TaskRPG/Engine/Settings.md";
+const HERO = "TaskRPG/Engine/Hero.md";
 const ENGINE = "TaskRPG/Scripts/engine.js";
 const UTILS = "TaskRPG/Scripts/task-utils.js";
 
@@ -69,6 +70,7 @@ module.exports = async ({ app }) => {
 
     const out = engine.recordAction(events, action, settings, timestamp);
     const result = out.result;
+    const state = engine.recalculate(out.events, settings, timestamp).state;
     const tableResult = utils.pickTableResult(result.outcome, dice.lootRoll);
     const lines =
       out.added.map((event) => JSON.stringify(event)).join("\n") + "\n";
@@ -86,6 +88,8 @@ module.exports = async ({ app }) => {
         completedDate: timestamp,
       }),
     );
+
+    await files.write(HERO, utils.renderHero(state));
 
     const card = utils.formatResultCard({
       name: task.name || file.basename,

@@ -8,7 +8,7 @@ TaskNotes owns task creation, planning, statuses, and the skill, size, urgent an
 
 `task-utils.test.js` tests pure helpers, including the TaskNotes scheduled-date mapping and completion-field updates (missing-field insertion, frontmatter-only edits, literal `$` values, undo reopening the note with `status: open`, CRLF).
 
-`task-done.test.js` runs the real `Scripts/task-done.js` against an in-memory vault whose task note sits in `TaskNotes/Tasks/…` (the folder named by TaskNotes' `data.json`), and checks the logged `task_done` event and the completion-field update. It also proves the script does not run when a required property is missing: `skill` or `size` absent, empty, or YAML `null`, and `taskId` absent, empty, or `null` — each case must leave the log and the note untouched.
+`task-done.test.js` runs the real `Scripts/task-done.js` against an in-memory vault whose task note sits in `TaskNotes/Tasks/…` (the folder named by TaskNotes' `data.json`), and checks the logged `task_done` event, the completion-field update, and the rewritten `Engine/Hero.md` (derived HP, MP and skill XP). It also proves the script does not run when a required property is missing: `skill` or `size` absent, empty, or YAML `null`, and `taskId` absent, empty, or `null` — each case must leave the log and the note untouched.
 
 A note is a task only when it carries TaskNotes' configured `taskTag`.
 
