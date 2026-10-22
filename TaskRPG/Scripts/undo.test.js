@@ -4,9 +4,8 @@ const { test, describe } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const { hasUnresolvedTaskDone } = require("./task-utils.js");
 const engine = require("./engine.js");
-const undoLast = require("./task-undo.js");
+const undoLast = require("./undo.js");
 
 const readRepo = (name) =>
   fs.readFileSync(path.join(__dirname, "..", name), "utf8");
@@ -81,6 +80,14 @@ const TASKS = {
   matching: "TaskNotes/Tasks/fix the fence.md",
   other: "TaskNotes/Tasks/water the plants.md",
 };
+const HABITS = {
+  matching: "TaskRPG/Engine/Habits/Morning routine.md",
+  other: "TaskRPG/Engine/Habits/Evening walk.md",
+};
+
+function habitNote({ habitId, history = [] }) {
+  return `---\ntype: core-habit\nhabitId: ${habitId}\nskill: vitality\nblock: morning\n---\n\n# Habit\n\n## History\n\n${history.join("\n")}\n`;
+}
 
 function taskNote({
   taskId,
@@ -95,6 +102,7 @@ function taskNote({
 function undoHarness({
   action,
   notes = { [TASKS.matching]: "task-1", [TASKS.other]: "task-2" },
+  habits = {},
 } = {}) {
   const event =
     action ??
@@ -112,11 +120,13 @@ function undoHarness({
     // so the lookup has to leave the TaskNotes root to find one.
     [TASKNOTES_DATA, JSON.stringify({ tasksFolder: "TaskNotes/Tasks" })],
     ["TaskNotes/Tasks", ""],
+    ["TaskRPG/Engine/Habits", ""],
     ["TaskNotes/Start Here.md", "---\ntype: index\n---\n# TaskNotes"],
     ...Object.entries(notes).map(([file, taskId]) => [
       file,
       taskNote({ taskId }),
     ]),
+    ...Object.entries(habits).map(([file, habit]) => [file, habitNote(habit)]),
   ]);
   const notices = [];
   global.Notice = class {
@@ -136,8 +146,13 @@ function undoHarness({
     list: async (dir) => {
       if (dir === "TaskNotes/Tasks")
         return { files: Object.keys(notes), folders: [] };
+      if (dir === "TaskRPG/Engine/Habits")
+        return { files: Object.keys(habits), folders: [] };
       if (dir === "TaskNotes")
-        return { files: ["TaskNotes/Start Here.md"], folders: ["TaskNotes/Tasks"] };
+        return {
+          files: ["TaskNotes/Start Here.md"],
+          folders: ["TaskNotes/Tasks"],
+        };
       return { files: [], folders: [] };
     },
   };
@@ -148,76 +163,7 @@ function undoHarness({
   };
 }
 
-describe("task-undo.test.js", () => {
-  test("a TaskNotes task marked Done can be resolved when no RPG resolution exists", () => {
-    assert.equal(hasUnresolvedTaskDone([], "task-1"), false);
-  });
-
-  test("a second resolution is blocked while the latest relevant event is an unresolved task_done", () => {
-    const events = [
-      taskDoneEvent({
-        id: "task-event-1",
-        taskId: "task-1",
-        timestamp: "2026-10-15T09:00:00+11:00",
-      }),
-    ];
-    assert.equal(hasUnresolvedTaskDone(events, "task-1"), true);
-  });
-
-  test("a valid engine undo makes the task eligible for resolution again", () => {
-    const events = [
-      taskDoneEvent({
-        id: "task-event-1",
-        taskId: "task-1",
-        timestamp: "2026-10-15T09:00:00+11:00",
-      }),
-      undoEvent({
-        id: "undo-event-1",
-        targetEventId: "task-event-1",
-        timestamp: "2026-10-15T09:05:00+11:00",
-      }),
-    ];
-    assert.equal(hasUnresolvedTaskDone(events, "task-1"), false);
-  });
-
-  test("undo is linked by targetEventId, not taskId", () => {
-    const events = [
-      taskDoneEvent({
-        id: "task-event-1",
-        taskId: "task-1",
-        timestamp: "2026-10-15T09:00:00+11:00",
-      }),
-      undoEvent({
-        id: "undo-event-1",
-        targetEventId: "task-event-1",
-        timestamp: "2026-10-15T09:05:00+11:00",
-      }),
-    ];
-    assert.equal(events.at(-1).taskId, undefined);
-    assert.equal(hasUnresolvedTaskDone(events, "task-1"), false);
-  });
-
-  test("an undo targeting another task does not release this task resolution guard", () => {
-    const events = [
-      taskDoneEvent({
-        id: "task-event-1",
-        taskId: "task-1",
-        timestamp: "2026-10-15T09:00:00+11:00",
-      }),
-      taskDoneEvent({
-        id: "task-event-2",
-        taskId: "task-2",
-        timestamp: "2026-10-15T09:01:00+11:00",
-      }),
-      undoEvent({
-        id: "undo-event-2",
-        targetEventId: "task-event-2",
-        timestamp: "2026-10-15T09:06:00+11:00",
-      }),
-    ];
-    assert.equal(hasUnresolvedTaskDone(events, "task-1"), true);
-  });
-
+describe("undo.test.js", () => {
   test("resolution after undo is marked repeat by the engine", () => {
     const first = taskDoneEvent({
       id: "task-event-1",
@@ -277,27 +223,6 @@ describe("task-undo.test.js", () => {
     );
   });
 
-  test("duplicate resolution guard accepts an undo that targets the original task_done event", () => {
-    const events = [
-      taskDoneEvent({
-        id: "task-event-1",
-        taskId: "task-1",
-        timestamp: "2026-10-15T09:00:00+11:00",
-      }),
-      undoEvent({
-        id: "undo-event-1",
-        targetEventId: "task-event-1",
-        timestamp: "2026-10-15T09:05:00+11:00",
-      }),
-      taskDoneEvent({
-        id: "task-event-2",
-        taskId: "task-1",
-        timestamp: "2026-10-15T09:10:00+11:00",
-      }),
-    ];
-    assert.equal(hasUnresolvedTaskDone(events, "task-1"), true);
-  });
-
   test('undoing a task_done event writes status: open and completedDate: "" to the matching note', async () => {
     const h = undoHarness();
     const otherBefore = h.data.get(TASKS.other);
@@ -323,32 +248,75 @@ describe("task-undo.test.js", () => {
     await h.press();
 
     const hero = h.data.get("TaskRPG/Engine/Hero.md");
-    assert.match(hero, /^---\ntype: hero-state\nhp: 10\nmaxHP: 10\nmp: 10\nmaxMP: 10\n/m);
+    assert.match(
+      hero,
+      /^---\ntype: hero-state\nhp: 10\nmaxHP: 10\nmp: 10\nmaxMP: 10\n/m,
+    );
     assert.match(hero, /xp_mind: 0$/m);
     assert.match(hero, /VIEW\[\{mp\}\]\[text\]/);
   });
 
-  test("undoing a habit leaves task notes untouched and does not claim a TaskNotes change", async () => {
+  test("undoing a habit removes its history line and leaves task notes untouched", async () => {
+    const stamp = engine.localStamp();
+    const line = `- ${stamp} | on time | Morning routine complete! +1 HP, +1 XP, -2 MP (MP 8/10)`;
+    const older =
+      "- 2026-10-20T09:00:00+11:00 | late | Morning routine complete! +1 HP, +1 XP, -2 MP (MP 6/10)";
     const h = undoHarness({
       action: {
         id: "habit-event-1",
         type: "habit_done",
-        timestamp: engine.localStamp(),
+        timestamp: stamp,
         habitId: "morning-routine",
         skill: "vitality",
         onTime: true,
+      },
+      habits: {
+        [HABITS.matching]: {
+          habitId: "morning-routine",
+          history: [older, line],
+        },
+        [HABITS.other]: { habitId: "evening-walk", history: [line] },
       },
     });
     const before = [h.data.get(TASKS.matching), h.data.get(TASKS.other)];
 
     await h.press();
 
+    const note = h.data.get(HABITS.matching);
+    assert.doesNotMatch(note, new RegExp(stamp.replace(/[+]/g, "\\+")));
+    assert.match(note, /2026-10-20T09:00:00\+11:00 \| late/);
+    assert.equal(
+      h.data.get(HABITS.other),
+      habitNote({
+        habitId: "evening-walk",
+        history: [line],
+      }),
+    );
     assert.deepEqual(
       [h.data.get(TASKS.matching), h.data.get(TASKS.other)],
       before,
     );
     assert.doesNotMatch(h.notices[0], /TaskNotes/);
-    assert.match(h.notices[0], /^Undid the last RPG action\./);
+    assert.match(h.notices[0], /Habit history line removed/);
+  });
+
+  test("undoing a habit with no matching habit note still logs the correction and says so", async () => {
+    const h = undoHarness({
+      action: {
+        id: "habit-event-2",
+        type: "habit_done",
+        timestamp: engine.localStamp(),
+        habitId: "missing-habit",
+        skill: "vitality",
+        onTime: false,
+      },
+    });
+
+    await h.press();
+
+    const events = engine.parseEvents(h.data.get("TaskRPG/Engine/Events.md"));
+    assert.equal(events.at(-1).type, "undo");
+    assert.match(h.notices[0], /no matching habit note/);
   });
 
   test("an undo with no matching note still logs the correction and says so", async () => {

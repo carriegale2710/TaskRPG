@@ -56,6 +56,17 @@ module.exports = async ({ app }) => {
       }
     }
 
+    let habitRemoved = false;
+    if (target?.type === "habit_done" && target.habitId) {
+      const path = await findHabitPath(files, utils, target.habitId);
+      if (path) {
+        const text = await files.read(path);
+        const next = utils.removeHabitLogLine(text, target.timestamp);
+        habitRemoved = next !== text;
+        if (habitRemoved) await files.write(path, next);
+      }
+    }
+
     await files.write(HERO, utils.renderHero(state));
 
     new Notice(
@@ -63,7 +74,11 @@ module.exports = async ({ app }) => {
         ? reopened
           ? "Undid the last RPG action. TaskNotes status restored to open."
           : "Undid the last RPG action, but no matching task note was found. Check TaskNotes' tasks folder."
-        : "Undid the last RPG action. Habit notes are unchanged.",
+        : target?.type === "habit_done"
+          ? habitRemoved
+            ? "Undid the last RPG action. Habit history line removed."
+            : "Undid the last RPG action, but no matching habit note or history line was found."
+          : "Undid the last RPG action.",
       8000,
     );
   } catch (error) {
@@ -89,6 +104,18 @@ async function findTaskPath(files, utils, folder, taskId) {
   for (const name of names) {
     if (!name.endsWith(".md")) continue;
     if (utils.parseFrontmatter(await files.read(name)).taskId === taskId)
+      return name;
+  }
+  return "";
+}
+
+async function findHabitPath(files, utils, habitId) {
+  const folder = "TaskRPG/Engine/Habits";
+  if (!(await files.exists(folder))) return "";
+  const { files: names = [] } = await files.list(folder);
+  for (const name of names) {
+    if (!name.endsWith(".md")) continue;
+    if (utils.parseFrontmatter(await files.read(name)).habitId === habitId)
       return name;
   }
   return "";

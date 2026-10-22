@@ -4,6 +4,26 @@ const { test, describe } = require("node:test");
 const assert = require("node:assert/strict");
 const utils = require("./task-utils.js");
 
+function taskDoneEvent({ id, taskId, timestamp }) {
+  return {
+    id,
+    type: "task_done",
+    timestamp,
+    taskId,
+    skill: "mind",
+    size: "small",
+    planned: true,
+    important: false,
+    urgent: false,
+    roll: [3, 4],
+    lootRoll: 1,
+  };
+}
+
+function undoEvent({ id, targetEventId, timestamp }) {
+  return { id, type: "undo", timestamp, targetEventId };
+}
+
 describe("task-utils.test.js", () => {
   test("parses TaskNotes frontmatter", () => {
     const fields = utils.parseFrontmatter(
@@ -253,6 +273,99 @@ describe("task-utils.test.js", () => {
     assert.equal(fields.completedDate, "");
     assert.equal(fields.taskId, "abc");
     assert.equal(updated.endsWith("# Task"), true);
+  });
+
+  // Duplicate-resolution guard used by task-done.js. Undo behavior itself lives
+  // in undo.test.js; this block covers the event-list query only.
+
+  test("task resolution guard allows a TaskNotes task marked Done when no RPG resolution exists", () => {
+    assert.equal(utils.hasUnresolvedTaskDone([], "task-1"), false);
+  });
+
+  test("task resolution guard blocks a second resolution while the latest relevant event is an unresolved task_done", () => {
+    const events = [
+      taskDoneEvent({
+        id: "task-event-1",
+        taskId: "task-1",
+        timestamp: "2026-10-15T09:00:00+11:00",
+      }),
+    ];
+    assert.equal(utils.hasUnresolvedTaskDone(events, "task-1"), true);
+  });
+
+  test("task resolution guard allows resolution again after a valid engine undo", () => {
+    const events = [
+      taskDoneEvent({
+        id: "task-event-1",
+        taskId: "task-1",
+        timestamp: "2026-10-15T09:00:00+11:00",
+      }),
+      undoEvent({
+        id: "undo-event-1",
+        targetEventId: "task-event-1",
+        timestamp: "2026-10-15T09:05:00+11:00",
+      }),
+    ];
+    assert.equal(utils.hasUnresolvedTaskDone(events, "task-1"), false);
+  });
+
+  test("undo is linked by targetEventId, not taskId", () => {
+    const events = [
+      taskDoneEvent({
+        id: "task-event-1",
+        taskId: "task-1",
+        timestamp: "2026-10-15T09:00:00+11:00",
+      }),
+      undoEvent({
+        id: "undo-event-1",
+        targetEventId: "task-event-1",
+        timestamp: "2026-10-15T09:05:00+11:00",
+      }),
+    ];
+    assert.equal(events.at(-1).taskId, undefined);
+    assert.equal(utils.hasUnresolvedTaskDone(events, "task-1"), false);
+  });
+
+  test("an undo targeting another task does not release this task resolution guard", () => {
+    const events = [
+      taskDoneEvent({
+        id: "task-event-1",
+        taskId: "task-1",
+        timestamp: "2026-10-15T09:00:00+11:00",
+      }),
+      taskDoneEvent({
+        id: "task-event-2",
+        taskId: "task-2",
+        timestamp: "2026-10-15T09:01:00+11:00",
+      }),
+      undoEvent({
+        id: "undo-event-2",
+        targetEventId: "task-event-2",
+        timestamp: "2026-10-15T09:06:00+11:00",
+      }),
+    ];
+    assert.equal(utils.hasUnresolvedTaskDone(events, "task-1"), true);
+  });
+
+  test("duplicate resolution guard still blocks after an undo and a fresh resolution", () => {
+    const events = [
+      taskDoneEvent({
+        id: "task-event-1",
+        taskId: "task-1",
+        timestamp: "2026-10-15T09:00:00+11:00",
+      }),
+      undoEvent({
+        id: "undo-event-1",
+        targetEventId: "task-event-1",
+        timestamp: "2026-10-15T09:05:00+11:00",
+      }),
+      taskDoneEvent({
+        id: "task-event-2",
+        taskId: "task-1",
+        timestamp: "2026-10-15T09:10:00+11:00",
+      }),
+    ];
+    assert.equal(utils.hasUnresolvedTaskDone(events, "task-1"), true);
   });
 
   test("preserves CRLF line endings when inserting a field", () => {

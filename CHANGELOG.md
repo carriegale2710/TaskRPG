@@ -4,6 +4,14 @@ All notable changes to project documented here. Format follows Keep a Changelog 
 
 ## [UNRELEASED] - Step 3 (issue #3, draft PR #10)
 
+### Documentation
+
+- Fixed stale PRD v1 section references. `docs/BUILD_PLAN.md` ground rules no longer cite `PRD 4.15`, `4.23`, `4.35` or `4.39`, which do not exist in PRD v2; they now point to `ARCHITECTURE.md` §4, §5 and §10 plus PRD 3.23.1 and 3.25. `AGENTS.md` safety rule now points to the folder layout in `docs/ARCHITECTURE.md` §5 instead of `PRD 4.15`. Documentation only; no behavior changes.
+- Made the AI agent host decision-agnostic across `docs/PRD.md`, `docs/ARCHITECTURE.md`, `docs/PLUGINS.md`, `docs/DECISIONS.md`, `docs/BUILD_PLAN.md`, `docs/TESTING.md`, `README.md` and the `gm_bridge.py` docstring. Docs now say "AI agent host" and list Obsidian Copilot, Text Generator and Vault Operator as undecided candidates. Added `PLUGINS.md` section 5 capability requirements and decision D-032; D-005 superseded. No behavior changes; only the `gm_bridge.py` module docstring changed.
+- Added a **User stories** block to every subsection 3.1–3.25 of `docs/PRD.md`. Each of the 50 stories is a blockquote followed by two numbered acceptance criteria. Each story and criterion restates an existing settled bullet and introduces no new behavior.
+- Moved the six `hasUnresolvedTaskDone` guard tests from `undo.test.js` to `task-utils.test.js`, where the helper lives, and renamed one that claimed the guard "accepts" a case it actually blocks. `docs/TESTING.md` and `docs/BUILD_PLAN.md` now separate guard coverage from undo coverage and state that five of the undo script tests remain, two of them missing-note notices. Test-only change; no behavior changes.
+- Rewrote the `docs/BUILD_PLAN.md` 3.2 undo checklist as acceptance criteria grouped by PRD 3.17: eligibility and stack, correcting event and write order, derived state and rules in force, note writes, story rollback, gift cascade, messages, and regression tests. Added the missing criteria for timestamp ties, skipped ineligible actions, write-failure ordering, full replay-derived state, story tag matching and CRLF, and the daily-note regeneration. Documented that story rollback, the gift cascade, and the mid-day day-boundary change are unbuilt or undecided. Documentation only; no code changed.
+
 ### Step 3 redesign
 
 TaskNotes = task creation, planning, user fields, while TaskRPG = task resolution, undo, and the `done`/`open` status writes. `Task done` resolves open TaskNotes task through engine. `Undo last` appends correcting engine event.
@@ -24,12 +32,14 @@ TaskNotes = task creation, planning, user fields, while TaskRPG = task resolutio
 
 **Undo feature**: `undo.js`
 
-    - `Undo last` appends correcting RPG event, writes `status: open` and clears `completedDate` on matching task note.
+    - `Undo last` appends correcting RPG event, writes `status: open` and clears `completedDate` on matching task note; habit undo deletes the habit note's history line.
 
-- finds the newest same-day action
-- appends an undo correction
-- preserves the original event
-- clears completedDate and restores the TaskNotes default `open` status on the matching task; habit undo leaves task notes untouched.
+- finds newest same-day action
+- appends undo correction
+- preserves original event
+- task undo: clears `completedDate`, restores TaskNotes default `open` status
+- habit undo: deletes history line stamped with undone event's timestamp, other lines untouched
+- missing task note, habit note or history line: undo still saves, notice says so
 
 **Shared task helpers**: `task-utils.js`
 
@@ -55,11 +65,25 @@ TaskNotes = task creation, planning, user fields, while TaskRPG = task resolutio
   - repeat resolution after undo
   - preserved original `task_done` event
   - end-to-end `Undo last` run against a stubbed vault adapter: the matching note gets `status: open` and `completedDate: ""`, and a second Done note is left untouched (test-only; behaviour already shipped)
+  - habit undo deletes only the history line matching the undone event's timestamp and notices the removal; old "habit undo leaves task notes untouched" test replaced
+
+#### Undo requirements settled (documentation only)
+
+No code changed. PRD 3.17 replaced the six-line undo rule with testable requirements; `docs/BUILD_PLAN.md` undo substeps rewritten; decisions D-027 to D-031 recorded.
+
+- Eligibility: tasks and habits only; boss challenges, gifts, rest days, pause/resume, focus project, arc completion, settings change, and missed deadlines are never targets and do not block an older eligible action.
+- Stacking: each press reverses one action, newest first, same game day by configured boundary; undo events are never targets.
+- Correcting event written before note changes; log write failure changes nothing, later note failure keeps the correction and says not to repeat.
+- Derived state rebuilt by replay, including skill levels, habit cost tier, and rules in force at the original action; a level gained by the undone action is reversed.
+- Story rollback: narrator tags lines with `<!-- evt:<eventId> -->` in `Story/`, `Campaign/`, `World/`, `Characters/`; undo removes only matching lines. No backfill of existing prose.
+- Gifted loot: undoing the source task removes the item from the recipient and reduces the affinity that gift raised; the gift line replays as void. Blocked until gifts, inventory, and companions exist.
+- No confirmation step; undo cost has no performance target yet.
 
 #### Changed
 
 - `Task done` now always writes `status: done` to the resolved task note, overwriting any prior value; TaskNotes detects the written status. Prior behaviour preserved the note's status. New test `Task done writes status done over the note's current status` starts the note at `open` and asserts `done`. Docs split changed: TaskRPG owns the `done`/`open` status writes (PRD 3.9, D-024).
 - `Task done` shows the result card in one 15-second Notice; the unverified `obsidian.Modal` path and its silent `try`/`catch` fallback are removed (D-025). `task-done.test.js` asserts a single Notice carrying the outcome. PRD 3.15 and `BUILD_PLAN.md` updated; the "result modal untested" gap closes, mobile Notice stays unverified.
+- `task-undo.js`/`task-undo.test.js` renamed `undo.js`/`undo.test.js` because the script handles habits, not tasks only. `removeHabitLogLine` added to `task-utils.js`; habit undo removes its own history line (D-026). PRD 3.17, `ARCHITECTURE.md`, `TESTING.md`, `PLUGINS.md`, `AGENTS.md` and `BUILD_PLAN.md` updated.
 - `hasUnresolvedTaskDone` moved to `task-utils.js`, used by `task-done.js`; follows `undo.targetEventId` to original `task_done`.
 - Post-valid-undo allows later `Task done`; engine marks repeat.
 - Documentation updated for the ownership split and undo flow: `STEP3.md`, `TESTING.md`, `PLUGINS.md`, `AGENTS.md`, `BUILD_PLAN.md`, `README.md`.

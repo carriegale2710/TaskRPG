@@ -1,9 +1,69 @@
 # TaskRPG Decision Log
 
-**Last Updated**: 2026-10-21
+**Last Updated**: 2026-10-23
 Newest first. A decision stays active until marked `Superseded`.
 
 Statuses: **Accepted** (settled; agents follow it), **Provisional** (revisable default), **Superseded** (inactive; link replacement).
+
+## D-032—AI agent host stays undecided and docs stay host-agnostic
+
+- **Status:** Accepted
+- **Decision:** TaskRPG does not depend on a named Obsidian AI plugin. All documentation, prompts, personas and rules describe an "AI agent host" defined only by capabilities: persistent persona or system prompt, selected vault context, scoped writes with approval, and a selectable model. The candidate set is Obsidian Copilot, Text Generator and Vault Operator; the final choice is deferred to the Step 4 host check.
+- **Context:** D-005 named Vault Operator as the narrator host. The user has not settled on it and may use Obsidian Copilot or Text Generator. Naming one plugin across the PRD, architecture and build plan would make every host swap a documentation rewrite and imply unverified behavior.
+- **Rationale:** The host is replaceable infrastructure around fixed plain-Markdown persona and prompt contracts. Capability-based requirements keep the engine, file ownership and safety rules unchanged whichever plugin wins.
+- **Alternatives considered:** Keep Vault Operator as the default and note alternatives in one place (leaves host-specific claims scattered through the docs); pick Copilot or Text Generator now (premature before the host check).
+- **Implications:** No doc may assert host-specific features as working. `docs/PLUGINS.md` section 5 holds the candidate list and required capabilities. Step 4 validates the chosen host and records version, tested features and gaps in `docs/TESTING.md`. Persona files and prompts stay host-neutral Markdown. `gm_bridge.py` remains an optional terminal fallback and is not the host.
+- **Revisit when:** A host is chosen and validated in Step 4, or a required capability is missing from every candidate.
+
+## D-031—Undo has no confirmation step
+
+- **Status:** Accepted
+- **Decision:** `Undo last` runs immediately with no prompt. One Notice reports what was reversed and what could not be found.
+- **Context:** PRD 3.17 already removed confirmation from Done to preserve instant reward; undo was silent on the question. User confirmed no confirmation for undo.
+- **Rationale:** Undo is recoverable by pressing Done again, creates a fresh logged roll, and never rewrites the log, so a prompt adds friction without preventing loss.
+- **Alternatives considered:** Confirm-only-when-loot-drops; block undo once more than one action happened that day.
+- **Implications:** No modal, no second QuickAdd step. Undo cost has no performance target; measure after real use and record the number here if it needs one.
+- **Revisit when:** Undo starts touching irreversible effects, or measured replay time becomes noticeable.
+
+## D-030—Undoing a task removes loot gifted from it and reduces that affinity
+
+- **Status:** Accepted
+- **Decision:** When undo reverses a `task_done` that produced an item which was later gifted, the item is removed from the recipient and the affinity raised by that gift is reduced by the same amount. The gift line stays in the event log and replays as void. A gift is still never an undo target itself.
+- **Context:** PRD line 372 said gifts cannot be undone. User chose that undoing the source task must also remove the gifted item rather than leave a phantom item or block the undo.
+- **Rationale:** State must match the log. If the item never existed, the gift could not have happened, so affinity earned from it cannot stand.
+- **Alternatives considered:** Refuse undo of a task whose loot was gifted; leave the item with the recipient; make the gift line ineligible and leave affinity.
+- **Implications:** PRD 3.17 and the Build defaults Undo row now state the cascade. Engine replay must skip a gift whose source item was undone and subtract its affinity. Not implementable yet: no gift event, inventory, or companion affinity code exists (`TaskRPG/Scripts` has no matches). Tracked in `docs/BUILD_PLAN.md` Step 3 undo substeps.
+- **Revisit when:** Gifts, inventory, and companions are built, or gifting is cut from scope.
+
+## D-029—Story prose rolls back on undo, matched by event tag
+
+- **Status:** Accepted
+- **Decision:** The narrator tags each line it writes in response to a resolved action with a trailing `<!-- evt:<eventId> -->` comment in `Story/`, `Campaign/`, `World/`, and `Characters/` notes. Undo removes every line carrying the target event ID and collapses the resulting blank-line gap. Untagged prose, tables, and links stay, even when they mention the undone action; the Notice reports the removed count and what was left.
+- **Context:** PRD 3.17 previously rewrote hero and note state only, and BUILD_PLAN asked to "restore Story state" with no rule or mechanism. Story files contain no tags today, and prose has no natural identity to match.
+- **Rationale:** A trailing HTML comment is invisible in reading view, survives inside tables, and needs no snapshot or timestamp matching. Line-level removal is deterministic and testable with a pure helper like `removeHabitLogLine`.
+- **Alternatives considered:** Whole-file snapshots (deletes unrelated canon, breaks shared multi-campaign canon); date matching (removes correct prose when two actions share a day); narrator rewriting history after undo (nondeterministic, fails offline); block-level tags (no table support).
+- **Implications:** Narrative text written without a tag survives undo forever. No backfill for existing prose: dates in `Campaign/02 Story So Far` cannot be mapped to event IDs reliably. A line covering two actions is tagged with both IDs and is removed when either is undone, an accepted over-removal. Event log and dice stay; removed prose stays in git history. Graph and backlink checks belong in manual verification.
+- **Revisit when:** Narrator output is generated by a fixed template that could carry block IDs, or untagged prose drift becomes a problem.
+
+## D-028—Undo reverses derived state and uses the original action's rules
+
+- **Status:** Accepted
+- **Decision:** Undo recomputes state by replaying the log with the target event excluded, so MP, HP, skill XP, skill levels, habit cost tier, Wounded and Tired, focus effect, inventory, loot, and companion XP and affinity all return to pre-action values. A level gained by the undone action is reversed with its MP discount. Rules come from the settings in force at the target action's timestamp, not current settings.
+- **Context:** PRD 3.17 listed only MP, XP, HP, and loot. BUILD_PLAN said "restore Hero state" without naming derived values, and PRD 3.23 says a settings change never rewrites the past.
+- **Rationale:** Replay is the only source of truth; stored deltas would drift. Per-event rules keep old days under old rules.
+- **Alternatives considered:** Subtract stored deltas from the action result (misses threshold effects); recompute with current settings (contradicts 3.23).
+- **Implications:** `recalculate()` already replays; undo must render `Hero.md` from that result. Hooks needed for habit cost tier and, later, companion affinity. Tests must cover a level-up reversal and an undo after a settings change.
+- **Revisit when:** A derived value cannot be recomputed from the log, or replay cost becomes measurable.
+
+## D-027—Undo targets tasks and habits only, newest first, repeatable
+
+- **Status:** Accepted
+- **Decision:** Only `task_done` and `habit_done` are undoable. Boss challenges, gifts, rest days, pause and resume, focus project, arc completion, settings change, and missed deadlines are never targets and never block an older eligible action. Each press reverses one action; repeated presses unwind the same game day's stack, newest first, until empty. An `undo` event is never itself undone. Same day uses the configured day boundary.
+- **Context:** PRD 3.17 said "newest eligible action" without defining eligible, and "one at a time" could be read as one undo per day. Eligibility lived only in a Build defaults row.
+- **Rationale:** Stack semantics match the engine's `lastActionByDay` and let a mis-clicked pair be corrected without touching unrelated actions. Undoing an undo would re-apply an effect the user rejected.
+- **Alternatives considered:** One undo per day (strands a second mistake); undo any event type (reverses administrative actions with no user-visible meaning); undo-of-undo as redo.
+- **Implications:** Engine validation rejects a target that is not the stack top or not from the same game day. `undo.js` reads the top of the stack. Nothing-to-undo writes nothing and says so.
+- **Revisit when:** A redo action is wanted, or an event type gains a user-visible effect that undo should cover.
 
 ## D-026—Undo removes the habit history line it added
 
@@ -22,7 +82,7 @@ Statuses: **Accepted** (settled; agents follow it), **Provisional** (revisable d
 - **Context:** The modal was never observed: every run produced the Notice fallback. `obsidian` is not reliably a global in a QuickAdd user script loaded by read/eval, and the `try`/`catch` hid which branch ran. User asked for the Notice only.
 - **Rationale:** One display path, no swallowed error, no dependency on an unavailable global. The Notice already carries the full card (roll, outcome, table result, XP/MP, loot) and clicking dismisses it (PRD 3.15).
 - **Alternatives considered:** Keep the modal with an explicit error Notice in `catch`; report the global from QuickAdd to inject `Modal`.
-- **Implications:** PRD 3.15 second bullet now says Notice. `task-done.test.js` asserts exactly one Notice containing `**Outcome:**`. The "result modal untested" gap closes; mobile Notice rendering stays unverified.
+- **Implications:** The result-card acceptance criteria in PRD 3.15 say Notice. `task-done.test.js` asserts exactly one Notice containing `**Outcome:**`. The "result modal untested" gap closes; mobile Notice rendering stays unverified.
 - **Revisit when:** A modal is wanted for readability and QuickAdd exposes `obsidian` to user scripts.
 
 ## D-024—`Task done` always writes `status: done`
@@ -199,7 +259,7 @@ Statuses: **Accepted** (settled; agents follow it), **Provisional** (revisable d
 
 - **Status:** Accepted
 - **Decision:** Plain, dependency-free JavaScript, no Obsidian API.
-- **Context:** Vault Operator cannot run a terminal; a future plugin port is possible.
+- **Context:** An in-vault AI host cannot run a terminal; a future plugin port is possible.
 - **Rationale:** A pure engine runs in QuickAdd, terminal tests and a future plugin without rewriting rules.
 - **Alternatives considered:** Build against Obsidian APIs.
 - **Implications:** All file I/O in wrappers; tests run without Obsidian.
@@ -215,15 +275,15 @@ Statuses: **Accepted** (settled; agents follow it), **Provisional** (revisable d
 - **Implications:** Terminal tests may use equivalent JSONL; live vault stays Markdown.
 - **Revisit when:** Performance, concurrency or querying justify migration.
 
-## D-005—Vault Operator runs narrator and characters
+## D-005—AI agent host runs narrator and characters
 
-- **Status:** Accepted
-- **Decision:** Narrator and character agents run in Vault Operator inside Obsidian.
-- **Context:** User wants in-vault character interaction, not a terminal workflow.
+- **Status:** Superseded by D-032
+- **Decision:** Narrator and character agents run in an Obsidian AI agent host, not in a terminal workflow.
+- **Context:** User wants in-vault character interaction, not a terminal workflow. The original entry named Vault Operator; that choice is no longer settled.
 - **Rationale:** Sidebar chat, vault access and persona agents without a custom framework.
 - **Alternatives considered:** Custom plugin; external chat app; terminal agent.
 - **Implications:** Desktop-only; provider data terms apply; controlled write permissions required.
-- **Revisit when:** Vault Operator limits block required interactions.
+- **Revisit when:** Superseded by D-032; host choice revisited there.
 
 ## D-004—One agent per character
 

@@ -165,6 +165,18 @@ function reopenTaskNote(text) {
   });
 }
 
+// Habit Done appends one history line per press. Undo removes the line the
+// undone event added, matched by its timestamp, and leaves other lines alone.
+function removeHabitLogLine(text, timestamp) {
+  const prefix = `- ${timestamp} | `;
+  const eol = text.includes("\r\n") ? "\r\n" : "\n";
+  const lines = text.split(/\r?\n/);
+  const index = lines.findIndex((line) => line.trimStart().startsWith(prefix));
+  if (index === -1) return text;
+  lines.splice(index, 1);
+  return lines.join(eol);
+}
+
 // TaskNotes stores task notes in the folder configured in its plugin data and
 // identifies a task by a tag, not by a `type` field. Read both instead of
 // guessing, so moving the folder or renaming the tag does not silently break
@@ -219,6 +231,7 @@ module.exports = {
   parseTags,
   pickTableResult,
   reopenTaskNote,
+  removeHabitLogLine,
   renderHero,
   scheduled,
   taskFolder,

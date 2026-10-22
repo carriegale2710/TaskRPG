@@ -6,7 +6,7 @@ TaskRPG is an immersive, character-driven RPG layer on an Obsidian vault. Resolv
 
 ## Why TaskRPG
 
-**Dice and tables decide _what_ happens. The AI narrates _how_.** Every number (HP, MP, XP, rolls, levels) comes from a small, tested JavaScript engine that reads an event log. Randomness is real, and the game works when the AI is down. Narrator and characters run as Vault Operator agents, write only story files, and never touch stats or task records.
+**Dice and tables decide _what_ happens. The AI narrates _how_.** Every number (HP, MP, XP, rolls, levels) comes from a small, tested JavaScript engine that reads an event log. Randomness is real, and the game works when the AI is down. Narrator and characters run in an Obsidian AI agent host, write only story files, and never touch stats or task records.
 
 Your vault stays yours. Tasks, notes and journals stay where they are; TaskRPG adds a game loop on top.
 
@@ -26,7 +26,7 @@ Built for one person. Sharing the vault is decided after the first month.
 - Append-only **event log** as source of truth; undo and correction instead of editing history.
 - Hero progression: HP, MP, XP across five skills with ten levels each.
 - 2d6 resolution against success/partial/setback, random-table results, loot drops.
-- Narrator and characters that remember you, run as Vault Operator agents.
+- Narrator and characters that remember you, run in an Obsidian AI agent host.
 - Story, world and campaign notes that grow with play.
 - Rest days, pause, no-death recovery arcs.
 - **Works without AI.** Buttons, dice, stats and tables keep running; narration catches up later.
@@ -36,7 +36,7 @@ Built for one person. Sharing the vault is decided after the first month.
 
 - **Obsidian** (desktop for setup and planning; phone for quick taps).
 - Required community plugins ([Plugins](#plugins)).
-- **AI provider for Vault Operator** (free Gemini key or GitHub Copilot) — optional.
+- **AI agent host** for the narrator and characters (Obsidian Copilot, Text Generator or Vault Operator; undecided) and a model provider — optional.
 - **Node.js 22+** only for terminal engine and tests.
 
 ## Setup
@@ -140,15 +140,15 @@ Add only what is listed; every extra plugin slows startup. Detail: [`docs/PLUGIN
 | **Fit**                | Phone ↔ desktop sync through GitHub; doubles as backup           |
 | **Dice Roller**        | Draws from random tables                                          |
 | **TaskNotes**          | Task layer: creates, plans, displays; owns task fields            |
-| **Vault Operator**     | Narrator and characters as agents. Desktop only                   |
+| **AI agent host**      | Narrator and characters as agents; Copilot, Text Generator or Vault Operator. Desktop only |
 
-**Don't use:** Buttons (discontinued), Life RPG / LifeQuest / RPG Stat Tracker (clashing XP rules), Tasks (date-only done stamp), Checklist, tabletop-GM plugins, any second AI plugin beside Vault Operator, utilities you don't need.
+**Don't use:** Buttons (discontinued), Life RPG / LifeQuest / RPG Stat Tracker (clashing XP rules), Tasks (date-only done stamp), Checklist, tabletop-GM plugins, two AI writers at once, utilities you don't need.
 
 **Optional, later, on request:** Dataview, Storyteller Suite, Atlas VTT, Heatmap Calendar, presentation plugins, external-sync plugins.
 
 ## `gm_bridge.py` (optional)
 
-Terminal fallback narrator through the Anthropic API, for when Vault Operator or its provider is unavailable. **The game never depends on it.**
+Terminal fallback narrator through the Anthropic API, for when the AI agent host or its provider is unavailable. **The game never depends on it.**
 
 ```bash
 pip install anthropic pyyaml
@@ -176,7 +176,7 @@ Override models with `GM_MODEL_STRONG` and `GM_MODEL_SMALL`.
 - **Enforced in code:** Story and Characters only. Never HP, MP, XP, rolls, task records, journal or Engine.
 - **Scope:** predates multi-campaign; not campaign-aware. Do not use across campaigns until updated.
 - **API failure:** reports and exits; next briefing covers missed days.
-- No overwrite without `--force`. Do not run during a Vault Operator session writing the same files.
+- No overwrite without `--force`. Do not run during an AI agent host session writing the same files.
 - Config block at the top holds legacy single-campaign paths (`Engine/Event Log.md`, `Engine/Hero.md`, `Engine/Settings.md`, `Story/Story So Far.md`, `Characters/Narrator.md`).
 - Old names `morning` → `briefing`, `summary` → `story` still work with a notice. `evening` removed; results become prose in the next briefing.
 
@@ -192,7 +192,9 @@ Override models with `GM_MODEL_STRONG` and `GM_MODEL_SMALL`.
 
 **Need Obsidian?** Yes. Built on Obsidian and its plugins. Notion and Logseq unsupported.
 
-**Need a paid AI provider?** No. Vault Operator can use a free Gemini key or GitHub Copilot. `gm_bridge.py` needs an Anthropic key and is optional.
+**Which AI plugin?** Undecided. Obsidian Copilot, Text Generator and Vault Operator are the candidates. The docs describe an "AI agent host" and define it by the capability list in `docs/PLUGINS.md` section 5. Pick one before Step 4; the choice is recorded in `docs/TESTING.md`.
+
+**Need a paid AI provider?** No. The chosen host can use whatever free or local models it supports; paid providers are optional. `gm_bridge.py` needs an Anthropic key and is optional.
 
 **AI down?** Buttons, dice, stats and tables keep working; the narrator catches up.
 
@@ -200,7 +202,7 @@ Override models with `GM_MODEL_STRONG` and `GM_MODEL_SMALL`.
 
 **Does real energy matter?** No. Stats are game state; no health data. MP is an in-game budget for choosing important work.
 
-**Own AI agent?** Narrator and characters are Vault Operator agents with persona files. No second AI plugin. `gm_bridge.py` is a restricted script, not a plugin.
+**Own AI agent?** Narrator and characters are agents in the chosen host, with plain-Markdown persona files. One AI writer at a time. `gm_bridge.py` is a restricted script, not a plugin.
 
 **Teams?** No, one person.
 
