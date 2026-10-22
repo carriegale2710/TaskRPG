@@ -105,7 +105,7 @@ module.exports = async ({ app }) => {
       overdraft: result.overdraft,
     });
 
-    await showResultCard(app, card, `Task complete: ${result.outcome}`);
+    new Notice(`Task complete: ${result.outcome}\n\n${card}`, 15000);
   } catch (error) {
     new Notice(
       `TaskRPG: ${error.message}${committed ? " Event was saved; do not press Done again. Repair the task note from the event log." : " Nothing was logged."}`,
@@ -121,19 +121,4 @@ async function loadModule(files, path) {
     module.exports,
   );
   return module.exports;
-}
-
-async function showResultCard(app, markdown, title) {
-  try {
-    const { Modal } = obsidian;
-    const modal = new Modal(app);
-    modal.contentEl.createEl("h2", { text: title });
-    const pre = modal.contentEl.createEl("pre");
-    pre.setText(markdown);
-    const button = modal.contentEl.createEl("button", { text: "Dismiss" });
-    button.onclick = () => modal.close();
-    modal.open();
-  } catch {
-    new Notice(`Task complete.\n\n${markdown}`, 15000);
-  }
 }

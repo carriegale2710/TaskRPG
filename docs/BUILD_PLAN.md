@@ -39,10 +39,10 @@ Single home for build status. Change history: `CHANGELOG.md`. Test procedures: `
 - Task identity: TaskNotes 4.13.8 identifies tasks by tag (`taskIdentificationMethod: "tag"`, `taskTag: "task"`) and writes no ID. Body template (`TaskNotes/Templates/template.md`, `taskId: {{nano}}`) verified manually 2026-10-21: new task got `taskId`, kept `tags` and `status`.
 - `Task done` needs `skill` and `size` on the note. The template reserves both empty; TaskRPG rejects empty values.
 - TaskNotes field mapping unverified for the installed version.
-- Desktop Obsidian unverified: `Task done`, result modal, event log, task updates.
-- Mobile result card unverified.
+- Desktop Obsidian unverified: `Task done`, event log, task updates.
+- Mobile result Notice unverified.
 - Habit undo does not remove habit-note history.
-- Result modal via QuickAdd `obsidian.Modal` untested; Notice fallback in use.
+- Result card is a single Obsidian Notice (D-025), not a modal; QuickAdd's `obsidian.Modal` is not used.
 - Outcome table uses the loot die, not a separate table draw.
 - Automatic TaskNotes Workflows trigger not built (phase 2 only).
 - Step 2 event-log/Hero repair gap and engine CLI default to `Engine/Events.jsonl` remain.
@@ -133,12 +133,12 @@ The engine takes event log plus settings note and returns new state and action r
 Substeps:
 
 - [ ] Configure TaskNotes fields: `taskId`, `skill`, `size`, `urgent`, `important`, status, scheduled date. Verify the installed version preserves them.
-- [ ] **Task done** (`Scripts/task-done.js`): with a TaskNotes task open, read mapped fields and scheduled date, deduct MP, roll 2d6, pick from the placeholder table, apply XP, append the engine event to `Engine/Events.md`, show the result card (roll, outcome, table result, XP/MP, loot). Tap to dismiss. Always writes `status: done` and `completedDate`.
+- [ ] **Task done** (`Scripts/task-done.js`): with a TaskNotes task open, read mapped fields and scheduled date, deduct MP, roll 2d6, pick from the placeholder table, apply XP, append the engine event to `Engine/Events.md`, show the result card as one Notice (roll, outcome, table result, XP/MP, loot); clicking the Notice dismisses it. Always writes `status: done` and `completedDate`.
 - [ ] A task scheduled for today avoids the unplanned surcharge.
-- [ ] **Undo last** (`Scripts/task-undo.js`): append a correcting event for the newest same-game-day task or habit action. On the matching task note, write `status: open` and clear the completion field, frontmatter only; leave other fields alone. Never delete history or enable a re-roll.
+- [ ] **Undo last** (`Scripts/undo.js`): append a correcting event for the newest same-game-day task or habit action. On the matching task note, write `status: open` and clear the completion field, frontmatter only; leave other fields alone. Never delete history or enable a re-roll.
 - [ ] Regression tests: duplicate guard follows `undo.targetEventId`, valid undo allows a repeat resolution, original `task_done` stays.
 - [ ] Optional phase 2: TaskNotes Workflows fires `/task-done` on In Progress → Done. Not built or claimed.
-- [ ] **Done when:** create and schedule a task in TaskNotes, mark it Done, run **Task done**, get the card, undo it. Check the card on phone; use a Notice if pop-ups misbehave. Record field mapping and limitations.
+- [ ] **Done when:** create and schedule a task in TaskNotes, mark it Done, run **Task done**, get the Notice card, undo it. Repeat on phone; record what the Notice shows. Record field mapping and limitations.
 
 ## TaskNotes setup
 
@@ -171,10 +171,10 @@ taskId: "1"
 
 Two **Macro** choices, one **User Script** action each. Enable the lightning-bolt commands. QuickAdd configuration is device-local unless synced.
 
-| Choice    | Script                 | Action                                                                                                    |
-| --------- | ---------------------- | --------------------------------------------------------------------------------------------------------- |
-| Task done | `Scripts/task-done.js` | With a task open: `task_done` event, 2d6 + loot die, XP/MP, note marked done, result card                 |
-| Undo last | `Scripts/task-undo.js` | Correcting event for today's newest task or habit; restores a matching task note if found                 |
+| Choice    | Script                 | Action                                                                                    |
+| --------- | ---------------------- | ----------------------------------------------------------------------------------------- |
+| Task done | `Scripts/task-done.js` | With a task open: `task_done` event, 2d6 + loot die, XP/MP, note marked done, result card |
+| Undo last | `Scripts/undo.js`      | Correcting event for today's newest task or habit; restores a matching task note if found |
 
 ## Phase 1 trigger
 
@@ -209,18 +209,18 @@ node --test
 
 `task-utils.test.js`: frontmatter parsing (block-list tags, quoted/unquoted values, empty quoted, colon/quote values, CRLF, BOM), scheduled-date mapping, outcome table, result card, completion fields (missing-field insert, frontmatter-only edit, literal `$&`/`$1`, undo case, CRLF, no-frontmatter error), quoted `taskId`/`skill`/`size` pass `task-done.js`, `taskTag` configured tag with `task` fallback.
 
-`task-undo.test.js`: `hasUnresolvedTaskDone`, `targetEventId` linkage, repeat after undo, original event preserved. It does not exercise QuickAdd, TaskNotes compatibility, the modal, the phone fallback or hero-state updates.
+`undo.test.js`: `hasUnresolvedTaskDone`, `targetEventId` linkage, repeat after undo, original event preserved. It does not exercise QuickAdd, TaskNotes compatibility, the result Notice or hero-state updates.
 
 ## Manual validation gate
 
 1. Confirm Step 2 desktop/phone validation.
 2. Configure TaskNotes fields; create a disposable task.
 3. Create and schedule with TaskNotes only. Verify `taskId`, `skill`, `size`, `urgent`, `important`, status, scheduled date survive.
-4. Mark Done, run **Task done**, inspect `Engine/Events.md`, XP/MP, the card or Notice, the note.
+4. Mark Done, run **Task done**, inspect `Engine/Events.md`, XP/MP, the result Notice, the note.
 5. Run **Task done** again without undo. Confirm the duplicate guard blocks it.
 6. Run **Undo last**. Confirm an `undo` line, the open state, original dice intact.
 7. Run **Task done** again. Confirm a fresh `task_done` marked repeat.
-8. Repeat the card check on phone. Record device and plugin versions, modal or Notice, exact errors.
+8. Repeat the result-Notice check on phone. Record device and plugin versions, exact Notice text, exact errors.
 
 Record observations in `TESTING.md`. PR #10 stays draft until blockers and validation resolve. A script's existence does not check an issue box.
 

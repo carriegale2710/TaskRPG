@@ -244,7 +244,7 @@ Full rationale and alternatives are in [`DECISIONS.md`](./DECISIONS.md).
 - This is desktop only.
 - If the button route is unreliable, fallback is opening the narrator in the sidebar and pasting a prepared prompt, or saving the prompt as a Vault Operator skill.
 - Task result card shows the 2d6 roll, outcome tier, table result, XP/MP changes, and any loot.
-- Tapping anywhere dismisses the result card.
+- The result card is an Obsidian Notice; clicking it dismisses it.
 - Results are also logged under “Today’s turns.”
 - Habit Done shows a one-line toast.
 - Mobile popup behaviour is untested and must be checked in the thin slice.

@@ -5,6 +5,26 @@ Newest first. A decision stays active until marked `Superseded`.
 
 Statuses: **Accepted** (settled; agents follow it), **Provisional** (revisable default), **Superseded** (inactive; link replacement).
 
+## D-026—Undo removes the habit history line it added
+
+- **Status:** Accepted
+- **Decision:** `undo.js` removes the one habit-note line whose timestamp matches the undone `habit_done` event. Other lines in that note, other habit notes, and task notes stay untouched. If no note or line matches, the undo still logs and says so.
+- **Context:** `habit-done.js` appends a line per press, but undo only appended a correcting event, leaving the note claiming a completion the engine had reversed.
+- **Rationale:** The habit body is a visible log, not the event log, so it must match engine state. Timestamp matching removes exactly the line that press added without needing a history ID. PRD 3.17 keeps the event log append-only.
+- **Alternatives considered:** Leave the note (visible drift); rebuild the whole history from events (more code, rewrites user editing); mark the line undone instead of removing (note keeps a false entry).
+- **Implications:** `removeHabitLogLine()` in `task-utils.js`; habit lookup by `habitId` in `TaskRPG/Engine/Habits/`. Notice text changes from "Habit notes are unchanged" to removed-or-not-found.
+- **Revisit when:** Habit presses need a durable per-line ID, or users want undone entries kept and struck through.
+
+## D-025—The task result card is a Notice, not a modal
+
+- **Status:** Accepted
+- **Decision:** `task-done.js` shows the result card in a single 15-second `Notice`. QuickAdd's `obsidian.Modal` and the modal fallback wrapper are removed.
+- **Context:** The modal was never observed: every run produced the Notice fallback. `obsidian` is not reliably a global in a QuickAdd user script loaded by read/eval, and the `try`/`catch` hid which branch ran. User asked for the Notice only.
+- **Rationale:** One display path, no swallowed error, no dependency on an unavailable global. The Notice already carries the full card (roll, outcome, table result, XP/MP, loot) and clicking dismisses it (PRD 3.15).
+- **Alternatives considered:** Keep the modal with an explicit error Notice in `catch`; report the global from QuickAdd to inject `Modal`.
+- **Implications:** PRD 3.15 second bullet now says Notice. `task-done.test.js` asserts exactly one Notice containing `**Outcome:**`. The "result modal untested" gap closes; mobile Notice rendering stays unverified.
+- **Revisit when:** A modal is wanted for readability and QuickAdd exposes `obsidian` to user scripts.
+
 ## D-024—`Task done` always writes `status: done`
 
 - **Status:** Accepted

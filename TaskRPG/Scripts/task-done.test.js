@@ -100,6 +100,8 @@ describe("task-done.test.js", () => {
     assert.equal(fields.status, "done");
     assert.equal(fields.completedDate, done.timestamp);
     assert.match(h.notices[0], /Task complete/);
+    assert.match(h.notices[0], /\*\*Outcome:\*\* \w+/);
+    assert.equal(h.notices.length, 1, "the result card is one Notice");
   });
 
   // Task done owns the completion status: TaskNotes detects the written value,
