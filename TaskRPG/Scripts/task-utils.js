@@ -1,5 +1,8 @@
 "use strict";
 
+// TaskNotes' default, non-completed status (verified against TaskNotes 4.13.8).
+const OPEN_TASK_STATUS = "open";
+
 const OUTCOME_TABLE = {
   success: [
     "A clean victory—the way forward opens.",
@@ -27,16 +30,37 @@ const OUTCOME_TABLE = {
   ],
 };
 
+function unquote(value) {
+  const text = String(value).trim();
+  const quoted = /^(["'])([\s\S]*)\1$/.exec(text);
+  return quoted ? quoted[2] : text;
+}
+
 function parseFrontmatter(text) {
-  const match = /^---\r?\n([\s\S]*?)\r?\n---/.exec(text);
+  const match = /^(?:\uFEFF)?---\r?\n([\s\S]*?)\r?\n---/.exec(text);
   if (!match) return {};
   const fields = {};
+  let listKey = null;
   for (const line of match[1].split(/\r?\n/)) {
+    // TaskNotes writes tags as a block list. Attribute items to the key above.
+    const item = /^\s*-\s+(.*)$/.exec(line);
+    if (item && listKey) {
+      if (!Array.isArray(fields[listKey])) fields[listKey] = [];
+      fields[listKey].push(unquote(item[1]));
+      continue;
+    }
     const index = line.indexOf(":");
-    if (index > 0)
-      fields[line.slice(0, index).trim()] = line.slice(index + 1).trim();
+    if (index > 0) {
+      const key = line.slice(0, index).trim();
+      fields[key] = unquote(line.slice(index + 1));
+      listKey = fields[key] === "" ? key : null;
+    }
   }
   return fields;
+}
+
+function normalizeTag(tag) {
+  return unquote(tag).replace(/^#/, "").toLowerCase();
 }
 
 function today(date = new Date()) {
@@ -49,23 +73,15 @@ function scheduled(task) {
 }
 
 function parseTags(value) {
-  if (Array.isArray(value))
-    return value
-      .map((tag) => String(tag).trim().replace(/^#/, "").toLowerCase())
-      .filter(Boolean);
+  if (Array.isArray(value)) return value.map(normalizeTag).filter(Boolean);
   if (value === undefined || value === null || value === "") return [];
   let text = String(value).trim();
   if (text.startsWith("[") && text.endsWith("]")) text = text.slice(1, -1);
-  return text
-    .split(/[\s,]+/)
-    .map((tag) => tag.trim().replace(/^#/, "").toLowerCase())
-    .filter(Boolean);
+  return text.split(/[\s,]+/).map(normalizeTag).filter(Boolean);
 }
 
 function hasTag(value, tag) {
-  return parseTags(value).includes(
-    String(tag).trim().replace(/^#/, "").toLowerCase(),
-  );
+  return parseTags(value).includes(normalizeTag(tag));
 }
 
 function pickTableResult(outcome, roll) {
@@ -108,10 +124,84 @@ function formatResultCard({
   return lines.join("\n");
 }
 
+// Hero.md is derived display state; wrappers rewrite it after every action.
+function renderHero(state) {
+  const xp = Object.entries(state.skillXP)
+    .map(([name, value]) => `xp_${name}: ${value}`)
+    .join("\n");
+  return `---\ntype: hero-state\nhp: ${state.HP}\nmaxHP: ${state.maxHP}\nmp: ${state.MP}\nmaxMP: ${state.maxMP}\n${xp}\n---\n# Hero state\n\nDerived from [[Events]]; do not edit these numbers by hand.\n\nHP: \`VIEW[{hp}][text]\` / \`VIEW[{maxHP}][text]\`  \nMP: \`VIEW[{mp}][text]\` / \`VIEW[{maxMP}][text]\`\n\n## Skill XP\n\n${Object.keys(
+    state.skillXP,
+  )
+    .map((name) => `- ${name}: \`VIEW[{xp_${name}}][text]\``)
+    .join("\n")}\n`;
+}
+
+function updateFrontmatter(text, values) {
+  const match = /^(\uFEFF?---)(\r?\n)([\s\S]*?)(\r?\n---)/.exec(text);
+  if (!match) throw new Error("Task note has no frontmatter to update.");
+  const [, open, eol, body, close] = match;
+  const lines = body ? body.split(eol) : [];
+  // Values are written as plain text, never as a String.replace pattern.
+  for (const [key, value] of Object.entries(values)) {
+    const index = lines.findIndex((line) => line.split(":")[0].trim() === key);
+    if (index === -1) lines.push(`${key}: ${value}`);
+    else lines[index] = `${key}: ${value}`;
+  }
+  return `${open}${eol}${lines.join(eol)}${close}${text.slice(match[0].length)}`;
+}
+
 function updateTaskStatus(text, { status, completedDate }) {
-  return text
-    .replace(/^status:.*$/m, `status: ${status}`)
-    .replace(/^completedDate:.*$/m, `completedDate: "${completedDate ?? ""}"`);
+  return updateFrontmatter(text, {
+    status: String(status ?? ""),
+    completedDate: `"${completedDate ?? ""}"`,
+  });
+}
+
+// Undo restores the TaskNotes status to the plugin default and clears completion.
+function reopenTaskNote(text) {
+  return updateTaskStatus(text, {
+    status: OPEN_TASK_STATUS,
+    completedDate: "",
+  });
+}
+
+// Habit Done appends one history line per press. Undo removes the line the
+// undone event added, matched by its timestamp, and leaves other lines alone.
+function removeHabitLogLine(text, timestamp) {
+  const prefix = `- ${timestamp} | `;
+  const eol = text.includes("\r\n") ? "\r\n" : "\n";
+  const lines = text.split(/\r?\n/);
+  const index = lines.findIndex((line) => line.trimStart().startsWith(prefix));
+  if (index === -1) return text;
+  lines.splice(index, 1);
+  return lines.join(eol);
+}
+
+// TaskNotes stores task notes in the folder configured in its plugin data and
+// identifies a task by a tag, not by a `type` field. Read both instead of
+// guessing, so moving the folder or renaming the tag does not silently break
+// task lookup. Missing or unreadable data falls back to the plugin defaults.
+const TASKNOTES_DATA = ".obsidian/plugins/tasknotes/data.json";
+
+async function tasknotesConfig(files) {
+  try {
+    return JSON.parse(await files.read(TASKNOTES_DATA));
+  } catch {
+    return {};
+  }
+}
+
+async function taskFolder(files) {
+  const folder = String((await tasknotesConfig(files)).tasksFolder ?? "")
+    .replace(/^\/+|\/+$/g, "");
+  return folder || "TaskNotes/Tasks";
+}
+
+async function taskTag(files) {
+  const tag = String((await tasknotesConfig(files)).taskTag ?? "")
+    .trim()
+    .replace(/^#/, "");
+  return tag || "task";
 }
 
 // A task is unresolved when its latest relevant RPG event is task_done.
@@ -132,6 +222,7 @@ function hasUnresolvedTaskDone(events, taskId) {
 }
 
 module.exports = {
+  OPEN_TASK_STATUS,
   OUTCOME_TABLE,
   formatResultCard,
   hasTag,
@@ -139,7 +230,13 @@ module.exports = {
   parseFrontmatter,
   parseTags,
   pickTableResult,
+  reopenTaskNote,
+  removeHabitLogLine,
+  renderHero,
   scheduled,
+  taskFolder,
+  taskTag,
   today,
+  updateFrontmatter,
   updateTaskStatus,
 };

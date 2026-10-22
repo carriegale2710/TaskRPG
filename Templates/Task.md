@@ -1,0 +1,5 @@
+---
+taskId: {{nano}}
+skill: 
+size: 
+---

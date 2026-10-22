@@ -6,36 +6,94 @@ All notable changes to project documented here. Format follows Keep a Changelog 
 
 ### Step 3 redesign
 
-TaskNotes = task creation, planning, statuses, user fields, while TaskRPG = task resolution and undo. `Task done` resolves open TaskNotes task through engine. `Undo last` appends correcting engine event.
+TaskNotes = task creation, planning, user fields, while TaskRPG = task resolution, undo, and the `done`/`open` status writes. `Task done` resolves open TaskNotes task through engine. `Undo last` appends correcting engine event.
 
 #### Added
 
-- TaskNotes scheduled-date helper in `task-utils.js`, used by resolution (`task-done.js`).
-- Tests: TaskNotes frontmatter parsing, scheduled-date mapping, outcome-table selection, result-card formatting, completion-field updates (`task-utils.test.js`).
-- Tests: shared duplicate-resolution guard, `targetEventId` undo linkage, repeat resolution after undo, preserved original `task_done` event (`task-undo-resolution.test.js`).
+**Task resolution feature**: `task-done.js`
+
+    - `Task done` reads scheduled date for planned-day MP rule. Today-scheduled task avoids unplanned MP surcharge.
+
+- resolves the active TaskNotes task
+- validates its skill/size
+- prevents duplicate resolution
+- rolls dice
+- appends a `task_done` event to `Engine/Events.md`
+- updates resolution metadata and sets `status: done`
+- shows the result card as a single 15-second Notice
+
+**Undo feature**: `task-undo.js`
+
+    - `Undo last` appends correcting RPG event, writes `status: open` and clears `completedDate` on matching task note.
+
+- finds the newest same-day action
+- appends an undo correction
+- preserves the original event
+- clears completedDate and restores the TaskNotes default `open` status on the matching task; habit undo leaves task notes untouched.
+
+**Shared task helpers**: `task-utils.js`
+
+- for TaskNotes frontmatter parsing
+- scheduled-date lookup
+- urgent/important tags
+- placeholder outcome tables
+- result-card formatting
+- duplicate-resolution guard
+
+**Tests**:
+
+- Adds `task-utils.test.js`
+  - TaskNotes frontmatter parsing,
+  - scheduled-date mapping,
+  - outcome-table selection,
+  - result-card formatting,
+  - completion-field updates
+  - reopening a task after undo (`status: open`, empty `completedDate`)
+- Adds `task-undo.test.js`
+  - shared duplicate-resolution guard
+  - `targetEventId` undo linkage
+  - repeat resolution after undo
+  - preserved original `task_done` event
+  - end-to-end `Undo last` run against a stubbed vault adapter: the matching note gets `status: open` and `completedDate: ""`, and a second Done note is left untouched (test-only; behaviour already shipped)
 
 #### Changed
 
-- `Task done` reads scheduled date for planned-day MP rule. Today-scheduled task avoids unplanned MP surcharge.
-- `Undo last` appends correcting RPG event, clears `completedDate` on matching task note, preserves status.
+- `Task done` now always writes `status: done` to the resolved task note, overwriting any prior value; TaskNotes detects the written status. Prior behaviour preserved the note's status. New test `Task done writes status done over the note's current status` starts the note at `open` and asserts `done`. Docs split changed: TaskRPG owns the `done`/`open` status writes (PRD 3.9, D-024).
+- `Task done` shows the result card in one 15-second Notice; the unverified `obsidian.Modal` path and its silent `try`/`catch` fallback are removed (D-025). `task-done.test.js` asserts a single Notice carrying the outcome. PRD 3.15 and `BUILD_PLAN.md` updated; the "result modal untested" gap closes, mobile Notice stays unverified.
 - `hasUnresolvedTaskDone` moved to `task-utils.js`, used by `task-done.js`; follows `undo.targetEventId` to original `task_done`.
 - Post-valid-undo allows later `Task done`; engine marks repeat.
 - Documentation updated for the ownership split and undo flow: `STEP3.md`, `TESTING.md`, `PLUGINS.md`, `AGENTS.md`, `BUILD_PLAN.md`, `README.md`.
 - Scripts and tests derive urgency/importance from TaskNotes tags.
+- `Journal/` folder moved outside of `TaskRPG`/ folder - user-owned content, agents should not touch it.
+- Moves the game content from repository root into `TaskRPG/`: `Engine/`, `Scripts/`, `Story/`, `World/`, `Characters/`, `Campaign/`, `Backlog/`, and assets.
+- Categorize tests with describe blocks to improve terminal readabilty. See `docs/TESTING.md`.
+- `AGENTS.md` owns _where_ existing information lives; `docs/DOCUMENTATION.md` owns _how_ to write documentation and where _new_ documentation goes. No rule was removed, only relocated or dropped where it duplicated `AGENTS.md`.
 
 #### Fixed
 
+- Fixed outdate file paths for Scripts/ and Engine/ after moving both folders to TaskRPG/ folder
+- TaskNotes block-list `tags` (`tags:` then `  - important`) now parse as a list, so `urgent`/`important` XP bonuses apply. Quoted flow-list tags (`["urgent", "important"]`) lose their quotes.
+- `parseFrontmatter` strips matching quotes from scalar values (`taskId: "1"` reads as `1`) and ignores a leading BOM. Tests cover double-, single- and unquoted `type`/`taskId`/`skill`/`size`, empty quoted values, and values containing a colon or quote (issue #17). Test-only: the behaviour already shipped with the quoted-`taskId` fix.
 - Scheduled date property uses `scheduled`, not `scheduledDate`.
 - Duplicate-resolution guard follows `undo.targetEventId`, allowing re-resolution after valid undo.
-- Removed `task-done.js` rejection of TaskNotes done/completed statuses.
-- `task-done.js`/`undo-last.js` rewrite `status` and `completedDate` lines, preserving status value; other frontmatter untouched.
+- `updateTaskStatus` now edits only the frontmatter block, inserts `status`/`completedDate` when missing, writes `$&`/`$1` literally, preserves CRLF, and throws a clear error when there is no frontmatter (issue #14). This fixes `Task done` silently logging an event without marking the note.
+- `task-done.js`/`task-undo.js` rewrite only the `status` and `completedDate` lines; other frontmatter untouched. `task-done.js` always writes `status: done` (D-024); `task-undo.js` writes `open`.
+- `Undo last` now restores the TaskNotes status to `open` and clears `completedDate`, so the note no longer stays Done after an undo (issue #19). The status value is defined once as `OPEN_TASK_STATUS` in `task-utils.js`; TaskNotes 4.13.8 uses `open` as `defaultTaskStatus`.
+- Task notes identified via the `tasksFolder` in TaskNotes' `data.json` (fallback `TaskNotes/Tasks`) instead of assuming notes sit directly in `TaskNotes/`.
+- Identifies a note is a task by `taskTag` (read from `data.json`, fallback `task`) instead of requiring a `type: task` frontmatter field. Adds `taskTag` to `task-utils.js` and tests that a note without the tag is refused.
+- Task identity: Adds `taskId` as the stable identity (decision D-023), a TaskNotes body template (`TaskNotes/Templates/template.md`: `taskId: {{nano}}`) for new notes. Template verified manually on 2026-10-21 (taskId written, tags/status preserved).
+- `Task done` now treats `taskId: null`, `taskId: ~` and `taskId: undefined` as missing instead of accepting the literal word as an ID. `task-done.test.js` adds negative cases for missing, empty and `null` `taskId`, `skill` and `size`: no event is logged and the note is untouched (test-only coverage for the skill/size checks, which the engine also enforces).
+- `Task done` now rewrites the derived `Engine/Hero.md` after resolution, so HP, MP and skill XP in the Meta Bind panels match the new event (previously only `Habit Done` refreshed it). The hero template moved to `renderHero()` in `task-utils.js` and both wrappers use it, so the two copies cannot drift. `task-done.test.js` asserts the written hero state; `habit-done.test.js` covers the shared helper.
+- `Undo last` also rewrites `Engine/Hero.md` from the corrected state, for task and habit undos. `task-undo.test.js` asserts the restored MP and skill XP.
+- `Undo last`'s Notice now matches what happened: "TaskNotes status restored to open" only after a task note was actually rewritten; a task undo with no matching note says so instead; a habit undo does not mention TaskNotes. Tests cover all three paths.
+- `Undo last` now removes the habit-note history line added by the undone habit press, matched by its timestamp, instead of leaving the note claiming a reversed completion (D-026). Adds `removeHabitLogLine()` in `task-utils.js` and habit lookup by `habitId` in `TaskRPG/Engine/Habits/`; the Notice reports whether a line was removed. `task-undo.test.js` covers removal, other habit/task notes staying untouched, and a missing habit note.
 
 #### Removed
 
 - `new-task.js` and `New task` QuickAdd flow.
 - `plan-task.js` and `Plan task` QuickAdd flow.
 - Task-note creation, slug generation, size-suggestion helpers from `task-utils.js`.
-- Hard-coded planned/backlog restoration from `undo-last.js`.
+- Hard-coded planned/backlog restoration from `task-undo.js`.
 
 ---
 
