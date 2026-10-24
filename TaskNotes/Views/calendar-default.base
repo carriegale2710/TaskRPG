@@ -1,9 +1,6 @@
-# Calendar
-
 filters:
   and:
     - file.hasTag("task")
-
 formulas:
   priorityWeight: if(priority=="none",0,if(priority=="low",1,if(priority=="normal",2,if(priority=="high",3,999))))
   daysUntilDue: if((due.isEmpty() == false), ((number(date(due)) - number(today())) / 86400000).floor(), null)
@@ -45,10 +42,9 @@ formulas:
   urgencyScore: if(due.isEmpty() && scheduled.isEmpty(), formula.priorityWeight, formula.priorityWeight + max(0, 10 - if(formula.daysUntilNext, formula.daysUntilNext, 0)) + (1 - ((number(date(formula.nextDate)) - number(date(date(formula.nextDate).format("YYYY-MM-DD")))) / 86400000)))
   timeTrackedFormatted: if(timeEntries, if(list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) >= 60, (list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) / 60).floor() + "h " + (list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) % 60).round() + "m", list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round() + "m"), "0m")
   dueDateDisplay: if(due.isEmpty(), "", if(date(due).format("YYYY-MM-DD") == today().format("YYYY-MM-DD"), "Today", if(date(due).format("YYYY-MM-DD") == (today() + "1 day").format("YYYY-MM-DD"), "Tomorrow", if(date(due).format("YYYY-MM-DD") == (today() - "1 day").format("YYYY-MM-DD"), "Yesterday", if(date(due) < today(), formula.daysUntilDue * -1 + "d ago", if(date(due).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD"), date(due).format("ddd"), date(due).format("MMM D")))))))
-
 views:
   - type: tasknotesCalendar
-    name: "Calendar"
+    name: Calendar
     order:
       - status
       - priority
@@ -70,6 +66,6 @@ views:
       showTimeblocks: true
       showPropertyBasedEvents: true
       createDailyNotesFromDateLinks: true
-      calendarView: "timeGridWeek"
+      calendarView: timeGridWeek
       customDayCount: 3
       firstDay: 1

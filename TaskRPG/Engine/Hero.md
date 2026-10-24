@@ -2,7 +2,7 @@
 type: hero-state
 hp: 10
 maxHP: 10
-mp: 0
+mp: 10
 maxMP: 10
 xp_focus: 0
 xp_vitality: 6
@@ -10,7 +10,6 @@ xp_craft: 0
 xp_mind: 0
 xp_presence: 0
 ---
-
 # Hero state
 
 Derived from [[Events]]; do not edit these numbers by hand.
