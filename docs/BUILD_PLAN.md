@@ -120,7 +120,7 @@ The engine takes event log plus settings note and returns new state and action r
 
 > Issue #3 redesign: **TaskNotes owns task creation, planning and task fields. TaskRPG owns task resolution (`Task done`), undo, and the `done`/`open` status writes.** Old `New task` and `Plan task` QuickAdd macros removed.
 
-### Prerequisite: TaskNotes setup and QuickAdd macros
+### ~~Prerequisite: TaskNotes setup and QuickAdd macros~~
 
 **TaskNotes setup**
 
@@ -151,7 +151,7 @@ size: small
 taskId: "1"
 ```
 
-**QuickAdd macros**
+~~**QuickAdd macros**~~
 
 Two **Macro** choices, one **User Script** action each. Enable the lightning-bolt commands. QuickAdd configuration is device-local unless synced.
 
@@ -173,27 +173,46 @@ Resolved setup facts:
 
 ### 3.1 Task done feature (`Scripts/task-done.js`)
 
-With a TaskNotes task open:
-
-- [ ] Read mapped fields and scheduled date.
-- [ ] Deduct MP.
-- [ ] Roll 2d6.
-- [ ] Pick from the placeholder table.
-- [ ] Apply XP.
-- [x] Append the engine event to `Engine/Events.md`.
-- [x] Show the result card as one Notice (roll, outcome, table result, XP/MP, loot); clicking the Notice dismisses it.
-- [x] Always write `status: done` and `completedDate`.
-- [ ] A task scheduled for today avoids the unplanned surcharge.
-
-**Trigger:** manual only. Create and plan the task in TaskNotes, mark it Done, then run **Task done** with that note open. TaskRPG does not create or plan tasks in this phase.
-
-Optional phase 2: TaskNotes Workflows may call `/task-done` on In Progress → Done. Not built, claimed or validated. Use manual **Task done** until then.
-
-**What the script does**
+#### **What the script does**
 
 - **Task done** requires an open note in `TaskNotes/`. Reads mapped fields, validates skill and size, checks whether the scheduled date is today, rolls through the engine, appends to `Engine/Events.md`, then sets `status: done` and `completedDate`.
 - Today-scheduled tasks avoid the unplanned surcharge.
 - The result card uses the same loot die for a six-entry placeholder table. Not a Dice Roller integration.
+
+**Trigger:** manual only. Create and plan the task in TaskNotes, mark it Done, then run **Task done** with that note open. TaskRPG does not create or plan tasks in this phase.
+
+With a TaskNotes task open:
+
+- [x] Read mapped fields and scheduled date.
+- [x] Deduct MP.
+- [x] Roll 2d6.
+- [x] Pick from the placeholder table.
+- [x] Apply XP.
+- [x] Append the engine event to `Engine/Events.md`.
+- [x] Show the result card as one Notice (roll, outcome, table result, XP/MP, loot); clicking the Notice dismisses it.
+- [x] Always write `status: done` and `completedDate`.
+- [x] A task scheduled for today avoids the unplanned surcharge.
+
+**Acceptance criteria**
+
+Each criterion is testable from the event log, the task note, `Hero.md`, or the Notice.
+
+1. [ ] **AC-1 Trigger and scope.** The active note is inside the configured TaskNotes folder. If there is no active note or it is outside that folder, the script stops with a Notice and writes nothing.
+2. [x] **AC-2 Task identity.** The note carries the configured task tag and a non-empty `taskId`; empty, quoted-empty, `null`, `~`, and missing all count as absent. A note failing either check is rejected before any write.
+3. [ ] **AC-3 Mapped fields.** `skill` and `size` are present, non-empty, and listed in `Engine/Settings.md`. An unknown skill or size is rejected before any write.
+4. [ ] **AC-4 Planned status.** `planned` is `true` only when `scheduled` equals the local calendar date; a missing, past, or future scheduled date makes it `false`. The engine adds the unplanned MP surcharge when `planned` is false.
+5. [x] **AC-5 MP.** The engine charges the size cost plus unplanned and Wounded surcharges, minus level discounts, never below `minTaskMP`, and never below 0 MP. At 0 MP the task still resolves: XP is halved rounded up, the roll takes the Tired penalty, and HP is unchanged.
+6. [x] **AC-6 Roll.** The result is 2d6 plus the skill's dice bonus, minus the HP penalty and Tired penalty. Outcome follows the engine thresholds. `task_done` carries no `projectId`, so project threat is 0.
+7. [ ] **AC-7 XP.** Task XP equals size XP times 1 plus the important and urgent bonuses, rounded up. The roll never changes XP or MP. The focus-project bonus is not applied because the task note has no mapped project field.
+8. [ ] **AC-8 Table.** One loot die result from 1 to 6 selects a table line for the outcome. The same die is the loot die; there is no separate table draw.
+9. [ ] **AC-9 Result card.** Exactly one dismissible Notice shows the task name, both dice and total, outcome, table line, XP gained, MP spent and remaining, a Tired note on overdraft, and a loot line when the engine flags a drop.
+10. [ ] **AC-10 Event log.** A `settings_changed` line is appended first when the log has none or settings changed, then one `task_done` line. Existing lines are never edited or reordered, and a missing log note is created.
+11. [x] **AC-11 Task note completion.** Only after the log write, the note gets `status: done` and `completedDate` set to the event timestamp. Only the frontmatter changes; all other fields and the body stay byte-identical.
+12. [x] **AC-12 Duplicate guard.** A second **Task done** for the same `taskId` is blocked while the latest relevant event is an unresolved `task_done`. An `undo` releases the guard only when its `targetEventId` is that task's event; an undo for another task does not.
+13. [ ] **AC-13 Failure handling.** A failure before the log write leaves the log, task note, and `Hero.md` unchanged and says nothing was logged. A failure after the log write leaves the correction standing and says the event was saved and **Task done** must not be pressed again.
+14. [x] **AC-14 Hero display.** After a successful resolution, `Hero.md` shows the state recalculated from the log, including new MP and skill XP.
+
+#### Testing
 
 **Automated checks**
 
@@ -205,12 +224,60 @@ node --test
 
 `task-utils.test.js`: frontmatter parsing (block-list tags, quoted/unquoted values, empty quoted, colon/quote values, CRLF, BOM), scheduled-date mapping, outcome table, result card, completion fields (missing-field insert, frontmatter-only edit, literal `$&`/`$1`, undo case, CRLF, no-frontmatter error), quoted `taskId`/`skill`/`size` pass `task-done.js`, `taskTag` configured tag with `task` fallback.
 
+**Test cases**
+
+Legend: **Automated** is covered by `node --test`. **Not covered** means no automated test exists yet. **Manual** means an Obsidian check. **Gap** means the behavior is absent or undecided.
+
+| ID    | Case                                                            | Expected                                                                              | Status                                |
+| ----- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------- |
+| TC-1  | Task in the configured folder, all fields valid                 | One `task_done` event, note Done, `completedDate` set, `Hero.md` rewritten, one Notice | Automated (`task-done.test.js`)       |
+| TC-2  | Note status is `open` before the press                          | Status becomes `done`; prior status is not preserved                                  | Automated (`task-done.test.js`)       |
+| TC-3  | Log note absent                                                 | Log created with `settings_changed` then `task_done`                                  | Automated (`task-done.test.js`)       |
+| TC-4  | Note has no task tag                                            | Rejected; no log, note, or Hero write                                                 | Automated (`task-done.test.js`)       |
+| TC-5  | `taskId` missing, empty, or YAML null                            | Rejected; nothing written                                                             | Automated (`task-done.test.js`)       |
+| TC-6  | `skill` missing, empty, or null                                 | Rejected; nothing written                                                             | Automated (`task-done.test.js`)       |
+| TC-7  | `size` missing, empty, or null                                  | Rejected; nothing written                                                             | Automated (`task-done.test.js`)       |
+| TC-8  | `skill` not listed in Settings                                  | Rejected with an unknown-skill Notice; nothing written                                | Not covered                           |
+| TC-9  | `size` not listed in `taskSizes`                                | Rejected with an unknown-size Notice; nothing written                                 | Not covered                           |
+| TC-10 | No active note, or active note outside the TaskNotes folder     | Rejected with a Notice; nothing written                                               | Not covered                           |
+| TC-11 | `scheduled` equals today                                        | `planned: true`; size cost only, no unplanned surcharge                               | Automated (`task-done.test.js`)       |
+| TC-12 | `scheduled` is yesterday, tomorrow, absent, or not a date       | `planned: false`; +1 MP unplanned surcharge                                           | Not covered end to end                |
+| TC-13 | `taskId`, `skill`, `size` written in double or single quotes    | Values parse and resolve as unquoted                                                  | Automated (`task-utils.test.js`)      |
+| TC-14 | Tags as a block list, flow list, mixed case, or `#task`         | Configured tag matched case-insensitively                                             | Automated (`task-utils.test.js`)      |
+| TC-15 | Frontmatter with CRLF or a BOM                                  | Parses correctly; a CRLF edit keeps CRLF line endings                                 | Automated (`task-utils.test.js`)      |
+| TC-16 | `status:` line also appears in the body                         | Only the frontmatter field changes                                                    | Automated (`task-utils.test.js`)      |
+| TC-17 | A value contains `$&` or `$1`                                   | Written literally                                                                     | Automated (`task-utils.test.js`)      |
+| TC-18 | Note has no frontmatter                                         | Clear error; nothing written                                                          | Automated (`task-utils.test.js`)      |
+| TC-19 | Small, medium, large; unplanned; Wounded; level 5 or 10 discount | Expected MP cost, floor `minTaskMP`, MP never below 0                                 | Automated (`engine.test.js`)          |
+| TC-20 | Cost exceeds remaining MP                                       | XP halved rounded up, Tired penalty applied, HP unchanged                             | Automated (`engine.test.js`)          |
+| TC-21 | Roll totals around each threshold, with dice bonus and HP penalty | Success, partial, and setback at the expected totals                                | Automated (`engine.test.js`)          |
+| TC-22 | Loot die 1–4, 5–6, and non-success outcomes                     | Loot flagged only on success with 5 or 6                                              | Automated (`engine.test.js`)          |
+| TC-23 | Every outcome with table rolls 1–6, plus roll 0 and 7           | Correct line per outcome; 0 and 7 rejected                                            | Partly covered (`task-utils.test.js`) |
+| TC-24 | Card with overdraft and with loot; card without either          | Tired and loot lines appear only when true                                            | Partly covered (`task-utils.test.js`) |
+| TC-25 | Second **Task done** on the same task without undo              | Blocked by the duplicate guard; nothing written                                       | Not covered end to end                |
+| TC-26 | Undo the task, then run **Task done** again                     | New resolution allowed and marked `repeat`; original event intact                     | Not covered end to end                |
+| TC-27 | Log write fails                                                 | No note or Hero change; Notice says nothing was logged                                | Not covered                           |
+| TC-28 | Task note or `Hero.md` write fails after the log write          | Event stands; Notice says it was saved and not to press again                         | Not covered                           |
+| TC-29 | Successful resolution                                           | `Hero.md` reflects recalculated MP, XP, and levels                                    | Automated (`task-done.test.js`)       |
+| TC-30 | Task belongs to the weekly focus project                        | Focus XP bonus applied                                                                | Gap: no project field is mapped       |
+| TC-31 | TaskNotes re-reads a completed note                             | Keeps `status: done`, `completedDate`, and all other fields and body                  | Manual, pending                       |
+| TC-32 | Full run on desktop Obsidian                                    | Event, note, Notice, and Hero update as above                                         | Manual, pending                       |
+| TC-33 | Full run on phone                                               | Same result; Notice is readable and dismissible                                       | Manual, pending                       |
+| TC-34 | Record device, plugin versions, exact Notice text, any error    | Recorded in `TESTING.md`                                                              | Manual, pending                       |
+
 **Manual validation**
 
 1. Mark the disposable task Done, run **Task done**, inspect `Engine/Events.md`, XP/MP, the result Notice, the note.
 2. Run **Task done** again without undo. Confirm the duplicate guard blocks it.
 
-**Known gaps and validation status**
+**Done when:**
+
+- [ ] Create and schedule a task in TaskNotes.
+- [ ] Mark it Done.
+- [ ] Run **Task done**, get the Notice card.
+- [ ] Record field mapping and limitations.
+
+#### **Known gaps and validation status**
 
 - `completedDate` ownership unverified. Missing-field insertion, frontmatter-only edits, literal `$` and CRLF are covered by `task-utils.test.js` (issue #14); TaskNotes manual check pending.
 - Task note completion write: `Task done` always writes `status: done` and `completedDate` (D-024). Field preservation pending the manual check.
@@ -222,12 +289,7 @@ node --test
 - Outcome table uses the loot die, not a separate table draw.
 - Automatic TaskNotes Workflows trigger not built (phase 2 only).
 
-**Done when:**
-
-- [ ] Create and schedule a task in TaskNotes.
-- [ ] Mark it Done.
-- [ ] Run **Task done**, get the Notice card.
-- [ ] Record field mapping and limitations.
+Optional phase 2: TaskNotes Workflows may call `/task-done` on In Progress → Done. Not built, claimed or validated. Use manual **Task done** until then.
 
 ### 3.2 Undo feature (`Scripts/undo.js`)
 
@@ -235,30 +297,30 @@ Acceptance criteria map to PRD 3.17. Section numbers in brackets are PRD referen
 
 **Eligibility and stack** [3.17.1]
 
-- [ ] Append one correcting `undo` event for the newest eligible task or habit action of the current game day. Nothing else changes in the log.
-- [ ] Eligible targets are `task_done` and `habit_done` only. A boss challenge, gift, rest day, pause, resume, focus project, arc completion, settings change, or missed deadline is never a target, and skipping one does not block an older eligible action.
-- [ ] Replay rejects an `undo` whose `targetEventId` is missing, is not the newest eligible action, or belongs to an earlier game day.
-- [ ] An `undo` is never a target. Repeated presses unwind that game day's stack newest first until it is empty.
-- [ ] When two actions share a timestamp, the later line in the event log is newer.
-- [ ] "Same game day" uses the configured day boundary, not the calendar date.
-- [ ] No confirmation step before undo, matching **Task done** (D-031).
+- [x] Append one correcting `undo` event for the newest eligible task or habit action of the current game day. Nothing else changes in the log.
+- [x] Eligible targets are `task_done` and `habit_done` only. A boss challenge, gift, rest day, pause, resume, focus project, arc completion, settings change, or missed deadline is never a target, and skipping one does not block an older eligible action.
+- [x] Replay rejects an `undo` whose `targetEventId` is missing, is not the newest eligible action, or belongs to an earlier game day.
+- [x] An `undo` is never a target. Repeated presses unwind that game day's stack newest first until it is empty.
+- [x] When two actions share a timestamp, the later line in the event log is newer.
+- [x] "Same game day" uses the configured day boundary, not the calendar date.
+- [x] No confirmation step before undo, matching **Task done** (D-031).
 
 **Correcting event** [3.17.1]
 
-- [ ] The event records `type: undo`, `targetEventId`, and its own timestamp.
-- [ ] The original action line, including its dice, stays unchanged and readable. Event history is never edited, deleted, or reordered.
-- [ ] The correcting event is written before any note, story, or `Hero.md` write. If the log write fails, nothing changes. If a later write fails, the correction stands and the Notice says it was saved and must not be pressed again.
+- [x] The event records `type: undo`, `targetEventId`, and its own timestamp.
+- [x] The original action line, including its dice, stays unchanged and readable. Event history is never edited, deleted, or reordered.
+- [x] The correcting event is written before any note, story, or `Hero.md` write. If the log write fails, nothing changes. If a later write fails, the correction stands and the Notice says it was saved and must not be pressed again.
 
 **Derived state** [3.17.2]
 
 - [ ] Replay excludes the target, then `Hero.md` is rewritten from the result: MP, HP, skill XP, skill levels, habit cost tier, Wounded, Tired, focus effect, inventory, loot, and companion XP and affinity return to their pre-action values.
-- [ ] Rules in force when the target action was logged apply, not current settings (D-028), including an undo after a settings change.
-- [ ] A level gained by the undone action is reversed, including its MP discount or perk.
+- [x] Rules in force when the target action was logged apply, not current settings (D-028), including an undo after a settings change.
+- [x] A level gained by the undone action is reversed, including its MP discount or perk.
 - [ ] Inventory, loot, companion XP and affinity hooks: blocked until those systems exist.
 
 **Task and habit notes** [3.17.2]
 
-- [ ] On the matching task note, write `status: open` and clear the completion field, frontmatter only; leave other fields and the body alone; no previous-status lookup.
+- [x] On the matching task note, write `status: open` and clear the completion field, frontmatter only; leave other fields and the body alone; no previous-status lookup.
 - [x] On the matching habit note, remove the history line stamped with the undone event.
 
 **Story rollback** [3.17.3]
@@ -278,14 +340,14 @@ Acceptance criteria map to PRD 3.17. Section numbers in brackets are PRD referen
 
 **Messages** [3.17.1, 3.17.3]
 
-- [ ] No eligible action in the current game day: nothing is written, and the Notice says there is nothing to undo.
+- [x] No eligible action in the current game day: nothing is written, and the Notice says there is nothing to undo.
 - [ ] Missing task note, habit history line, or story tag: the correction still applies, and one Notice reports what was reversed, how many story lines were removed, and what was not found.
-- [ ] Note write failure after the log write: the correction stands, and the Notice says it was saved and must not be pressed again.
+- [x] Note write failure after the log write: the correction stands, and the Notice says it was saved and must not be pressed again.
 
 **Regression tests**
 
-- [ ] Duplicate guard follows `undo.targetEventId`; an undo for another task does not release this guard.
-- [ ] A valid undo allows a repeat resolution, marked `repeat`; the original `task_done` stays.
+- [x] Duplicate guard follows `undo.targetEventId`; an undo for another task does not release this guard.
+- [x] A valid undo allows a repeat resolution, marked `repeat`; the original `task_done` stays.
 - [ ] Undo never enables a re-roll.
 - [ ] Level-up reversal, and undo after a settings change, both replay with the original rules.
 - [ ] Story line-tag helper: matching lines removed, untagged neighbours and malformed tags survive, tags outside the four story folders ignored, CRLF preserved.
