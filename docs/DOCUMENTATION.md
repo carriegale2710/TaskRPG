@@ -12,6 +12,7 @@ How documentation is written: each file's job, writing rules, templates, and whe
 | `AGENTS.md`             | Agent contract        | Authority, workflow, safety, file map                          | Product spec, onboarding                           |
 | `CHANGELOG.md`          | Change history        | Dated Added/Changed/Fixed/Removed entries                      | Status, gaps, plans, rules                         |
 | `docs/BUILD_PLAN.md`    | Build order and state | Roadmap, steps, acceptance criteria, done/not-done, gaps       | Ad-hoc todos, change history                       |
+| `docs/DEVLOG.md`        | Session context       | Dated goals, outcomes, decisions, failures, blockers           | Release notes, build status, product rules         |
 | `docs/PRD.md`           | What TaskRPG must do  | Behavior, rules, scope, settled decisions, success criteria    | Build order, current status                        |
 | `docs/ARCHITECTURE.md`  | How the system works  | Event/state model, ownership, boundaries, storage, invariants  | Roadmap, build sequence                            |
 | `docs/DECISIONS.md`     | Why choices were made | Decision, context, rationale, alternatives, implications       | Status, implementation steps                       |
@@ -96,7 +97,65 @@ Full spec, complete game rules, agent workflow, architecture detail, test covera
 
 ## CHANGELOG
 
-Run `/changelog`. Change history only: meaningful code, test and doc changes, one dated entry may cover several commits. Current status, gaps and plans belong in `docs/BUILD_PLAN.md`.
+Run `/changelog`. Change history only: meaningful code, test and doc changes, one dated entry may cover several commits. Entries state what shipped and its user-visible or breaking effect, one line each, grouped under a version heading. Goals, commit hashes, decision rationale, failures and blockers belong in `docs/DEVLOG.md`; current status, gaps and plans belong in `docs/BUILD_PLAN.md`; rules belong in `docs/PRD.md`.
+
+## DEVLOG
+
+Run `/devlog`. Session context only: goal, why the work happened, what it produced, what failed, what is next. Entries answer questions the code and commit subject cannot: the reasoning behind a choice and the result of trying it.
+
+### Contains
+
+- Goal or context for the session
+- Why: the problem, the constraint, the tradeoff
+- Did: short commit-labelled list, no file-by-file restatement of the changelog
+- Outcome: what is now true, what it was verified by, what stayed unverified
+- Decisions: choice plus one-line rationale, linked to `docs/DECISIONS.md` IDs
+- Failed / learned, blockers and next actions
+- Links: commits, PRs, issues, tests
+
+### Never contains
+
+- Release notes or version headings (`CHANGELOG.md`)
+- Build status tables, done/not-done per step, gap lists (`docs/BUILD_PLAN.md`)
+- Product rules or rule wording (`docs/PRD.md`)
+
+### Template
+
+```md
+## YYYY-MM-DD — [short title]
+
+### Goal
+
+[One line: what this session set out to do.]
+
+### Why
+
+[Problem or constraint that made this the next move.]
+
+### Did
+
+- `hash` [what shipped, one line]
+
+### Outcome
+
+- [What is now true; how it was verified; what is still unverified.]
+
+### Decisions
+
+- [Choice and one-line rationale; D-0xx if recorded.]
+
+### Failed / learned
+
+- [What did not work and the rule taken from it.]
+
+### Blockers / next
+
+- [Open item or next action.]
+
+### Links
+
+- Commit, PR, issue, tests.
+```
 
 ## BUILD_PLAN.md
 
