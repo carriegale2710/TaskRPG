@@ -6,6 +6,8 @@ All notable changes to project documented here. Format follows Keep a Changelog 
 
 ### Documentation
 
+- Rewrote PRD section 7 scope. Must-have v1 cut from 20 items to 10: engine, TaskNotes fields, event log and hero panels, settings note, QuickAdd wrappers, result card and habit toast, habit notes with 30-day cost, quiz and personas without portrait or GM-only note, morning briefing and Today's quests, trial week. Deferred rules stay in section 3 but are marked out of v1 scope. No behavior changed; no code changed.
+
 - Fixed stale PRD v1 section references. `docs/BUILD_PLAN.md` ground rules no longer cite `PRD 4.15`, `4.23`, `4.35` or `4.39`, which do not exist in PRD v2; they now point to `ARCHITECTURE.md` §4, §5 and §10 plus PRD 3.23.1 and 3.25. `AGENTS.md` safety rule now points to the folder layout in `docs/ARCHITECTURE.md` §5 instead of `PRD 4.15`. Documentation only; no behavior changes.
 - Made the AI agent host decision-agnostic across `docs/PRD.md`, `docs/ARCHITECTURE.md`, `docs/PLUGINS.md`, `docs/DECISIONS.md`, `docs/BUILD_PLAN.md`, `docs/TESTING.md`, `README.md` and the `gm_bridge.py` docstring. Docs now say "AI agent host" and list Obsidian Copilot, Text Generator and Vault Operator as undecided candidates. Added `PLUGINS.md` section 5 capability requirements and decision D-032; D-005 superseded. No behavior changes; only the `gm_bridge.py` module docstring changed.
 - Added a **User stories** block to every subsection 3.1–3.25 of `docs/PRD.md`. Each of the 50 stories is a blockquote followed by two numbered acceptance criteria. Each story and criterion restates an existing settled bullet and introduces no new behavior.

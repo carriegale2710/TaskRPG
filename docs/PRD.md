@@ -550,32 +550,42 @@ These are aspirational targets, not pass/fail requirements.
 
 ## 7. Scope
 
+v1 is one closed daily loop: open the vault, get today's quests, resolve a task or habit, see the result, undo if needed. It carries no projects, companions, inventory, or story rollback. Rules for deferred features remain specified in section 3 but are out of v1 scope; nothing built for them is exposed or validated in v1.
+
 ### Must-have v1
 
-- Onboarding quiz, narrator persona, hero persona with portrait, GM-only preferences note
-- Tutorial arc with staged unlocks
-- Trial week and one-minute end-of-week check
 - One tested engine script used by all macros
 - TaskNotes task creation, planning and user fields
-- QuickAdd wrappers: Task done, habit Done, rest day, pause/resume, Undo last, recalculate
 - Event log and hero note with Meta Bind panels
 - Settings note for mechanics and preferences
-- TaskNotes backlog and scheduling views
-- Habit notes for 3–5 core habits with 30-day cost
-- Dice Roller 2d6 rolls and narrator-built random tables with “not for me”
-- One starting companion, layered memory, session summaries, one agent per character in the chosen AI host
-- Morning briefing and “Today’s quests” note
+- QuickAdd wrappers: Task done, habit Done, Undo last, recalculate, rest day, pause/resume
 - Task result card and habit toast
+- Habit notes for 3–5 core habits with 30-day cost
+- Onboarding quiz, narrator persona and hero persona. No portrait and no GM-only preferences note in v1
+- Morning briefing and “Today’s quests” note, run by the single narrator agent in the chosen AI host
+- Trial week and one-minute end-of-week check
+
+### Should-have
+
+Wanted for the next version after the trial week. Deferred from v1 and not built or validated yet.
+
+- Tutorial arc with staged unlocks
+- TaskNotes backlog and scheduling views
+- Dice Roller 2d6 rolls and narrator-built random tables with “not for me”
+- One starting companion: layered memory, session summaries, one agent per character
 - Daily note “Today’s turns” and 30-day pruning with GitHub backup
 - Monthly archive of finished tasks
 - Projects with arcs and quests, focus project, threat level
 - Loot drops, inventory, and gifts
-- Staleness shake-ups
-- Engine-checked boss challenges and perk items
+- Hero persona portrait and GM-only preferences note
 
-### Should-have
+### Could-have
+
+Nice to have once the should-haves land. Order is not a commitment.
 
 - Companion perks and team-ups
+- Staleness shake-ups
+- Engine-checked boss challenges and perk items
 - Live dashboard and Sunday recap
 - Catch-up button
 - Storyteller Suite maps or Atlas VTT
