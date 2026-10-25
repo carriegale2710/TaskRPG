@@ -18,6 +18,7 @@ Version numbers follow semver, one minor bump per release while 0.y.z: `0.1.0` =
 ### Changed
 
 - TaskNotes owns creation and planning; TaskRPG owns resolution, undo, status writes.
+- Task resolution tests expand validation to 132 passing cases.
 - Result card shows as one 15-second Notice; `obsidian.Modal` path gone.
 - `task-undo.js` renamed `undo.js`; handles habits too.
 - Habit undo deletes its own history line; other lines untouched.

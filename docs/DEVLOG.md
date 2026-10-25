@@ -6,6 +6,35 @@ Rule of thumb: if a fact explains a choice or records what happened during the w
 
 Timeline uses commit dates from `git log`, newest first. Not changelog release dates: the `0.4.0` block bundles commits from 2026-10-15 and 2026-10-16, and `0.1.0`/`0.2.0` both landed on 2026-10-14.
 
+## 2026-10-25 — task resolution test coverage
+
+### Goal
+
+Bring task-resolution documentation and test coverage into sync.
+
+### Did
+
+- Expanded `task-done.test.js` and `task-utils.test.js` around validation, failure handling, parsing, and duplicate guards.
+- Updated `docs/BUILD_PLAN.md` acceptance tables and recorded 132 passing tests.
+
+### Outcome
+
+- `node --test` passes: 132 tests, 30 suites, 0 failures.
+- No runtime code changed; desktop and phone Obsidian validation remains pending.
+
+### Decisions
+
+- Keep manual acceptance criteria open until real Obsidian checks run.
+
+### Blockers / next
+
+- Run pending desktop and phone checks before marking Step 3 complete.
+
+### Links
+
+- Tests: `TaskRPG/Scripts/task-done.test.js`, `TaskRPG/Scripts/task-utils.test.js`
+- Docs: `docs/BUILD_PLAN.md`, `docs/TESTING.md`
+
 ## 2026-10-24 — changelog and devlog split back to one job each
 
 ### Goal
