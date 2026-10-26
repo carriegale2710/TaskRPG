@@ -6,6 +6,36 @@ Rule of thumb: if a fact explains a choice or records what happened during the w
 
 Timeline uses commit dates from `git log`, newest first. Not changelog release dates: the `0.4.0` block bundles commits from 2026-10-15 and 2026-10-16, and `0.1.0`/`0.2.0` both landed on 2026-10-14.
 
+## 2026-10-25 — task resolution manual validation
+
+### Goal
+
+Record real-vault validation for Step 3 task resolution.
+
+### Did
+
+- Updated staged engine state, task template, and build/testing docs for current task-resolution work.
+- Recorded user-confirmed desktop and phone checks as passed: TaskNotes field mapping, completion fields, Notice output, duplicate prevention, undo/redo, failure handling, and settings versioning.
+
+### Outcome
+
+- `docs/BUILD_PLAN.md` now marks TC-30 through TC-33 and task-resolution manual validation passed.
+- Step 3 task resolution remains in progress because Undo acceptance still has open criteria.
+
+### Decisions
+
+- Keep Step 3 open until remaining Undo checks pass; do not mark whole milestone complete from Task done validation alone.
+
+### Blockers / next
+
+- Finish remaining Undo manual and replay checks before closing Step 3.
+
+### Links
+
+- Branch: `feat/3-task-creation-planning-completion-undo`
+- Docs: `docs/BUILD_PLAN.md`, `docs/TESTING.md`
+- Chat/session: user-confirmed manual validation, 2026-10-26
+
 ## 2026-10-25 — task resolution test coverage
 
 ### Goal

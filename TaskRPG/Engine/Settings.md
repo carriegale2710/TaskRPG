@@ -5,9 +5,7 @@ status: step-1
 
 # TaskRPG Settings
 
-Every tunable number the engine uses lives in the JSON block below. The engine rejects values outside
-its allowed ranges and says which one is wrong. Changing a value here never rewrites the past: the
-next recorded action logs the change with its time, and earlier days keep the rules they were played under.
+Every tunable number the engine uses lives in the JSON block below. The engine rejects values outside its allowed ranges and says which one is wrong. Changing a value here never rewrites the past: the next recorded action logs the change with its time, and earlier days keep the rules they were played under.
 
 Placeholders from the build brief (adjust after play): XP thresholds, XP rounding (round up).
 

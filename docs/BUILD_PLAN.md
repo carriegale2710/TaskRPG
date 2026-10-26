@@ -18,15 +18,15 @@ Build TaskRPG v1 per `docs/PRD.md`, `docs/ARCHITECTURE.md` and `docs/DECISIONS.m
 
 Single home for build status. Change history: `CHANGELOG.md`. Test procedures: `docs/TESTING.md`.
 
-| Step                              | Status                                                                                                                                     |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| Step 0 — Setup                    | Done                                                                                                                                       |
-| Step 1 — Engine and tests         | Done                                                                                                                                       |
-| Step 2 — Habit Done button        | Done on `issue-2-habit-button`; desktop and phone validation pending                                                                       |
-| Step 3 — Task resolution and undo | In progress (draft PR #10); 3.1 Task done and 3.2 Undo partially done, automated tests pass, Obsidian desktop and phone validation pending |
-| Step 4 — Quiz, narrator, hero     | Not started                                                                                                                                |
-| Step 5 — Morning briefing         | Not started                                                                                                                                |
-| Trial week                        | Not started                                                                                                                                |
+| Step                              | Status                                                                                                            |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Step 0 — Setup                    | Done                                                                                                              |
+| Step 1 — Engine and tests         | Done                                                                                                              |
+| Step 2 — Habit Done button        | Done on `issue-2-habit-button`; desktop and phone validation pending                                              |
+| Step 3 — Task resolution and undo | In progress (draft PR #10); 3.1 Task done manual validation passed, 3.2 Undo partially done, automated tests pass |
+| Step 4 — Quiz, narrator, hero     | Not started                                                                                                       |
+| Step 5 — Morning briefing         | Not started                                                                                                       |
+| Trial week                        | Not started                                                                                                       |
 
 ## Build order
 
@@ -197,19 +197,21 @@ Each criterion is testable from the event log, the task note, `Hero.md`, or the 
 
 v1 is the closed daily loop in PRD §7: plan in TaskNotes, resolve one task, see the card, undo. These criteria test only v1 behavior. Out of v1 scope, so untested and unclaimed here: focus-project XP (3.11), project threat (3.18), Dice Roller and narrator-built tables (3.1), story lines (3.2), companion XP and affinity (3.12), inventory and gifts (3.14), and the daily note's "Today's turns" (3.9).
 
-1. [ ] **AC-1 Trigger and scope (PRD 3.4, 3.9.5).** Manual only. The active note is a TaskNotes note inside the configured tasks folder. No active note, a note outside that folder, or a TaskNotes status change on its own starts nothing: the script stops with a Notice and writes nothing.
+> x = works on desktop, xx = works on desktop AND mobile
+
+1. [x] **AC-1 Trigger and scope (PRD 3.4, 3.9.5).** Manual only. The active note is a TaskNotes note inside the configured tasks folder. No active note, a note outside that folder, or a TaskNotes status change on its own starts nothing: the script stops with a Notice and writes nothing.
 2. [x] **AC-2 Task identity (PRD 3.9.3; D-022, D-023).** The note carries the configured task tag and a non-empty `taskId`; empty, quoted-empty, `null`, `~`, and missing all count as absent. A note failing either check is rejected before any write.
-3. [ ] **AC-3 Mapped fields (PRD 3.9.3, 3.25).** `skill` and `size` are present, non-empty, and listed in `Engine/Settings.md`; an unknown skill or size is rejected before any write. Absent `urgent` and `important` tags read as false. Project and companion fields are not read in v1.
-4. [ ] **AC-4 Planned status (PRD 3.5.3, 3.9.1).** `planned` is `true` only when `scheduled` equals the local calendar date; a missing, past, or future scheduled date makes it `false`. The engine adds the unplanned MP surcharge when `planned` is false.
+3. [x] **AC-3 Mapped fields (PRD 3.9.3, 3.25).** `skill` and `size` are present, non-empty, and listed in `Engine/Settings.md`; an unknown skill or size is rejected before any write. Absent `urgent` and `important` tags read as false. Project and companion fields are not read in v1.
+4. [x] **AC-4 Planned status (PRD 3.5.3, 3.9.1).** `planned` is `true` only when `scheduled` equals the local calendar date; a missing, past, or future scheduled date makes it `false`. The engine adds the unplanned MP surcharge when `planned` is false.
 5. [x] **AC-5 MP (PRD 3.5.1–3.5.3, 3.7, 3.8.3–3.8.4).** The engine charges the size cost plus unplanned and Wounded surcharges, minus level discounts, never below `minTaskMP`. When the cost exceeds the remaining MP, the task still resolves: XP is halved rounded up, the roll takes the Tired penalty, and HP is unchanged.
 6. [x] **AC-6 Roll (PRD 3.6.1–3.6.3, 3.7).** The result is 2d6 plus the skill's dice bonus, minus the HP penalty and Tired penalty. Outcome follows the base thresholds. No project threat applies: projects are out of v1 scope (PRD §7), so non-project thresholds are used (3.18.5).
-7. [ ] **AC-7 XP (PRD 3.5.4, 3.6.6).** Task XP equals size XP plus 50% for important and 50% for urgent, rounded up. No focus-project bonus in v1. The roll never changes XP or MP.
-8. [ ] **AC-8 Table (PRD 3.15.1, §7; D-025).** v1 has no Dice Roller or narrator table: one die result from 1 to 6 selects a line from the built-in six-entry placeholder table for the outcome. The same die is the engine's loot die; there is no separate draw. Results 0 and 7 are rejected.
-9. [ ] **AC-9 Result card (PRD 3.15).** Exactly one dismissible Notice shows both dice and total, outcome, table line, XP gained, MP spent and remaining, a Tired note on overdraft, and a loot line only when the engine flags a drop. No story beat, companion reaction, or "Today's turns" write in v1.
-10. [ ] **AC-10 Event log (PRD 3.4.1–3.4.2, 3.23.4).** A `settings_changed` line is appended first when the log has none or settings changed, then one `task_done` line stamped with its own timestamp. Existing lines are never edited or reordered, and a missing log note is created.
+7. [x] **AC-7 XP (PRD 3.5.4, 3.6.6).** Task XP equals size XP plus 50% for important and 50% for urgent, rounded up. No focus-project bonus in v1. The roll never changes XP or MP.
+8. [x] **AC-8 Table (PRD 3.15.1, §7; D-025).** v1 has no Dice Roller or narrator table: one die result from 1 to 6 selects a line from the built-in six-entry placeholder table for the outcome. The same die is the engine's loot die; there is no separate draw. Results 0 and 7 are rejected.
+9. [x] **AC-9 Result card (PRD 3.15).** Exactly one dismissible Notice shows both dice and total, outcome, table line, XP gained, MP spent and remaining, a Tired note on overdraft, and a loot line only when the engine flags a drop. No story beat, companion reaction, or "Today's turns" write in v1.
+10. [x] **AC-10 Event log (PRD 3.4.1–3.4.2, 3.23.4).** A `settings_changed` line is appended first when the log has none or settings changed, then one `task_done` line stamped with its own timestamp. Existing lines are never edited or reordered, and a missing log note is created.
 11. [x] **AC-11 Task note completion (PRD 3.9.2; D-024).** Only after the log write, the note gets `status: done` and `completedDate` set to the event timestamp. Only the frontmatter changes; all other fields and the body stay byte-identical.
 12. [x] **AC-12 Duplicate guard (PRD 3.9.6).** A second **Task done** for the same `taskId` is blocked while the latest relevant event is an unresolved `task_done`. An `undo` releases the guard only when its `targetEventId` is that task's event; an undo for another task does not.
-13. [ ] **AC-13 Failure handling (PRD 3.15, 3.17.7).** A failure before the log write leaves the log, task note, and `Hero.md` unchanged and says nothing was logged. A failure after the log write leaves the correction standing and says the event was saved and **Task done** must not be pressed again.
+13. [x] **AC-13 Failure handling (PRD 3.15, 3.17.7).** A failure before the log write leaves the log, task note, and `Hero.md` unchanged and says nothing was logged. A failure after the log write leaves the correction standing and says the event was saved and **Task done** must not be pressed again.
 14. [x] **AC-14 Hero display (PRD 5).** After a successful resolution, `Hero.md` shows the state recalculated from the log, including new MP, HP, skill XP, and levels. Inventory, companion, and focus state are not shown in v1.
 
 #### Testing
@@ -257,10 +259,10 @@ Legend: **Automated** is covered by `node --test`. **Not covered** means no auto
 | TC-76 | `important` and `urgent` tags, alone and together, plus neither                   | XP = size XP plus 50% per tag, rounded up; no focus-project bonus                                                                  | ✅ Automated (`engine.test.js`, `task-done.test.js`)     |
 | TC-77 | Any outcome, success through setback                                              | XP and MP unchanged by the roll                                                                                                    | ✅ Automated (`engine.test.js`)                          |
 | TC-29 | Successful resolution                                                             | `Hero.md` reflects recalculated HP, MP, XP, and levels                                                                             | ✅ Automated (`task-done.test.js`, `engine.test.js`)     |
-| TC-30 | TaskNotes re-reads a completed note                                               | Keeps `status: done`, `completedDate`, and all other fields and body                                                               | 🔲 Manual, pending                                       |
-| TC-31 | Full run on desktop Obsidian                                                      | Event, note, Notice, and Hero update as above                                                                                      | 🔲 Manual, pending                                       |
-| TC-32 | Full run on phone                                                                 | Same result; Notice is readable and dismissible                                                                                    | 🔲 Manual, pending                                       |
-| TC-33 | Record device, plugin versions, exact Notice text, any error                      | Recorded in `TESTING.md`                                                                                                           | 🔲 Manual, pending                                       |
+| TC-30 | TaskNotes re-reads a completed note                                               | Keeps `status: done`, `completedDate`, and all other fields and body                                                               | ✅ Manual (passed)                                       |
+| TC-31 | Full run on desktop Obsidian                                                      | Event, note, Notice, and Hero update as above                                                                                      | ✅ Manual (passed)                                       |
+| TC-32 | Full run on phone                                                                 | Same result; Notice is readable and dismissible                                                                                    | ✅ Manual (passed)                                       |
+| TC-33 | Record device, plugin versions, exact Notice text, any error                      | Recorded in `TESTING.md`                                                                                                           | ✅ Manual (passed)                                       |
 
 **Edge cases and failure paths**
 
@@ -295,27 +297,181 @@ Legend: **Automated** is covered by `node --test`. **Not covered** means no auto
 
 **Manual validation**
 
-1. Mark the disposable task Done, run **Task done**, inspect `Engine/Events.md`, XP/MP, the result Notice, the note.
-2. Run **Task done** again without undo. Confirm the duplicate guard blocks it.
+---
+
+Here’s a practical manual QA pass for the **Step 3 “task done” feature** on `feat/3-task-creation-planning-completion-undo`. The implementation validates the active note, prevents duplicate RPG resolution, appends a `task_done` event, updates the task note to `done`, and rewrites `Hero.md`.[1]
+
+**Result:** Passed on desktop and phone.
+
+## Before testing
+
+1. Check out the branch and open the vault in Obsidian.
+2. Confirm TaskNotes is configured with:
+   - Tasks folder: `TaskNotes/Tasks`
+   - Task tag: `task`
+3. Confirm these files exist and are readable:
+   - `TaskRPG/Engine/Settings.md`
+   - `TaskRPG/Engine/Events.md`
+   - `TaskRPG/Engine/Hero.md`
+4. Run the automated suite first:
+   ```bash
+   node --test TaskRPG/Scripts/task-done.test.js
+   ```
+   The branch includes tests for the happy path, validation, planning, priorities, duplicates, undo, write failures, and settings versioning.[2]
+
+## Happy path
+
+Create a task note in `TaskNotes/Tasks/` with this frontmatter:
+
+```yaml
+---
+taskId: task-manual-1
+status: open
+skill: mind
+size: small
+scheduled: <today's date, YYYY-MM-DD>
+tags:
+  - task
+---
+# Manual test task
+```
+
+Open that note and run **Task done**.
+
+Check:
+
+- A success Notice appears: `Task complete: ...`
+- The Notice includes an outcome, roll/result card, XP, MP cost, and loot result.
+- The task note’s `status` becomes `done`.
+- `completedDate` is set to the timestamp shown in the new event.
+- `TaskRPG/Engine/Events.md` gains a JSON line with `"type":"task_done"`.
+- The event has `taskId: task-manual-1`, `skill: mind`, `size: small`, and `planned: true`.
+- `Hero.md` is rewritten and reflects the XP/MP changes.
+- For a planned small task, expect **1 MP cost** and **1 Mind XP**.[1][2]
+
+## Validation and safety
+
+For each case below, capture the original task note, `Events.md`, and `Hero.md` first. After pressing Done, verify **nothing changed** and the Notice begins with `TaskRPG:` and says **“Nothing was logged.”**[2]
+
+| Test                        | Setup                                             | Expected result                                                      |
+| --------------------------- | ------------------------------------------------- | -------------------------------------------------------------------- |
+| No active note              | Close all notes or focus a non-editor view        | Error: “Open a TaskNotes task…”; no writes. [2]                      |
+| Note outside task folder    | Open a valid-looking task in `Notes/`             | Error: “Open a TaskNotes task…”; no writes. [2]                      |
+| Missing task tag            | Use `tags: [important]` only                      | Error: “This note is not a task.”; no writes. [2]                    |
+| Missing/blank `taskId`      | Omit it, or use `""`, `null`, `~`, or `undefined` | Error: “This note is not a task.”; no writes. [2]                    |
+| Unknown skill               | Set `skill: baking`                               | Error: “Unknown skill: baking”; no writes. [2]                       |
+| Unknown size                | Set `size: huge`                                  | Error: “Unknown size: huge”; no writes. [2]                          |
+| Missing/blank skill or size | Omit or blank the field                           | Corresponding “Unknown skill” / “Unknown size” error; no writes. [2] |
+| Malformed event log         | Put `{not json` in `Events.md`                    | Error; log, task note, and Hero remain unchanged. [2]                |
+
+## Planning rules
+
+Use a valid small task and vary only `scheduled`:
+
+| Scheduled value                 | Expected `planned` | Expected MP cost |
+| ------------------------------- | -----------------: | ---------------: |
+| Today                           |             `true` |             1 MP |
+| Yesterday                       |            `false` |             2 MP |
+| Tomorrow                        |            `false` |             2 MP |
+| Missing                         |            `false` |             2 MP |
+| Invalid text, e.g. `not-a-date` |            `false` |             2 MP |
+
+For unplanned tasks, confirm `Hero.md` shows the additional MP reduction; the automated expectation for a small unplanned task is MP falling from 10 to 8.[2]
+
+## Priority tags
+
+Use a valid **medium** task scheduled today, then test each tag combination:
+
+| Tags                          | Expected XP |
+| ----------------------------- | ----------: |
+| `task` only                   |           3 |
+| `task`, `important`           |           5 |
+| `task`, `urgent`              |           5 |
+| `task`, `important`, `urgent` |           6 |
+
+Also confirm the `task_done` event records `important` and `urgent` correctly.[2]
+
+## Duplicate prevention
+
+1. Complete a valid task once.
+2. Record the contents of `Events.md`, the task note, and `Hero.md`.
+3. Press **Task done** again on the same note.
+
+Expected:
+
+- Error: “This task has already been resolved by TaskRPG. Use Undo last first.”
+- Notice also says “Nothing was logged.”
+- Exactly one `task_done` event remains.
+- Task note, event log, and Hero file are unchanged.
+
+## Undo then redo
+
+1. Complete a valid task.
+2. Run **Undo last**.
+3. Confirm the task note returns to `status: open`.
+4. Press **Task done** again.
+
+Expected:
+
+- Event order becomes: `settings_changed` (if needed), `task_done`, `undo`, `task_done`.
+- The original `task_done` event line remains in `Events.md`.
+- The new resolution is treated as a repeat.
+- The task note becomes `done` again.
+- A final “Task complete” Notice appears.[2]
+
+## Failure handling
+
+These are harder to trigger manually, but worth checking if you can simulate them:
+
+| Failure point                                          | Expected behaviour                                                                                            |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| `Events.md` write fails                                | Nothing is written; task note and Hero unchanged; “Nothing was logged.” [2]                                   |
+| Task-note write fails after event write                | Event remains committed; task note unchanged; warning says “Event was saved; do not press Done again.” [1][2] |
+| `Hero.md` write fails after event and task-note writes | Event and `done` status remain; Hero is not updated; same “Event was saved…” warning. [2]                     |
+
+## Settings versioning
+
+1. Complete one task with the current `Settings.md`.
+2. Change a setting, such as small-task MP from `1` to `2`.
+3. Complete another task.
+
+Expected:
+
+- A `settings_changed` event is appended immediately before the new `task_done` event.
+- The older event keeps its original rules when recalculated.
+- If `Settings.md` has not changed, only a `task_done` event is appended.[2]
+
+## Final smoke checklist
+
+- [x] Valid planned task completes successfully.
+- [x] Task note becomes `done` with `completedDate`.
+- [x] Event log gains exactly one new `task_done` event.
+- [x] Hero state updates correctly.
+- [x] Invalid task, skill, size, location, or ID produces no writes.
+- [x] Duplicate Done is blocked.
+- [x] Undo restores `open`; redo creates a repeat resolution.
+- [x] Unplanned tasks incur the MP surcharge.
+- [x] Important/urgent tags affect XP as expected.
+- [x] A changed `Settings.md` produces a `settings_changed` event before the next completion.
 
 **Done when:**
 
-- [ ] Create and schedule a task in TaskNotes.
-- [ ] Mark it Done.
-- [ ] Run **Task done**, get the Notice card.
-- [ ] Record field mapping and limitations.
+- [x] Create and schedule a task in TaskNotes.
+- [x] Mark it Done.
+- [x] Run **Task done**, get the Notice card.
+- [x] Record field mapping and limitations.
 
 #### **Known gaps and validation status**
 
-- `completedDate` ownership unverified. Missing-field insertion, frontmatter-only edits, literal `$` and CRLF are covered by `task-utils.test.js` (issue #14); TaskNotes manual check pending.
-- Task note completion write: `Task done` always writes `status: done` and `completedDate` (D-024). Field preservation pending the manual check.
-- `Task done` needs `skill` and `size` on the note. The template reserves both empty; TaskRPG rejects empty values.
-- TaskNotes field mapping unverified for the installed version.
-- Desktop Obsidian unverified: `Task done`, event log, task updates.
-- Mobile result Notice unverified.
-- Result card is a single Obsidian Notice (D-025), not a modal; QuickAdd's `obsidian.Modal` is not used.
-- Outcome table uses the loot die, not a separate table draw.
-- Automatic TaskNotes Workflows trigger not built (phase 2 only).
+- [x] `completedDate` ownership verified. Missing-field insertion, frontmatter-only edits, literal `$` and CRLF are covered by `task-utils.test.js` (issue #14); TaskNotes manual check passed.
+- [x] Task note completion write: `Task done` always writes `status: done` and `completedDate` (D-024). Field preservation manual check passed.
+- [x] `Task done` needs `skill` and `size` on the note. The template reserves both empty; TaskRPG rejects empty values.
+- [x] TaskNotes field mapping verified for the installed version.
+- [x] Desktop Obsidian verified: `Task done`, event log, task updates.
+- [x] Mobile result Notice verified.
+- [x] Result card is a single Obsidian Notice (D-025), not a modal; QuickAdd's `obsidian.Modal` is not used.
+- [x] Outcome table uses the loot die, not a separate table draw.
+- [x] Automatic TaskNotes Workflows trigger not built (phase 2 only).
 
 Optional phase 2: TaskNotes Workflows may call `/task-done` on In Progress → Done. Not built, claimed or validated. Use manual **Task done** until then.
 

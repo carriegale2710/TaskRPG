@@ -127,7 +127,7 @@ Checks QuickAdd can run the engine and that it behaves in the real app. Uses a *
 | **Meta Bind**          | Enabled                                                              | No (Step 2)        |
 | **TaskNotes**          | Enabled; core **Bases** plugin on (Settings → Core plugins)          | Yes for Step 3     |
 | **Fit**                | Enabled and syncing the phone                                        | Phone check only   |
-| **AI agent host**      | Chosen host enabled (desktop); record name and version              | No (Step 4)        |
+| **AI agent host**      | Chosen host enabled (desktop); record name and version               | No (Step 4)        |
 
 Step 1 only uses QuickAdd. Other rows are an "is it installed and enabled" pass.
 
@@ -152,7 +152,7 @@ In order. Open `Engine/Test Events.md` and `Engine/Test State.md` beside the not
 | 2   | **Log a test habit**                                                                                          | Notice includes `mpCost: 2, mp: 8, xp: 1` and `MP 8/10`. New habit costs 2 MP. `Test Events.md` has two lines: long `settings_changed`, then `habit_done`. `vitality` XP is 1 |
 | 3   | **Log a test task**                                                                                           | Notice shows roll `total`, `outcome` (success, partial, setback), `mpCost: 1`, `xp: 1`, `loot`. MP 7. Repeat: outcome and loot vary, cost and XP do not                       |
 | 4   | **Undo last**                                                                                                 | MP back up by the task's cost. New `undo` line. **No line removed or changed**                                                                                                |
-| 5   | **Undo last** again, then once more                                                                           | Habit undone (MP 10); Notice says no matching habit note or history line. Third press: `Nothing to undo for this game day.` and nothing added                                  |
+| 5   | **Undo last** again, then once more                                                                           | Habit undone (MP 10); Notice says no matching habit note or history line. Third press: `Nothing to undo for this game day.` and nothing added                                 |
 | 6   | Edit `Engine/Settings.md`: `"small": { "mp": 1` → `"mp": 2`, then **Log a test task**                         | Notice `mpCost: 2`. A second `settings_changed` line before the task. Earlier lines untouched. Set it back to 1                                                               |
 | 7   | Set `"maxMP": 0`, run any option                                                                              | Notice names the setting: `Settings: maxMP must be a whole number from 1 to 100.` Nothing added. Restore 10                                                                   |
 | 8   | Add `not json` to the end of `Test Events.md`, **Recalculate**                                                | Notice `Event log line N is not valid JSON`, right line number. Remove the line                                                                                               |
