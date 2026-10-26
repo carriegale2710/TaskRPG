@@ -20,6 +20,7 @@ Fix issue #13: planned-task check must use engine game day, not local calendar d
 - Added 6 tests to `task-utils.test.js`: rollover at 01:00/04:00, datetime value, quoted value, missing/empty value, date normalisation.
 - Added 2 tests to `task-done.test.js`: datetime `scheduled` and quoted `scheduled` for current game day.
 - Updated AC-4 and added TC-13 to `docs/BUILD_PLAN.md`.
+- Fixed task-done tests to work for any local timezone so github actions run properly
 
 ### Decisions
 
@@ -36,12 +37,11 @@ Fix issue #13: planned-task check must use engine game day, not local calendar d
 - Red first: 6 utils tests failed on missing `isPlannedToday`/`scheduledDate`; datetime task-done test failed `false !== true`.
 - Green after implementation: 6/6 utils tests pass; 2/2 task-done tests pass.
 - Mutation check: forced `isPlannedToday()` to `false`; 3 utils tests and 2 task-done tests failed. Restored implementation; tests green.
+- Full `node --test` passes: 140 tests, 31 suites, 0 failures.
 
 ### Blockers / next
 
-- Apply provided file changes and run full `node --test TaskRPG/Scripts/task-utils.test.js` and `node --test TaskRPG/Scripts/task-done.test.js`.
-- Confirm existing test suites still pass.
-- Commit changes to `feat/3-task-creation-planning-completion-undo`; reference issue #13.
+- Complete remaining Undo manual checks and replay regression tests before closing PR #10.
 
 ### Links
 

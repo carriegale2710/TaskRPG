@@ -6,7 +6,7 @@ This file records what shipped, per version. It is not session context: goals, c
 
 Version numbers follow semver, one minor bump per release while 0.y.z: `0.1.0` = Step 1 (engine/tests), `0.2.0` = Step 2 (habit Done button), `0.3.0` = repo restructure, `0.4.0` = agent setup/docs skills, `0.4.1` = docs restructure.
 
-## [Unreleased]
+## [0.5.0]
 
 ### Added
 
@@ -18,7 +18,7 @@ Version numbers follow semver, one minor bump per release while 0.y.z: `0.1.0` =
 ### Changed
 
 - TaskNotes owns creation and planning; TaskRPG owns resolution, undo, status writes.
-- Task resolution tests expand validation to 132 passing cases.
+- Task resolution tests expand validation to 140 passing cases.
 - Result card shows as one 15-second Notice; `obsidian.Modal` path gone.
 - `task-undo.js` renamed `undo.js`; handles habits too.
 - Habit undo deletes its own history line; other lines untouched.

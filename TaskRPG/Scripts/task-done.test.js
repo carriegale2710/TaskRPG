@@ -29,7 +29,7 @@ function noteText(overrides = {}) {
     status: "open",
     skill: "mind",
     size: "small",
-    scheduled: utils.today(),
+    scheduled: engine.gameDay(engine.localStamp(), 4),
     tags: ["task"],
     ...overrides,
   };
@@ -118,15 +118,16 @@ const firstTaskDoneOf = (h) => taskDoneEventsOf(h)[0];
 const settingsNote = (text = readRepo("Engine/Settings.md")) =>
   engine.parseSettingsNote(text);
 
-// Built independently of utils.today() so the expected date is not derived
-// from the code under test.
+// Build dates from the current game day, independent of the host timezone.
 function ymd(offset) {
-  const date = new Date();
-  date.setDate(date.getDate() + offset);
+  const date = new Date(
+    `${engine.gameDay(engine.localStamp(), 4)}T00:00:00Z`,
+  );
+  date.setUTCDate(date.getUTCDate() + offset);
 
   const pad = (value) => String(value).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
-    date.getDate(),
+  return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(
+    date.getUTCDate(),
   )}`;
 }
 
