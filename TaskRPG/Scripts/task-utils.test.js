@@ -3,6 +3,7 @@
 const { test, describe } = require("node:test");
 const assert = require("node:assert/strict");
 const utils = require("./task-utils.js");
+const engine = require("./engine.js");
 
 describe("task-utils.test.js", () => {
   describe("parseFrontmatter", () => {
@@ -156,6 +157,65 @@ describe("task-utils.test.js", () => {
     test("reads the TaskNotes scheduled date", () => {
       assert.equal(utils.scheduled({ scheduled: "2026-10-15" }), "2026-10-15");
       assert.equal(utils.scheduled({}), "");
+    });
+  });
+
+  describe("planned today", () => {
+    const gameDay = (timestamp) => engine.gameDay(timestamp, 4);
+
+    test("uses the engine rollover hour: 01:00 is still the previous game day", () => {
+      assert.equal(
+        utils.isPlannedToday(
+          "2026-10-15",
+          gameDay("2026-10-16T01:00:00+11:00"),
+        ),
+        true,
+      );
+    });
+
+    test("uses the engine rollover hour: 04:00 starts the new game day", () => {
+      assert.equal(
+        utils.isPlannedToday(
+          "2026-10-15",
+          gameDay("2026-10-16T04:00:00+11:00"),
+        ),
+        false,
+      );
+    });
+
+    test("matches a scheduled value that includes a time", () => {
+      assert.equal(
+        utils.isPlannedToday(
+          "2026-10-15T09:00",
+          gameDay("2026-10-16T01:00:00+11:00"),
+        ),
+        true,
+      );
+    });
+
+    test("matches a quoted scheduled value", () => {
+      assert.equal(
+        utils.isPlannedToday(
+          '"2026-10-15"',
+          gameDay("2026-10-16T01:00:00+11:00"),
+        ),
+        true,
+      );
+    });
+
+    test("treats missing or empty scheduled values as unplanned", () => {
+      const day = gameDay("2026-10-16T01:00:00+11:00");
+
+      assert.equal(utils.isPlannedToday("", day), false);
+      assert.equal(utils.isPlannedToday(undefined, day), false);
+    });
+
+    test("normalises scheduled values to their calendar date", () => {
+      assert.equal(utils.scheduledDate("2026-10-15"), "2026-10-15");
+      assert.equal(utils.scheduledDate("2026-10-15T09:00"), "2026-10-15");
+      assert.equal(utils.scheduledDate('"2026-10-15"'), "2026-10-15");
+      assert.equal(utils.scheduledDate(""), "");
+      assert.equal(utils.scheduledDate(undefined), "");
     });
   });
 

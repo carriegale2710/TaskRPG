@@ -266,182 +266,37 @@ Legend: **Automated** is covered by `node --test`. **Not covered** means no auto
 
 **Edge cases and failure paths**
 
-| ID    | Case                                                               | Expected                                                                                                           | Status                                               |
-| ----- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
-| TC-3  | Log note absent                                                    | Log created with `settings_changed` then `task_done`                                                               | ✅ Automated (`task-done.test.js`)                   |
-| TC-4  | Note has no task tag                                               | Rejected; no log, note, or Hero write                                                                              | ✅ Automated (`task-done.test.js`)                   |
-| TC-5  | `taskId` missing, empty, quoted-empty, `null`, `~`, or `undefined` | Rejected; nothing written                                                                                          | ✅ Automated (`task-done.test.js`)                   |
-| TC-6  | `skill` missing, empty, or null                                    | Rejected; nothing written                                                                                          | ✅ Automated (`task-done.test.js`)                   |
-| TC-7  | `size` missing, empty, or null                                     | Rejected; nothing written                                                                                          | ✅ Automated (`task-done.test.js`)                   |
-| TC-8  | `skill` not listed in Settings                                     | Rejected with an unknown-skill Notice; nothing written                                                             | ✅ Automated (`task-done.test.js`)                   |
-| TC-9  | `size` not listed in `taskSizes`                                   | Rejected with an unknown-size Notice; nothing written                                                              | ✅ Automated (`task-done.test.js`)                   |
-| TC-10 | No active note, or active note outside the TaskNotes folder        | Rejected with a Notice; nothing written                                                                            | ✅ Automated (`task-done.test.js`)                   |
-| TC-12 | `scheduled` is yesterday, tomorrow, absent, or not a date          | `planned: false`; +1 MP unplanned surcharge                                                                        | ✅ Automated (`task-done.test.js`)                   |
-| TC-13 | `taskId`, `skill`, `size` written in double or single quotes       | Values parse and resolve as unquoted                                                                               | ✅ Automated (`task-utils.test.js`)                  |
-| TC-14 | Tags as a block list, flow list, mixed case, or `#task`            | Configured tag matched case-insensitively                                                                          | ✅ Automated (`task-utils.test.js`)                  |
-| TC-15 | Frontmatter with CRLF or a BOM                                     | Parses correctly; a CRLF edit keeps CRLF line endings                                                              | ✅ Automated (`task-utils.test.js`)                  |
-| TC-16 | `status:` line also appears in the body                            | Only the frontmatter field changes; other fields and body stay unchanged                                           | ✅ Automated (`task-utils.test.js`)                  |
-| TC-17 | A value contains `$&` or `$1`                                      | Written literally                                                                                                  | ✅ Automated (`task-utils.test.js`)                  |
-| TC-18 | Note has no frontmatter                                            | Clear error; nothing written                                                                                       | ✅ Automated (`task-utils.test.js`)                  |
-| TC-20 | Cost exceeds remaining MP                                          | XP halved rounded up, Tired penalty applied, HP unchanged                                                          | ✅ Automated (`engine.test.js`)                      |
-| TC-25 | Second **Task done** on the same task without undo                 | Blocked by the duplicate guard; nothing written                                                                    | ✅ Automated (`task-done.test.js`)                   |
-| TC-26 | Undo the task, then run **Task done** again                        | New resolution allowed and marked `repeat`; original event intact                                                  | ✅ Automated (`task-done.test.js`, `engine.test.js`) |
-| TC-27 | Log write fails                                                    | No note or Hero change; Notice says nothing was logged                                                             | ✅ Automated (`task-done.test.js`)                   |
-| TC-28 | Task note or `Hero.md` write fails after the log write             | Event stands; Notice says it was saved and not to press again                                                      | ✅ Automated (`task-done.test.js`)                   |
-| TC-78 | `Settings.md` changed since the last event                         | `settings_changed` appended before the `task_done`; event stamped with its own timestamp; existing lines untouched | ✅ Automated (`task-done.test.js`, `engine.test.js`) |
-| TC-79 | `urgent` and `important` tags absent                               | Both read as false; no XP bonus                                                                                    | ✅ Automated (`task-done.test.js`)                   |
-| TC-80 | Note carries project or companion fields                           | Ignored; resolution reads only `taskId`, `skill`, `size`, `scheduled`, `urgent`, `important`                       | ✅ Automated (`task-done.test.js`)                   |
-| TC-81 | TaskNotes status changed to Done without running **Task done**     | No event, note, or Hero write                                                                                      | 🔲 Not covered (v1 has no status trigger)            |
-| TC-82 | Undo for a different task, then **Task done** on this one          | Guard stays closed; second resolution blocked                                                                      | ✅ Automated (`task-utils.test.js`)                  |
-| TC-83 | Existing `Events.md` is malformed                                  | Rejected before any write; no log, note, or Hero change                                                            | ✅ Automated (`task-done.test.js`)                   |
+| ID    | Case                                                                                                 | Expected                                                                                                                                                                       | Status                                                        |
+| ----- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------- |
+| TC-3  | Log note absent                                                                                      | Log created with `settings_changed` then `task_done`                                                                                                                           | ✅ Automated (`task-done.test.js`)                            |
+| TC-4  | Note has no task tag                                                                                 | Rejected; no log, note, or Hero write                                                                                                                                          | ✅ Automated (`task-done.test.js`)                            |
+| TC-5  | `taskId` missing, empty, quoted-empty, `null`, `~`, or `undefined`                                   | Rejected; nothing written                                                                                                                                                      | ✅ Automated (`task-done.test.js`)                            |
+| TC-6  | `skill` missing, empty, or null                                                                      | Rejected; nothing written                                                                                                                                                      | ✅ Automated (`task-done.test.js`)                            |
+| TC-7  | `size` missing, empty, or null                                                                       | Rejected; nothing written                                                                                                                                                      | ✅ Automated (`task-done.test.js`)                            |
+| TC-8  | `skill` not listed in Settings                                                                       | Rejected with an unknown-skill Notice; nothing written                                                                                                                         | ✅ Automated (`task-done.test.js`)                            |
+| TC-9  | `size` not listed in `taskSizes`                                                                     | Rejected with an unknown-size Notice; nothing written                                                                                                                          | ✅ Automated (`task-done.test.js`)                            |
+| TC-10 | No active note, or active note outside the TaskNotes folder                                          | Rejected with a Notice; nothing written                                                                                                                                        | ✅ Automated (`task-done.test.js`)                            |
+| TC-12 | `scheduled` is yesterday, tomorrow, absent, or not a date                                            | `planned: false`; +1 MP unplanned surcharge                                                                                                                                    | ✅ Automated (`task-done.test.js`)                            |
+| TC-13 | `taskId`, `skill`, `size` written in double or single quotes                                         | Values parse and resolve as unquoted                                                                                                                                           | ✅ Automated (`task-utils.test.js`)                           |
+| TC-14 | Tags as a block list, flow list, mixed case, or `#task`                                              | Configured tag matched case-insensitively                                                                                                                                      | ✅ Automated (`task-utils.test.js`)                           |
+| TC-15 | Frontmatter with CRLF or a BOM                                                                       | Parses correctly; a CRLF edit keeps CRLF line endings                                                                                                                          | ✅ Automated (`task-utils.test.js`)                           |
+| TC-16 | `status:` line also appears in the body                                                              | Only the frontmatter field changes; other fields and body stay unchanged                                                                                                       | ✅ Automated (`task-utils.test.js`)                           |
+| TC-17 | A value contains `$&` or `$1`                                                                        | Written literally                                                                                                                                                              | ✅ Automated (`task-utils.test.js`)                           |
+| TC-18 | Note has no frontmatter                                                                              | Clear error; nothing written                                                                                                                                                   | ✅ Automated (`task-utils.test.js`)                           |
+| TC-20 | Cost exceeds remaining MP                                                                            | XP halved rounded up, Tired penalty applied, HP unchanged                                                                                                                      | ✅ Automated (`engine.test.js`)                               |
+| TC-25 | Second **Task done** on the same task without undo                                                   | Blocked by the duplicate guard; nothing written                                                                                                                                | ✅ Automated (`task-done.test.js`)                            |
+| TC-26 | Undo the task, then run **Task done** again                                                          | New resolution allowed and marked `repeat`; original event intact                                                                                                              | ✅ Automated (`task-done.test.js`, `engine.test.js`)          |
+| TC-27 | Log write fails                                                                                      | No note or Hero change; Notice says nothing was logged                                                                                                                         | ✅ Automated (`task-done.test.js`)                            |
+| TC-28 | Task note or `Hero.md` write fails after the log write                                               | Event stands; Notice says it was saved and not to press again                                                                                                                  | ✅ Automated (`task-done.test.js`)                            |
+| TC-78 | `Settings.md` changed since the last event                                                           | `settings_changed` appended before the `task_done`; event stamped with its own timestamp; existing lines untouched                                                             | ✅ Automated (`task-done.test.js`, `engine.test.js`)          |
+| TC-79 | `urgent` and `important` tags absent                                                                 | Both read as false; no XP bonus                                                                                                                                                | ✅ Automated (`task-done.test.js`)                            |
+| TC-80 | Note carries project or companion fields                                                             | Ignored; resolution reads only `taskId`, `skill`, `size`, `scheduled`, `urgent`, `important`                                                                                   | ✅ Automated (`task-done.test.js`)                            |
+| TC-81 | TaskNotes status changed to Done without running **Task done**                                       | No event, note, or Hero write                                                                                                                                                  | 🔲 Not covered (v1 has no status trigger)                     |
+| TC-82 | Undo for a different task, then **Task done** on this one                                            | Guard stays closed; second resolution blocked                                                                                                                                  | ✅ Automated (`task-utils.test.js`)                           |
+| TC-83 | Existing `Events.md` is malformed                                                                    | Rejected before any write; no log, note, or Hero change                                                                                                                        | ✅ Automated (`task-done.test.js`)                            |
+| TC-84 | Complete a task whose scheduled value is the current game day, written as YYYY-MM-DDTHH:mm or quoted | planned is true; the task pays only its size MP cost. Before dayRolloverHour, the prior calendar date counts as the current game day; missing or empty scheduled is unplanned. | ✅ Automated (task-done.test.js, task-utils.test.js) (passed) |
 
-**Manual validation**
-
----
-
-Here’s a practical manual QA pass for the **Step 3 “task done” feature** on `feat/3-task-creation-planning-completion-undo`. The implementation validates the active note, prevents duplicate RPG resolution, appends a `task_done` event, updates the task note to `done`, and rewrites `Hero.md`.[1]
-
-**Result:** Passed on desktop and phone.
-
-## Before testing
-
-1. Check out the branch and open the vault in Obsidian.
-2. Confirm TaskNotes is configured with:
-   - Tasks folder: `TaskNotes/Tasks`
-   - Task tag: `task`
-3. Confirm these files exist and are readable:
-   - `TaskRPG/Engine/Settings.md`
-   - `TaskRPG/Engine/Events.md`
-   - `TaskRPG/Engine/Hero.md`
-4. Run the automated suite first:
-   ```bash
-   node --test TaskRPG/Scripts/task-done.test.js
-   ```
-   The branch includes tests for the happy path, validation, planning, priorities, duplicates, undo, write failures, and settings versioning.[2]
-
-## Happy path
-
-Create a task note in `TaskNotes/Tasks/` with this frontmatter:
-
-```yaml
----
-taskId: task-manual-1
-status: open
-skill: mind
-size: small
-scheduled: <today's date, YYYY-MM-DD>
-tags:
-  - task
----
-# Manual test task
-```
-
-Open that note and run **Task done**.
-
-Check:
-
-- A success Notice appears: `Task complete: ...`
-- The Notice includes an outcome, roll/result card, XP, MP cost, and loot result.
-- The task note’s `status` becomes `done`.
-- `completedDate` is set to the timestamp shown in the new event.
-- `TaskRPG/Engine/Events.md` gains a JSON line with `"type":"task_done"`.
-- The event has `taskId: task-manual-1`, `skill: mind`, `size: small`, and `planned: true`.
-- `Hero.md` is rewritten and reflects the XP/MP changes.
-- For a planned small task, expect **1 MP cost** and **1 Mind XP**.[1][2]
-
-## Validation and safety
-
-For each case below, capture the original task note, `Events.md`, and `Hero.md` first. After pressing Done, verify **nothing changed** and the Notice begins with `TaskRPG:` and says **“Nothing was logged.”**[2]
-
-| Test                        | Setup                                             | Expected result                                                      |
-| --------------------------- | ------------------------------------------------- | -------------------------------------------------------------------- |
-| No active note              | Close all notes or focus a non-editor view        | Error: “Open a TaskNotes task…”; no writes. [2]                      |
-| Note outside task folder    | Open a valid-looking task in `Notes/`             | Error: “Open a TaskNotes task…”; no writes. [2]                      |
-| Missing task tag            | Use `tags: [important]` only                      | Error: “This note is not a task.”; no writes. [2]                    |
-| Missing/blank `taskId`      | Omit it, or use `""`, `null`, `~`, or `undefined` | Error: “This note is not a task.”; no writes. [2]                    |
-| Unknown skill               | Set `skill: baking`                               | Error: “Unknown skill: baking”; no writes. [2]                       |
-| Unknown size                | Set `size: huge`                                  | Error: “Unknown size: huge”; no writes. [2]                          |
-| Missing/blank skill or size | Omit or blank the field                           | Corresponding “Unknown skill” / “Unknown size” error; no writes. [2] |
-| Malformed event log         | Put `{not json` in `Events.md`                    | Error; log, task note, and Hero remain unchanged. [2]                |
-
-## Planning rules
-
-Use a valid small task and vary only `scheduled`:
-
-| Scheduled value                 | Expected `planned` | Expected MP cost |
-| ------------------------------- | -----------------: | ---------------: |
-| Today                           |             `true` |             1 MP |
-| Yesterday                       |            `false` |             2 MP |
-| Tomorrow                        |            `false` |             2 MP |
-| Missing                         |            `false` |             2 MP |
-| Invalid text, e.g. `not-a-date` |            `false` |             2 MP |
-
-For unplanned tasks, confirm `Hero.md` shows the additional MP reduction; the automated expectation for a small unplanned task is MP falling from 10 to 8.[2]
-
-## Priority tags
-
-Use a valid **medium** task scheduled today, then test each tag combination:
-
-| Tags                          | Expected XP |
-| ----------------------------- | ----------: |
-| `task` only                   |           3 |
-| `task`, `important`           |           5 |
-| `task`, `urgent`              |           5 |
-| `task`, `important`, `urgent` |           6 |
-
-Also confirm the `task_done` event records `important` and `urgent` correctly.[2]
-
-## Duplicate prevention
-
-1. Complete a valid task once.
-2. Record the contents of `Events.md`, the task note, and `Hero.md`.
-3. Press **Task done** again on the same note.
-
-Expected:
-
-- Error: “This task has already been resolved by TaskRPG. Use Undo last first.”
-- Notice also says “Nothing was logged.”
-- Exactly one `task_done` event remains.
-- Task note, event log, and Hero file are unchanged.
-
-## Undo then redo
-
-1. Complete a valid task.
-2. Run **Undo last**.
-3. Confirm the task note returns to `status: open`.
-4. Press **Task done** again.
-
-Expected:
-
-- Event order becomes: `settings_changed` (if needed), `task_done`, `undo`, `task_done`.
-- The original `task_done` event line remains in `Events.md`.
-- The new resolution is treated as a repeat.
-- The task note becomes `done` again.
-- A final “Task complete” Notice appears.[2]
-
-## Failure handling
-
-These are harder to trigger manually, but worth checking if you can simulate them:
-
-| Failure point                                          | Expected behaviour                                                                                            |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| `Events.md` write fails                                | Nothing is written; task note and Hero unchanged; “Nothing was logged.” [2]                                   |
-| Task-note write fails after event write                | Event remains committed; task note unchanged; warning says “Event was saved; do not press Done again.” [1][2] |
-| `Hero.md` write fails after event and task-note writes | Event and `done` status remain; Hero is not updated; same “Event was saved…” warning. [2]                     |
-
-## Settings versioning
-
-1. Complete one task with the current `Settings.md`.
-2. Change a setting, such as small-task MP from `1` to `2`.
-3. Complete another task.
-
-Expected:
-
-- A `settings_changed` event is appended immediately before the new `task_done` event.
-- The older event keeps its original rules when recalculated.
-- If `Settings.md` has not changed, only a `task_done` event is appended.[2]
-
-## Final smoke checklist
+## Final manual smoke checklist
 
 - [x] Valid planned task completes successfully.
 - [x] Task note becomes `done` with `completedDate`.

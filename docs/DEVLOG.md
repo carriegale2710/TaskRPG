@@ -6,6 +6,50 @@ Rule of thumb: if a fact explains a choice or records what happened during the w
 
 Timeline uses commit dates from `git log`, newest first. Not changelog release dates: the `0.4.0` block bundles commits from 2026-10-15 and 2026-10-16, and `0.1.0`/`0.2.0` both landed on 2026-10-14.
 
+## 2026-10-26 — Planned-task game day fix
+
+### Goal
+
+Fix issue #13: planned-task check must use engine game day, not local calendar date.
+
+### Did
+
+- Added `scheduledDate()` to `task-utils.js`. Normalises `YYYY-MM-DD`, datetime, and quoted `scheduled` values to calendar date.
+- Added `isPlannedToday(value, gameDay)` to `task-utils.js`. Compares normalised scheduled date with engine game day.
+- Changed `task-done.js` planned check from `scheduled === utils.today()` to `utils.isPlannedToday(scheduled, engine.gameDay(timestamp, settings.dayRolloverHour))`.
+- Added 6 tests to `task-utils.test.js`: rollover at 01:00/04:00, datetime value, quoted value, missing/empty value, date normalisation.
+- Added 2 tests to `task-done.test.js`: datetime `scheduled` and quoted `scheduled` for current game day.
+- Updated AC-4 and added TC-13 to `docs/BUILD_PLAN.md`.
+
+### Decisions
+
+- `isPlannedToday()` receives engine-computed game day. Avoids second copy of rollover rule in `task-utils.js`.
+- Task-done tests schedule current game day via `engine.gameDay(engine.localStamp(), 4)`. Calendar-date scheduling wrong between midnight and rollover hour.
+
+### Failed / learned
+
+- Initial task-done test used `ymd(0)`. Failed at 00:38 local because game day still previous day. Correct engine behaviour; test changed to game-day scheduling.
+- Quoted scheduled value already passed before fix. `parseFrontmatter()` strips quotes. Test kept as regression guard.
+
+### Validation
+
+- Red first: 6 utils tests failed on missing `isPlannedToday`/`scheduledDate`; datetime task-done test failed `false !== true`.
+- Green after implementation: 6/6 utils tests pass; 2/2 task-done tests pass.
+- Mutation check: forced `isPlannedToday()` to `false`; 3 utils tests and 2 task-done tests failed. Restored implementation; tests green.
+
+### Blockers / next
+
+- Apply provided file changes and run full `node --test TaskRPG/Scripts/task-utils.test.js` and `node --test TaskRPG/Scripts/task-done.test.js`.
+- Confirm existing test suites still pass.
+- Commit changes to `feat/3-task-creation-planning-completion-undo`; reference issue #13.
+
+### Links
+
+- Branch: `feat/3-task-creation-planning-completion-undo`
+- Issue: carriegale2710/TaskRPG#13
+- Files: `TaskRPG/Scripts/task-utils.js`, `TaskRPG/Scripts/task-done.js`, `TaskRPG/Scripts/task-utils.test.js`, `TaskRPG/Scripts/task-done.test.js`, `docs/BUILD_PLAN.md`
+- Tests: `TaskRPG/Scripts/task-utils.test.js`, `TaskRPG/Scripts/task-done.test.js`
+
 ## 2026-10-25 — task resolution manual validation
 
 ### Goal

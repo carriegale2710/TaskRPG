@@ -53,7 +53,10 @@ module.exports = async ({ app }) => {
     const timestamp = engine.localStamp();
     const dice = engine.rollDice();
     const scheduled = utils.scheduled(task);
-    const planned = scheduled === utils.today();
+    const planned = utils.isPlannedToday(
+      scheduled,
+      engine.gameDay(timestamp, settings.dayRolloverHour),
+    );
 
     const action = {
       id: `task-${Date.now()}-${Math.random().toString(36).slice(2)}`,

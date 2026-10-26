@@ -30,6 +30,9 @@ Version numbers follow semver, one minor bump per release while 0.y.z: `0.1.0` =
 
 ### Fixed
 
+- Planned tasks use game day, not calendar date.
+- `scheduled` accepts datetime and quoted values.
+- Missing or empty `scheduled` stays unplanned.
 - `Task done` logged event but left note open; frontmatter write fixed.
 - Block-list and quoted `tags` parse; urgent/important bonuses apply.
 - Scheduled date reads `scheduled`, not `scheduledDate`.

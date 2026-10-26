@@ -6,9 +6,15 @@ Two checks: automated terminal tests (every rule) and a short manual run inside 
 
 TaskNotes owns task creation, planning and user fields. TaskRPG owns only `Task done` and `Undo last`, including the `done`/`open` status writes.
 
-`task-utils.test.js` covers pure helpers: TaskNotes scheduled-date mapping and completion-field updates (missing-field insertion, frontmatter-only edits, literal `$`, undo reopening with `status: open`, CRLF), and habit history-line removal matched by timestamp (other lines untouched, CRLF).
+`task-utils.test.js` covers pure helpers: TaskNotes scheduled-date mapping, planned-today game-day checks, and completion-field updates (missing-field insertion, frontmatter-only edits, literal `$`, undo reopening with `status: open`, CRLF), and habit history-line removal matched by timestamp (other lines untouched, CRLF).
 
-`task-done.test.js` runs the real `Scripts/task-done.js` against an in-memory vault whose note sits in `TaskNotes/Tasks/…` (folder from TaskNotes `data.json`). Checks the `task_done` event, completion fields, and rewritten `Engine/Hero.md` (derived HP, MP, skill XP). One test starts at `status: open` and asserts the script overwrites it with `done`. Another asserts the result card is exactly one Notice containing `**Outcome:**` (D-025). Proves the script refuses a note missing `skill`, `size` or `taskId` (absent, empty or YAML `null`), leaving log and note untouched.
+`task-utils.test.js` also covers the planned-task check used by `task-done.js`:
+
+- `scheduledDate()` normalises date-only, datetime, and quoted `scheduled` values to `YYYY-MM-DD`; missing or empty values become empty.
+- `isPlannedToday()` compares that date with `engine.gameDay(timestamp, settings.dayRolloverHour)`, so the engine owns the rollover rule.
+- At 01:00 with a 04:00 rollover, the previous calendar date is still the current game day; at 04:00, the game day flips.
+
+`task-done.test.js` runs the real `Scripts/task-done.js` against an in-memory vault whose note sits in `TaskNotes/Tasks/…` (folder from TaskNotes `data.json`). Checks the `task_done` event, completion fields, and rewritten `Engine/Hero.md` (derived HP, MP, skill XP). It also checks that a `scheduled` value containing a time, or wrapped in quotes, counts as planned for the current game day. One test starts at `status: open` and asserts the script overwrites it with `done`. Another asserts the result card is exactly one Notice containing `**Outcome:**` (D-025). Proves the script refuses a note missing `skill`, `size` or `taskId` (absent, empty or YAML `null`), leaving log and note untouched.
 
 A note is a task only when it carries TaskNotes' configured `taskTag`.
 
@@ -64,30 +70,31 @@ A good run ends `# fail 0`. Passing a directory to `--test` fails on Node 22 wit
 
 ### What the tests cover
 
-| Rule                                        | Test name starts with                                                                 |
-| ------------------------------------------- | ------------------------------------------------------------------------------------- |
-| 4:00 AM day rollover                        | `day rolls over`                                                                      |
-| MP max 10 and morning refill                | `MP is 10`                                                                            |
-| Task MP by size, unplanned, Wounded         | `task MP cost`                                                                        |
-| Level 5 and 10 MP discount, minimum 1       | `skill levels 5 and 10`                                                               |
-| Overdraft: half XP, Tired −1                | `overdraft`                                                                           |
-| Task XP and bonuses, weekly focus           | `task XP`, `weekly focus`                                                             |
-| Habit XP, including at 0 MP                 | `habit XP`                                                                            |
-| Levels and dice bonus                       | `levels at the XP thresholds`, `dice bonus stacks`                                    |
-| Roll thresholds, threat, loot, no XP effect | `roll outcomes`, `project threat`, `loot`, `a roll never`                             |
-| HP gain, loss, penalties, Wounded           | `HP:`, `HP never`, `missed deadline`, `dice penalty`, `Wounded`                       |
-| Habit MP cost and eligible days             | `habit MP cost`, `habit measure`                                                      |
-| Rest days and pause                         | `rest days`, `pause and resume`, `missed deadlines are exempt`                        |
-| Settings changes (prospective, validated)   | `settings change`, `settings are validated`, `lowering max`, `the live Settings.md`   |
-| Undo                                        | `undo`, `pressing Done again`                                                         |
-| Undo-linked task resolution guard           | `task resolution guard`, `undo is linked`, `duplicate resolution guard`               |
-| Task folder from TaskNotes data             | `taskFolder`, `configured TaskNotes folder`                                           |
-| Task tag from TaskNotes data                | `taskTag`, `task tag`, `refuses a note`                                               |
-| `Task done` writes `done`                   | `status done over`                                                                    |
-| Back-filling missed blocks                  | `back-fill`                                                                           |
-| Bad logs, actions, log text, dice           | `bad logs`, `bad actions`, `event log text`, `localStamp`, `rollDice`, `an empty log` |
-| Terminal gives identical results            | `recalc from the terminal`                                                            |
-| Runs without `fs` (phone)                   | `the engine loads with no fs`                                                         |
+| Rule                                                                             | Test name starts with                                                                                                                                                                                                    |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 4:00 AM day rollover                                                             | `day rolls over`                                                                                                                                                                                                         |
+| MP max 10 and morning refill                                                     | `MP is 10`                                                                                                                                                                                                               |
+| Task MP by size, unplanned, Wounded                                              | `task MP cost`                                                                                                                                                                                                           |
+| Planned task uses game day; datetime/quoted `scheduled`; missing/empty unplanned | `planned today`, `uses the engine rollover hour`, `matches a scheduled value`, `treats missing or empty scheduled`, `normalises scheduled values`, `a scheduled value with a time component`, `a quoted scheduled value` |
+| Level 5 and 10 MP discount, minimum 1                                            | `skill levels 5 and 10`                                                                                                                                                                                                  |
+| Overdraft: half XP, Tired −1                                                     | `overdraft`                                                                                                                                                                                                              |
+| Task XP and bonuses, weekly focus                                                | `task XP`, `weekly focus`                                                                                                                                                                                                |
+| Habit XP, including at 0 MP                                                      | `habit XP`                                                                                                                                                                                                               |
+| Levels and dice bonus                                                            | `levels at the XP thresholds`, `dice bonus stacks`                                                                                                                                                                       |
+| Roll thresholds, threat, loot, no XP effect                                      | `roll outcomes`, `project threat`, `loot`, `a roll never`                                                                                                                                                                |
+| HP gain, loss, penalties, Wounded                                                | `HP:`, `HP never`, `missed deadline`, `dice penalty`, `Wounded`                                                                                                                                                          |
+| Habit MP cost and eligible days                                                  | `habit MP cost`, `habit measure`                                                                                                                                                                                         |
+| Rest days and pause                                                              | `rest days`, `pause and resume`, `missed deadlines are exempt`                                                                                                                                                           |
+| Settings changes (prospective, validated)                                        | `settings change`, `settings are validated`, `lowering max`, `the live Settings.md`                                                                                                                                      |
+| Undo                                                                             | `undo`, `pressing Done again`                                                                                                                                                                                            |
+| Undo-linked task resolution guard                                                | `task resolution guard`, `undo is linked`, `duplicate resolution guard`                                                                                                                                                  |
+| Task folder from TaskNotes data                                                  | `taskFolder`, `configured TaskNotes folder`                                                                                                                                                                              |
+| Task tag from TaskNotes data                                                     | `taskTag`, `task tag`, `refuses a note`                                                                                                                                                                                  |
+| `Task done` writes `done`                                                        | `status done over`                                                                                                                                                                                                       |
+| Back-filling missed blocks                                                       | `back-fill`                                                                                                                                                                                                              |
+| Bad logs, actions, log text, dice                                                | `bad logs`, `bad actions`, `event log text`, `localStamp`, `rollDice`, `an empty log`                                                                                                                                    |
+| Terminal gives identical results                                                 | `recalc from the terminal`                                                                                                                                                                                               |
+| Runs without `fs` (phone)                                                        | `the engine loads with no fs`                                                                                                                                                                                            |
 
 Fixed dates and fixed dice, so results are machine- and time-zone-stable. Change a rule, change its test in the same edit. Add a rule, add a test.
 
@@ -162,6 +169,16 @@ In order. Open `Engine/Test Events.md` and `Engine/Test State.md` beside the not
 
 Checks 9 and 10 edit the test log by hand. That is the one time you should: the real log is append-only.
 
+### Step 3 planned-task check
+
+Uses the real `Task done` workflow and a disposable task note. Do not use the live `Engine/Events.md` with an important task or concurrent synced devices.
+
+| #   | Do this                                                                                          | You should see                                         |
+| --- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
+| 1   | Create a task scheduled for the current game day, using `YYYY-MM-DDTHH:mm`, then run `Task done` | Task costs only its size MP: no unplanned surcharge    |
+| 2   | Create a task with no `scheduled` field, then run `Task done`                                    | `planned` is false; the unplanned MP surcharge applies |
+| 3   | Before `dayRolloverHour`, schedule a task for yesterday's calendar date, then run `Task done`    | It counts as the current game day and is planned       |
+
 ### On your phone
 
 1. Wait for Fit to sync `Scripts/`, `Engine/Settings.md` and test notes.
@@ -180,3 +197,4 @@ Delete `Engine/Test Events.md`, `Engine/Test State.md`, `Engine/Test State.json`
 - `.jsonl` files do not show in Obsidian's file list, hence the `.md` test log. The engine accepts either. The live log is `Engine/Events.md`.
 - The first log line is long because it saves the full settings, so later changes keep old days on old rules.
 - Back-filling missed habit blocks, rest days, pause, weekly focus and project threat are not exposed in this script. Automated tests cover them; no vault UI is verified here.
+- The planned-task rollover boundary is tested through `isPlannedToday()` in `task-utils.test.js`. `task-done.test.js` uses the current game day but does not simulate a fixed pre- or post-rollover completion time, because `task-done.js` reads the current time through `engine.localStamp()`.

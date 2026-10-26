@@ -68,6 +68,19 @@ function today(date = new Date()) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
+function scheduledDate(value) {
+  const text = unquote(value ?? "").trim();
+  const match = /^(\d{4}-\d{2}-\d{2})/.exec(text);
+  return match ? match[1] : "";
+}
+
+// `gameDay` comes from engine.gameDay(), so this check shares the engine's
+// rollover rule instead of keeping a second copy of it.
+function isPlannedToday(value, gameDay) {
+  const day = scheduledDate(value);
+  return Boolean(day) && day === gameDay;
+}
+
 function scheduled(task) {
   return task.scheduled || "";
 }
@@ -77,7 +90,10 @@ function parseTags(value) {
   if (value === undefined || value === null || value === "") return [];
   let text = String(value).trim();
   if (text.startsWith("[") && text.endsWith("]")) text = text.slice(1, -1);
-  return text.split(/[\s,]+/).map(normalizeTag).filter(Boolean);
+  return text
+    .split(/[\s,]+/)
+    .map(normalizeTag)
+    .filter(Boolean);
 }
 
 function hasTag(value, tag) {
@@ -192,8 +208,9 @@ async function tasknotesConfig(files) {
 }
 
 async function taskFolder(files) {
-  const folder = String((await tasknotesConfig(files)).tasksFolder ?? "")
-    .replace(/^\/+|\/+$/g, "");
+  const folder = String(
+    (await tasknotesConfig(files)).tasksFolder ?? "",
+  ).replace(/^\/+|\/+$/g, "");
   return folder || "TaskNotes/Tasks";
 }
 
@@ -227,6 +244,7 @@ module.exports = {
   formatResultCard,
   hasTag,
   hasUnresolvedTaskDone,
+  isPlannedToday,
   parseFrontmatter,
   parseTags,
   pickTableResult,
@@ -234,6 +252,7 @@ module.exports = {
   removeHabitLogLine,
   renderHero,
   scheduled,
+  scheduledDate,
   taskFolder,
   taskTag,
   today,
