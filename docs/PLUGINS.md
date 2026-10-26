@@ -1,6 +1,6 @@
 # TaskRPG: Plugins, integrations and development tools
 
-For coding agents building TaskRPG and Vault Operator agents running it. Read with `AGENTS.md`, `PRD.md`, `BUILD_PLAN.md`, `TESTING.md`.
+For coding agents building TaskRPG and AI agents running it in whichever host the user chooses. Read with `AGENTS.md`, `PRD.md`, `BUILD_PLAN.md`, `TESTING.md`.
 
 ## 1. Boundaries
 
@@ -12,7 +12,7 @@ For coding agents building TaskRPG and Vault Operator agents running it. Read wi
 | Meta Bind           | Buttons, input fields, displays                                |
 | TaskNotes and Bases | Task creation, planning, task fields, task views               |
 | Dice Roller         | Approved narrative-table draws                                 |
-| Vault Operator      | Narration, personas, story, scoped memory                      |
+| AI agent host       | Narration, personas, story, scoped memory                      |
 
 Rules:
 
@@ -42,7 +42,7 @@ Confirm each plugin is installed, enabled and working before its build step.
 | TaskNotes          | Step 3  | Task creation, planning, task fields, backlog, views                  | Required fields, scheduled dates, completion timestamps, custom props |
 | Bases              | Step 3  | Core Obsidian feature used by TaskNotes views                         | Enabled; installed TaskNotes requirements                            |
 | Dice Roller        | Step 3  | Narrative outcomes from table notes                                   | Table syntax, weighting, integration method                          |
-| Vault Operator     | Step 4  | Narrator, onboarding, chats, summaries, briefing                      | Model connection, agent setup, memory scope, approvals               |
+| AI agent host       | Step 4  | Narrator, onboarding, chats, summaries, briefing                      | Host choice, model connection, agent setup, memory scope, approvals   |
 
 Planned stack, not verified installation status. Do not install two plugins for one role.
 
@@ -53,7 +53,7 @@ Planned stack, not verified installation status. Do not install two plugins for 
 - https://github.com/chhoumann/quickadd
 - https://quickadd.obsidian.guide/docs/Examples/
 
-Reuse capture, template and JavaScript-macro examples. Wrappers: `habit-done`, `task-done`, `task-undo`, `recalculate`, `morning-briefing`. Task creation and planning belong to TaskNotes; no `task-new` or `task-plan` wrappers.
+Reuse capture, template and JavaScript-macro examples. Wrappers: `habit-done`, `task-done`, `undo`, `recalculate`, `morning-briefing`. Task creation and planning belong to TaskNotes; no `task-new` or `task-plan` wrappers.
 
 Each wrapper:
 
@@ -151,6 +151,26 @@ Detects committed credentials: one-time history scan, local pre-commit check, CL
 
 ## 5. Alternatives requiring approval
 
+### AI agent host (undecided)
+
+The plugin that runs the narrator and character agents is not chosen yet. Candidates, described from their public documentation and unverified until the Step 4 host check:
+
+- **Obsidian Copilot**: chat sidebar, vault context, custom prompts, model choice.
+- **Text Generator**: prompt templates, templated output, many providers.
+- **Vault Operator**: agent-centric sidebar with per-agent personas and write approvals.
+
+Choose one. Do not run two AI writers at once.
+
+Required capabilities, in priority order:
+
+1. Persistent persona or system prompt per agent, or a reliable persona-switch prompt.
+2. Reading selected vault notes as context, not the whole vault by default.
+3. Writing only to approved folders, with a review or approval step.
+4. Selectable model, with a stronger model for narration and a cheaper one for summaries.
+5. A way to launch a prepared prompt from QuickAdd, or a documented manual fallback.
+
+Record the chosen host, version, tested features and gaps in `TESTING.md`. Until then, treat every host-specific feature as unverified. Persona files, prompts and output rules stay host-neutral plain Markdown so a host swap is a configuration change, not a rewrite.
+
 ### Randomness
 
 https://github.com/Obsidian-TTRPG-Community/Randomness
@@ -171,7 +191,7 @@ No second game-rules plugin, no second autonomous AI writer, no workflow swap ju
 
 ## 6. Agent and data safety
 
-Vault Operator is narration, not the engine.
+The AI agent host is narration, not the engine. Host choice is undecided (see 5).
 
 - Agents write only to designated Story, Campaign, World and Characters areas.
 - They never edit task records, Engine state or user journal content.
@@ -202,7 +222,7 @@ Order: #2 → #3 → #4 → #5 → #6 → #7. #8 runs alongside #4–#5 and must
 
 Prepare safeguards before agent use. Do not block agent testing on #8 closing first.
 
-If prepared-prompt launch into Vault Operator fails, paste the prompt into narrator chat or invoke the reviewed skill.
+If prepared-prompt launch into the AI agent host fails, paste the prompt into the narrator chat or invoke the reviewed prompt or skill.
 
 ## 8. Version and licence hygiene
 

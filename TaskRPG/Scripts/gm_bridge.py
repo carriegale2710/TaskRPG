@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """TaskRPG GM Bridge (optional terminal fallback for the narrator).
 
-In TaskRPG v2 the narrator normally runs inside Vault Operator. This script does
-the same two jobs from a terminal, using the Anthropic API, for days when Vault
-Operator or its model provider is unavailable or rate-limited. The game itself
+In TaskRPG v2 the narrator normally runs inside an Obsidian AI agent host
+(Copilot, Text Generator, Vault Operator or similar; undecided). This script does
+the same two jobs from a terminal, using the Anthropic API, for days when the
+chosen host or its model provider is unavailable or rate-limited. The game itself
 (buttons, dice, HP/MP/XP) never depends on this script or on any AI.
 
 What it does

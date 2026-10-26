@@ -26,7 +26,7 @@ Event log → derived hero state → UI / narration
 | TaskNotes          | Task creation, planning, user fields. TaskRPG writes only `done`/`open` |
 | QuickAdd wrappers  | Vault I/O; call the engine                                              |
 | Engine             | Every RPG rule; state derived from the event log                        |
-| Vault Operator     | Narrator and character agents; never game rules                         |
+| AI agent host      | Narrator and character agents; never game rules                         |
 | Meta Bind          | Buttons and panels                                                      |
 | Dice Roller        | Dice rolls                                                              |
 | Templater          | Note templating                                                         |
@@ -45,7 +45,7 @@ Event log → derived hero state → UI / narration
 | Event history                            | `Engine/Events.md`                 |
 | Derived live state display               | `Engine/Hero.md`                   |
 | Stable hero identity                     | Hero persona note                  |
-| Narrator and character agents            | Vault Operator                     |
+| Narrator and character agents            | AI agent host                      |
 | World canon                              | `World/`                           |
 | Cross-campaign canon                     | `Story/`                           |
 | Campaign story state                     | `Campaign/<campaign-id>/`          |
@@ -149,8 +149,8 @@ Paths relative to `TaskRPG/`.
 - Shared progression belongs to the player, not a campaign.
 - Campaign story state is isolated by campaign ID.
 - Folder boundaries protect ownership and integrity, not privacy.
-- Vault Operator writes only to designated Story, Campaign, World and Characters areas.
-- Vault Operator never writes engine state, task lines or user-authored journal content.
+- The AI agent host writes only to designated Story, Campaign, World and Characters areas.
+- The AI agent host never writes engine state, task lines or user-authored journal content.
 - `Campaign/` remains the legacy current-campaign location until an approved migration.
 - Do not mass-move notes as part of a documentation change.
 
@@ -160,8 +160,9 @@ Paths relative to `TaskRPG/`.
 
 - One agent per character, plus one narrator.
 - Each has a persona file.
-- Run in Vault Operator inside Obsidian; desktop only.
-- Models: Gemini or GitHub Copilot, subject to provider support.
+- Run in the chosen Obsidian AI agent host; desktop only. Host is undecided: Obsidian Copilot, Text Generator or Vault Operator.
+- Models: any provider the chosen host supports. No rule depends on a specific model vendor.
+- The architecture assumes only four host capabilities: a persistent persona or system prompt, reading selected vault notes, writing to approved folders with approval, and a selectable model. A host missing per-agent configuration runs one agent with a persona switch.
 
 ### Model assignment
 
@@ -199,9 +200,9 @@ Model-per-agent support is untested; validate in the thin slice.
 - TaskNotes is the task layer; TaskRPG does not duplicate native task creation or scheduling.
 - TaskRPG wraps resolution and undo.
 - Confirm TaskNotes field mappings and status values against the installed version.
-- QuickAdd cannot run Vault Operator reliably until tested. Fallback: manual prompt or a Vault Operator skill.
-- Vault Operator cannot run a terminal, build the engine or run tests.
-- A VS Code coding agent builds and tests the engine.
+- QuickAdd cannot start the AI agent host reliably until tested. Fallback: manual prompt or a reusable prompt or skill.
+- The AI agent host cannot run a terminal, build the engine or run tests.
+- Any coding agent with terminal access builds and tests the engine.
 
 ## 8. Script flows
 
@@ -244,8 +245,11 @@ Undo last button
   → append correcting undo event
   → original event remains
   → reopen the task note, or remove the habit history line it added
-  → recalculate state
+  → remove story lines tagged with the target event ID
+  → recalculate state and rewrite Hero.md
 ```
+
+Story rollback depends on the narrator's `<!-- evt:<eventId> -->` line tag; untagged prose is never touched. Undo appears in the engine as an eligible-action stack per game day, never as a target.
 
 ## 9. Time and sync
 
@@ -261,7 +265,8 @@ Undo last button
 ## 10. Technical invariants
 
 - The event log is append-only.
-- Undo appends a correction; it never deletes or rewrites history.
+- Undo appends a correction; it never deletes or rewrites event history. It may remove the habit history line and event-tagged story lines that the reversed action added.
+- Story text written without an event tag survives undo.
 - One user action produces one primary game event.
 - A campaign-linked task still produces only one shared progression event.
 - Settings changes are logged and apply from their timestamp onward.

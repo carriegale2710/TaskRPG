@@ -3,7 +3,7 @@
 **Status:** Ready to build (v2)  
 **Source of truth for:** product behavior, game rules, v1 scope, and settled decisions  
 **Related:** [ARCHITECTURE.md](./ARCHITECTURE.md) · [DECISIONS.md](./DECISIONS.md) · [BUILD_PLAN.md](./BUILD_PLAN.md) · [PLUGINS.md](./PLUGINS.md) · [TESTING.md](./TESTING.md)
-**Last Updated**: 2026-10-21
+**Last Updated**: 2026-10-23
 
 Rationale, rejected alternatives and history: [`docs/DECISIONS.md`](./DECISIONS.md). Structure, ownership and integration boundaries: [`docs/ARCHITECTURE.md`](./ARCHITECTURE.md).
 
@@ -38,70 +38,123 @@ TaskRPG turns daily habits and project work into an interactive campaign. Real t
 
 Full rationale and alternatives are in [`DECISIONS.md`](./DECISIONS.md).
 
+Each section lists the rules that span all of its stories, then the fewest user stories that cover the rest. A decision that affects more than one story stays in the shared-rules list rather than being pinned to a single story.
+
 ### 3.1 Novelty and randomness
 
-- Dice and random tables decide **what** happens; the AI narrates **how**.
-- The narrator writes random tables in the world’s voice using onboarding answers.
-- Tables are plain notes that Dice Roller rolls against, so randomness is real.
-- The event log records how often each table entry appears. Overused entries are retired and replaced.
-- New table entries go live unseen. Every result has a “not for me” action that retires it and teaches the narrator user taste.
-- Hard “never include” limits from onboarding are checked before an entry goes live.
 - Progression comes from skill levels, stats, plot, and character relationships.
+
+**User stories**
+
+> As a player, I want dice and random tables to decide what happens, so that each session is surprising without me planning novelty myself.
+
+1. A table is a plain note that Dice Roller rolls against, so randomness is real.
+2. The narrator writes tables in the world’s voice from onboarding answers, and narrates only the “how”.
+3. The rolled entry is recorded in the event log.
+
+> As a player, I want a “not for me” action on every result, so that unwanted entries retire and the narrator learns my taste.
+
+1. New entries go live unseen, and every table result offers a “not for me” action.
+2. Using it retires that entry and records the preference for the narrator.
+3. The event log counts how often each entry appears; overused entries are retired and replaced.
+4. Hard “never include” limits from onboarding are checked before an entry goes live.
 
 ### 3.2 Narrator and characters
 
-- The narrator is a wise-wizard or fortune-teller persona that speaks directly to the user.
-- Onboarding is one resumable quiz of about 20 questions covering genre, tone, character types, themes, and pet peeves, plus a “never include” list.
-- Answers are saved to a GM-only preferences note. The narrator builds the world, party, and initial tables from them.
-- The narrator continues learning through story forks, character reactions, and user choices.
-- The cast includes a core party of recurring characters with deep persona files, plus occasional NPCs generated from a shared template.
-- Each character has a relationship note. Affinity changes are proposed by the agent, sized by a dice roll, and approved by the user at session end.
-- The morning briefing opens the day after planning, frames planned tasks as quests, and recaps yesterday. Skipping it has no penalty.
 - The narrator and characters may write only designated Story, Campaign, World, and Characters files.
-- Multiple campaigns may share one world. Shared world lore, characters, and approved canon are reusable; campaign story logs, arcs, and quest boards remain separate.
-- A campaign-specific event becomes shared canon only when explicitly approved.
-- Talking to characters costs no MP.
+- Narrator and character agents run in whichever Obsidian AI agent host the user chooses. No rule, file format, prompt or workflow depends on a named host; any host that can hold a persona prompt, read selected vault notes and write within the approved folders is acceptable.
+- Only one AI writer runs at a time. The host may be Obsidian Copilot, Text Generator, Vault Operator or an equivalent plugin; the choice is undecided (section 8).
+
+**User stories**
+
+> As a player, I want the narrator to build the world, party, and first tables from my onboarding answers, so that the campaign fits my taste from session one.
+
+1. The narrator is a wise-wizard or fortune-teller persona that speaks directly to the user.
+2. Onboarding is one resumable quiz of about 20 questions covering genre, tone, character types, themes, and pet peeves, plus a “never include” list.
+3. Answers are saved to a GM-only preferences note and drive the world, party, and first tables.
+4. The narrator keeps learning through story forks, character reactions, and user choices.
+
+> As a player, I want a recurring cast whose relationships and canon stay under my control, so that the story stays continuous without one campaign rewriting another.
+
+1. The cast includes a core party of recurring characters with deep persona files, plus occasional NPCs generated from a shared template.
+2. Each character has a relationship note. Affinity changes are proposed by the agent, sized by a dice roll, and approved by the user at session end.
+3. Multiple campaigns may share one world. Shared world lore, characters, and approved canon are reusable, while campaign story logs, arcs, and quest boards remain separate.
+4. A campaign-specific event becomes shared canon only when explicitly approved.
+5. Talking to characters costs no MP.
+
+The morning briefing that opens the day after planning is specified in 3.15.
 
 ### 3.3 Memory
 
-- A shared story log holds world-level events approved as cross-campaign canon.
-- Each campaign has its own story log, so campaign-specific events do not silently become shared canon.
-- Character-scoped memory holds one-on-one conversations. It is narrative organisation, not a privacy boundary.
-- A “who knows what” note tracks in-fiction secrets. Characters learn facts only through in-fiction disclosure or user disclosure.
-- Dice can decide whether a secret leaks.
-- Layered memory keeps characters manageable: a short core-facts note is always loaded, the last 10 sessions remain detailed, and older sessions are compressed into monthly digests.
-- Key moments can be pinned so they are never compressed.
-- Original summaries remain in GitHub history.
+- Character-scoped memory is narrative organisation, not a privacy boundary.
+
+**User stories**
+
+> As a player, I want older sessions compressed into monthly digests with key moments pinned, so that characters stay consistent without the vault bloating.
+
+1. A short core-facts note is always loaded.
+2. The last 10 sessions remain detailed; older sessions compress into monthly digests.
+3. Key moments can be pinned and are never compressed.
+4. Original summaries remain in GitHub history.
+
+> As a player, I want campaign events and in-fiction secrets to stay where they belong, so that one campaign cannot silently rewrite another.
+
+1. A shared story log holds world-level events approved as cross-campaign canon.
+2. Each campaign has its own story log, so campaign-specific events do not silently become shared canon.
+3. Character-scoped memory holds one-on-one conversations.
+4. A “who knows what” note tracks in-fiction secrets; characters learn facts only through in-fiction disclosure or user disclosure.
+5. Dice can decide whether a secret leaks.
 
 ### 3.4 Stats and inputs
 
 - Stats are purely game state. No real energy or health data is entered or modelled.
 - Tasks and habits are real.
-- For tasks: mark Done in TaskNotes, then run TaskRPG’s manual **Task done** command.
-- Habit Done remains a separate macro.
-- RPG macros stamp their own event time.
-- A TaskNotes status change alone does not resolve an RPG event in phase 1.
-- Automatic Workflows triggering is optional phase 2 and must be validated separately.
+- There are five skills: Focus, Vitality, Craft, Mind, and Presence. Each task or habit feeds exactly one skill.
 - External sync is a later feature.
-- There are five skills: Focus, Vitality, Craft, Mind, and Presence.
-- Each task or habit feeds exactly one skill.
+
+**User stories**
+
+> As a player, I want to mark Done in TaskNotes and then run Task done, so that only a deliberate action resolves a turn.
+
+1. For tasks: mark Done in TaskNotes, then run TaskRPG’s manual **Task done** command with the task note open.
+2. Habit Done remains a separate macro.
+3. A TaskNotes status change alone creates no RPG event in phase 1.
+4. Automatic Workflows triggering is optional phase 2 and must be validated separately.
+
+> As a player, I want RPG macros to stamp their own event time, so that the log stays correct when I resolve a task later.
+
+1. Each macro writes its own timestamp into the event it appends.
+2. Event order follows those timestamps.
 
 ### 3.5 Daily MP budget
 
-- Maximum MP is 10. MP refills to full every morning.
-- A task scheduled for today costs its normal MP. A task not scheduled for today costs +1 MP.
-- Task size sets base cost: small 1, medium 3, large 5.
-- Task XP equals task size, plus 50% if important and plus 50% if urgent.
-- Past 0 MP, tasks can still be completed. They earn half XP, rounded up, and roll with a −1 “Tired” penalty. HP is untouched.
-- At 0 HP (“Wounded”), every task costs +1 MP until recovery. Habits are exempt.
+**User stories**
+
+> As a player, I want MP to refill to full each morning, cap at 10, and charge tasks by size and scheduling, so that every day starts with a clear budget for important work.
+
+1. Maximum MP is 10, and MP refills to full every morning.
+2. Task size sets base cost: small 1, medium 3, large 5.
+3. A task scheduled for today costs its normal MP; a task not scheduled for today costs +1 MP.
+4. Task XP equals task size, plus 50% if important and plus 50% if urgent.
+
+> As a player, I want to keep completing tasks past 0 MP with half XP and a Tired penalty, so that a busy day never hard-stops me.
+
+1. Past 0 MP, tasks can still be completed.
+2. They earn half XP, rounded up, and roll with a −1 “Tired” penalty.
+3. HP is untouched.
 
 ### 3.6 Tasks, dice, and story
 
-- Pressing Done on a task is a game turn.
-- Roll: `2d6 + skill dice bonus − HP penalty − Tired penalty`.
-- The task’s skill determines which skill’s dice bonus applies.
-- All tasks use the same thresholds. Task size changes story-result scale, not odds.
-- A roll changes only the story. It never changes the task’s XP or MP.
+**User stories**
+
+> As a player, I want pressing Done on a task to roll dice and produce a story outcome, so that real work immediately moves the plot.
+
+1. Pressing Done on a task is a game turn.
+2. Resolution rolls `2d6 + skill dice bonus − HP penalty − Tired penalty`, using the task’s skill for the dice bonus.
+3. The total maps to success, partial success, or setback, using the same thresholds for every task.
+4. Task size changes the scale of the story result, not the odds.
+5. A setback is a twist that moves the story forward, never a dead end.
+6. A roll changes only the story. It never changes the task’s XP or MP.
 
 | Total     | Outcome                                                         |
 | --------- | --------------------------------------------------------------- |
@@ -118,24 +171,29 @@ Full rationale and alternatives are in [`DECISIONS.md`](./DECISIONS.md).
 
 ### 3.7 Habits and HP
 
-- The user selects 3–5 core habits. Each has its own note.
-- Habit frontmatter holds its block—morning, afternoon, or evening—and its skill.
-- The habit body is a dated log of on-time, late, and missed entries.
-- Habit Done stamps the time, appends a line to the habit note, and shows a status line.
 - Maximum HP is 10.
-- Completing a core habit within its block restores 1 HP.
-- A late tick earns skill XP but restores no HP.
-- Missing a block deadline costs 1 HP, capped at 2 HP lost per day.
+- At 0 HP the user is Wounded: dice penalty −3, tasks cost +1 MP (habits exempt), and boss challenges cannot start. One completed habit lifts the user out of Wounded.
 - Rest days, pause, and weekends are exempt.
-- At 0 HP, the user is Wounded: dice penalty −3, tasks cost +1 MP, and boss challenges cannot start.
-- One completed habit lifts the user out of Wounded.
-- Habits cost less MP than tasks. Cost is based on the share of eligible days completed on time in the last 30 days.
-- Only on-time completions count toward habit cost.
-- A new habit starts at 2 MP.
-- Eligible days are weekdays that are not rest or pause days. A weekend, rest, or pause day counts only if the habit was completed.
-- Habits give HP and XP at every cost level, including 0 MP.
-- Habit XP is 1 per press.
-- Habits have no story beat and no dice roll.
+
+**User stories**
+
+> As a player, I want an on-time habit tick to restore HP and a late tick to earn XP only, so that timing matters without erasing effort.
+
+1. The user selects 3–5 core habits, each with its own note whose frontmatter holds its block (morning, afternoon, or evening) and its skill.
+2. The habit body is a dated log of on-time, late, and missed entries.
+3. Habit Done stamps the time, appends a line to the habit note, and shows a status line.
+4. A completion within its block restores 1 HP; HP never exceeds 10.
+5. A late tick earns skill XP but restores no HP.
+6. Missing a block deadline costs 1 HP, capped at 2 HP lost per day.
+7. Habit XP is 1 per press, and habits give HP and XP at every cost level, including 0 MP.
+8. Habits have no story beat and no dice roll.
+
+> As a player, I want a habit’s MP cost to fall as my 30-day on-time share rises, so that consistency makes the habit nearly free.
+
+1. Cost is based on the share of eligible days completed on time in the last 30 days.
+2. Under one third costs 2 MP; one third to under two thirds costs 1 MP; two thirds or more costs 0.
+3. Only on-time completions count toward the share, and a new habit starts at 2 MP.
+4. Eligible days are weekdays that are not rest or pause days; a weekend, rest, or pause day counts only if the habit was completed.
 
 | On-time completion share, last 30 eligible days | Habit cost       |
 | ----------------------------------------------- | ---------------- |
@@ -145,207 +203,307 @@ Full rationale and alternatives are in [`DECISIONS.md`](./DECISIONS.md).
 
 ### 3.8 Skill levels
 
-- Each skill has 10 levels and its own XP.
-- Dice bonus is +1 at levels 2, 4, 6, 8, and 10, reaching +5 at level 10.
-- At levels 5 and 10, tasks in that skill cost 1 MP less.
-- No task costs less than 1 MP.
-- Indicative XP curve: level 2 at 10 XP, level 3 at 25, level 4 at 45, level 5 at 70, then slowing so level 10 takes months.
+**User stories**
+
+> As a player, I want skill levels to raise dice bonuses and cut MP costs, so that practice visibly improves my odds.
+
+1. Each skill has 10 levels and its own XP.
+2. Dice bonus is +1 at levels 2, 4, 6, 8, and 10, reaching +5 at level 10.
+3. At levels 5 and 10, tasks in that skill cost 1 MP less.
+4. No task costs less than 1 MP.
+5. Indicative XP curve: level 2 at 10 XP, level 3 at 25, level 4 at 45, level 5 at 70, then slowing so level 10 takes months.
 
 ### 3.9 Tasks, planning, and daily note
 
-- TaskNotes owns task creation, planning, scheduling, and skill/size/urgent/important user fields. TaskRPG writes only the two status values it owns: `done` on resolution (overwriting any prior value, with `completedDate`) and `open` on undo (clearing `completedDate`, no previous-status lookup). TaskNotes detects the written value.
-- TaskRPG reads a stable task identity, skill, size, urgency, importance, and TaskNotes scheduled date.
-- Property mappings and configured status values must be confirmed against the installed TaskNotes version.
-- Schedule tasks in TaskNotes. A scheduled date matching today avoids the unplanned MP surcharge.
-- In phase 1, finish work, mark Done in TaskNotes, then run the manual Task done command with the task note open.
-- Task completion status and RPG resolution are distinct. Duplicate protection uses recorded RPG resolution, not TaskNotes status alone.
-- Undo last reverses the newest eligible RPG action with a correcting event, preserving original dice and history.
-- A task may optionally link to one campaign for story framing.
-- Resolution records one global game event and awards shared progression once, even if it advances campaign story.
-- Unfinished tasks remain managed in TaskNotes and may be rescheduled without penalty.
-- The daily note is a journal plus a “Today’s turns” section pulled from the event log.
-- The narrator writes a “Today’s quests” note in the selected campaign. Each quest links to its real task.
-- The narrator never edits task records or task state.
-- Only the last 30 daily notes remain in the vault. Older notes remain in GitHub history.
-- Daily-note pruning is safe because required game data lives outside daily notes.
-- Each daily note must be committed before removal.
+**User stories**
+
+> As a player, I want TaskNotes to own my tasks while TaskRPG writes only the two status values it owns, so that my task data stays clean.
+
+1. TaskNotes owns task creation, planning, scheduling, and the skill, size, urgent, and important user fields.
+2. TaskRPG writes `done` on resolution (overwriting any prior value, with `completedDate`) and `open` on undo (clearing `completedDate`, no previous-status lookup). TaskNotes detects the written value.
+3. TaskRPG reads a stable task identity, skill, size, urgency, importance, and the TaskNotes scheduled date.
+4. Property mappings and configured status values must be confirmed against the installed TaskNotes version.
+5. In phase 1, finish the work, mark Done in TaskNotes, then run the manual Task done command with the task note open.
+6. Task completion status and RPG resolution are distinct. Duplicate protection uses recorded RPG resolution, not TaskNotes status alone.
+7. Undo last reverses the newest eligible RPG action with a correcting event, preserving original dice and history.
+
+> As a player, I want a task scheduled for today to avoid the unplanned surcharge, so that planning ahead is rewarded.
+
+1. Schedule tasks in TaskNotes; a scheduled date matching today avoids the unplanned MP surcharge.
+2. A task may optionally link to one campaign for story framing.
+3. Resolution records one global game event and awards shared progression once, even if it advances campaign story.
+4. Unfinished tasks remain managed in TaskNotes and may be rescheduled without penalty.
+
+> As a player, I want the narrator to write linked quests but never edit task state, so that story framing cannot corrupt my task data.
+
+1. The daily note is a journal plus a “Today’s turns” section pulled from the event log.
+2. The narrator writes a “Today’s quests” note in the selected campaign; each quest links to its real task.
+3. The narrator never edits task records or task state.
+4. Only the last 30 daily notes remain in the vault; older notes remain in GitHub history.
+5. Daily-note pruning is safe because required game data lives outside daily notes, and each daily note must be committed before removal.
 
 ### 3.10 Boss challenges
 
-- A boss is a short-term real-world challenge, not a dice fight.
-- A challenge unlocks when a skill reaches level 5 or 10, or when a story arc finishes.
-- The engine owns a fixed menu of challenge types, such as completing a habit for N days, maintaining HP at Y or more, or finishing N tasks in skill Z within W days.
-- The narrator selects a challenge, fills in values within engine limits, and wraps it in story.
-- Criteria are visible when announced. The engine checks the event log automatically.
-- One challenge is active at a time.
-- Failure costs nothing and the challenge can be retried.
-- A Wounded day cannot start a challenge.
-- Reward: a story reward plus an item with one small engine-owned perk.
-- Perks include +1 dice in a skill or 1 MP off that skill’s tasks.
-- The narrator only names and describes items.
-- Maximum one perk per skill.
+**User stories**
+
+> As a player, I want boss challenges to be real-world goals with criteria the engine checks, so that I never have to prove progress by hand.
+
+1. A boss is a short-term real-world challenge, not a dice fight.
+2. A challenge unlocks when a skill reaches level 5 or 10, or when a story arc finishes.
+3. The engine owns a fixed menu of challenge types, such as completing a habit for N days, maintaining HP at Y or more, or finishing N tasks in skill Z within W days. The narrator selects one, fills in values within engine limits, and wraps it in story.
+4. Criteria are visible when announced and checked automatically from the event log.
+5. One challenge is active at a time.
+6. Reward: a story reward plus an item with one small engine-owned perk, either +1 dice in a skill or 1 MP off that skill’s tasks. The narrator only names and describes items, and there is at most one perk per skill.
+
+> As a player, I want failure to cost nothing and allow a retry, so that a missed challenge never feels like punishment.
+
+1. A missed challenge deducts nothing and can be retried.
+2. A Wounded day cannot start a challenge.
 
 ### 3.11 Projects, arcs, and quests
 
-- A project is an epic story, such as “build the app.”
-- Each work stage is an arc.
-- Each arc has a backlog of quests, which are real tasks framed as story.
-- Default limit: at most 3 projects open at once. Additional projects wait on a shelf.
-- The user describes a project in a few sentences. The narrator proposes arcs and a starting quest list for approval.
-- Only the current arc is fully detailed. Later arcs remain one-line placeholders until the prior arc finishes.
-- Default gate: the next arc unlocks when required quests in the current arc are complete.
-- Any quest may be marked optional or cut without penalty.
-- Finishing an arc may unlock a boss challenge.
-- On Monday, the user selects one focus project. Its quests earn +25% XP by default, stacking with important/urgent bonuses.
 - This replaces fixed-length seasons. Novelty comes from dice, tables, and character conversations.
+
+**User stories**
+
+> As a player, I want to describe a project in a few sentences and approve the arcs and quests that follow, so that a big goal becomes a playable epic.
+
+1. A project is an epic story; each work stage is an arc, and each arc has a backlog of quests, which are real tasks framed as story.
+2. At most 3 projects are open at once by default; additional projects wait on a shelf.
+3. The user describes a project in a few sentences, and the narrator proposes arcs and a starting quest list for approval.
+4. Only the current arc is fully detailed. Later arcs remain one-line placeholders until the prior arc finishes.
+5. The next arc unlocks when required quests in the current arc are complete.
+6. Any quest may be marked optional or cut without penalty, and finishing an arc may unlock a boss challenge.
+
+> As a player, I want one focus project each Monday to earn bonus XP, so that a single project gets real momentum.
+
+1. On Monday, the user selects one focus project.
+2. Its quests earn +25% XP by default, stacking with important and urgent bonuses.
 
 ### 3.12 Companions
 
-- Each party member is tied to one of the five skills as their specialty.
-- At affinity milestones, a companion grants a small perk in their specialty: +1 dice in that skill or 1 MP off its tasks.
-- Maximum one companion perk per skill.
-- When planning the day, a task may optionally be tagged with a party member.
-- Team-ups cost no extra MP.
-- Completing a team-up task earns companion XP in their specialty and raises affinity by a dice-sized, user-approved change.
-- Companions level only through team-ups, using the same XP curve as skills by default.
-- In v1, the accountability partner reacts instantly from a table when a team-up task is completed; the fuller reaction comes in the next chat.
-- Advice chats before or after a task are available at any time.
 - Live work sessions with periodic check-ins are a later feature.
-- The hero starts with one companion.
-- New companions join through story after an arc or boss challenge, covering a skill without a companion.
-- Maximum 5 companions, one per skill by default.
-- Other characters may be added as NPCs without skill, perk, or XP systems.
+
+**User stories**
+
+> As a player, I want to tag a task with a party member at no extra MP, so that team-ups fit inside my daily budget and relationships grow from work I actually did.
+
+1. When planning the day, a task may optionally be tagged with one party member.
+2. Team-ups cost no extra MP.
+3. Completing a team-up task earns companion XP in their specialty and raises affinity by a dice-sized, user-approved change.
+4. Companions level only through team-ups, using the same XP curve as skills by default.
+5. In v1 the accountability partner reacts instantly from a table when a team-up task is completed; the fuller reaction comes in the next chat. Advice chats before or after a task are available at any time.
+
+> As a player, I want new companions to join through story, one per skill, with small perks, so that the party grows with the campaign.
+
+1. Each party member is tied to one of the five skills as their specialty.
+2. At affinity milestones, a companion grants a small perk in their specialty: +1 dice in that skill or 1 MP off its tasks, with a maximum of one companion perk per skill.
+3. The hero starts with one companion. New companions join through story after an arc or boss challenge, covering a skill without a companion.
+4. Maximum 5 companions, one per skill by default. Other characters may be added as NPCs without skill, perk, or XP systems.
 
 ### 3.13 Journal access and real talk
 
-- Agents receive only notes needed for the current interaction, not the whole journal by default.
-- Any note read may be sent to the configured model provider.
-- No vault file or folder is private by guarantee.
-- Agents write only to designated Story, Campaign, World, and Characters areas.
-- Only the narrator or game system gives “real-talk” lines: short, plain, out-of-character lines following an in-character line.
-- Characters remain in fiction and give advice only when asked.
-- Defaults: at most one real-talk line per day, only when planned MP is over budget, a focus project has been untouched for a week, or HP is 0.
-- Real-talk wording is neutral and kind, with no guilt.
+**User stories**
+
+> As a player, I want agents to read only the notes needed for the current interaction, so that my journal is not sent wholesale to a model provider.
+
+1. Each interaction loads only the notes it needs.
+2. Any note read may be sent to the configured model provider. No vault file or folder is private by guarantee.
+3. Agents write only to designated Story, Campaign, World, and Characters areas.
+
+> As a player, I want at most one gentle real-talk line per day and only on set triggers, so that out-of-character advice stays rare and kind.
+
+1. Only the narrator or game system gives “real-talk” lines: short, plain, out-of-character lines following an in-character line.
+2. Characters remain in fiction and give advice only when asked.
+3. At most one real-talk line appears per day, only when planned MP is over budget, a focus project has been untouched for a week, or HP is 0.
+4. Wording is neutral and kind, with no guilt.
 
 ### 3.14 Rewards, loot, and inventory
 
-- Rewards remain inside the game. There is no real-world reward list or coin economy.
-- A successful task roll can drop flavour loot.
-- Default drop chance: one in three successes.
-- Only boss rewards carry a stat perk.
-- Loot never changes the maths.
-- The engine stores inventory; the narrator names and describes items.
-- Items can be gifted to party members, raising affinity through a user-approved, dice-sized change.
+**User stories**
+
+> As a player, I want successful rolls to drop flavour loot that never changes the maths, so that rewards add colour without unbalancing the game.
+
+1. Rewards remain inside the game. There is no real-world reward list or coin economy.
+2. A successful task roll can drop flavour loot, on one in three successes by default.
+3. Only boss rewards carry a stat perk; loot never changes the maths.
+4. The engine stores inventory; the narrator names and describes items.
+
+> As a player, I want to gift items to companions and raise affinity, so that loot builds relationships.
+
+1. A gift moves the item to the companion’s record.
+2. Affinity rises by a dice-sized, user-approved amount.
 
 ### 3.15 Morning briefing and result display
 
-- A morning-briefing button runs a QuickAdd macro that starts Vault Operator after daily planning.
-- The briefing appears in a note.
-- This is desktop only.
-- If the button route is unreliable, fallback is opening the narrator in the sidebar and pasting a prepared prompt, or saving the prompt as a Vault Operator skill.
-- Task result card shows the 2d6 roll, outcome tier, table result, XP/MP changes, and any loot.
-- The result card is an Obsidian Notice; clicking it dismisses it.
-- Results are also logged under “Today’s turns.”
-- Habit Done shows a one-line toast.
-- Mobile popup behaviour is untested and must be checked in the thin slice.
+**User stories**
+
+> As a player, I want a morning briefing that frames today’s planned tasks as quests, so that planning ahead pays off immediately.
+
+1. The briefing opens the day after planning, frames planned tasks as quests, and recaps yesterday.
+2. Skipping the briefing has no penalty.
+3. A briefing button runs a QuickAdd macro that starts the AI agent host after daily planning, and the briefing appears in a note.
+4. This is desktop only. If the button route is unreliable, the fallback is opening the narrator in the host's chat panel and pasting a prepared prompt, or saving the prompt as a reusable prompt or skill where the host supports one.
+
+> As a player, I want one result card showing roll, outcome, table result, XP and MP changes, and loot, so that I see the whole turn at a glance.
+
+1. The card shows the 2d6 roll, outcome tier, table result, XP and MP changes, and any loot.
+2. The card is an Obsidian Notice; clicking dismisses it, and the same turn is logged under “Today’s turns”.
+3. Habit Done shows a one-line toast instead.
+4. Mobile popup behaviour is untested and must be checked in the thin slice.
 
 ### 3.16 Hero and party growth
 
-- The hero is a user-designed alter ego sharing some traits and goals.
-- The narrator proposes name, background, and class from quiz answers; the user can edit them.
-- Hero changes do not affect stats.
-- The five skills are the hero’s stats.
-- Projects are the hero’s epic stories.
-- The hero has a persona file like other characters.
-- Companions speak to the hero in character; narrator real-talk speaks to the user directly.
 - Party size and joining follow 3.12.
+
+**User stories**
+
+> As a player, I want an editable hero whose identity never changes the maths, so that the alter ego stays mine.
+
+1. The hero is a user-designed alter ego sharing some traits and goals.
+2. The narrator proposes name, background, and class from quiz answers; the user can edit all three.
+3. The hero has a persona file like other characters, and hero changes affect no stats.
+4. The five skills are the hero’s stats, and projects are the hero’s epic stories.
+5. Companions speak to the hero in character; narrator real-talk speaks to the user directly.
 
 ### 3.17 Undo
 
-- Undo last adds a correcting event that reverses the newest eligible action’s MP, XP, HP, and loot effects.
-- Undo removes the habit note line that the undone habit press added, matched by its timestamp. Task notes are reopened; the event log keeps full history.
-- The event log retains full history; nothing is erased.
-- Defaults: same-day actions only, one at a time, newest first.
-- Undo cannot re-roll. Pressing Done again creates a fresh, logged repeat roll.
-- There is no confirmation step before Done, preserving instant reward.
+**User stories**
+
+> As a player, I want undo to reach back over the current game day’s eligible actions, so that fixing a mistake never costs me older history.
+
+1. Undo appends one correcting event. It never edits, deletes, or reorders the event log.
+2. Eligible actions are task resolution and habit completion. Boss challenges, gifts, rest days, pause and resume, focus project, arc completion, settings change, and missed deadlines are never undo targets, and skipping them does not block an older eligible action.
+3. Undo reverses the newest eligible action of the current game day, where the game day uses the configured day boundary, not the calendar date.
+4. Each press reverses one action. Pressing again reverses the next-newest eligible action of the same game day until that day’s eligible actions are exhausted. An undo is never itself undone.
+5. When two actions share a timestamp, the later line in the event log is newer.
+6. The correcting event records the target action’s event ID and its own timestamp. The original action line, including its dice, stays unchanged and readable.
+7. With no eligible action in the current game day, undo changes nothing and reports that there is nothing to undo.
+8. There is no confirmation step before Undo, matching Done.
+9. Defaults: same-day actions only, newest first, repeated presses allowed. Cost is measured after use, with no target.
+
+> As a player, I want undo to replay the log without the target action, so that every derived value returns to what it was.
+
+1. Undo recomputes state by replaying the log with the target action excluded: MP, HP, skill XP, skill levels, habit cost tier, Wounded and Tired, focus effect, inventory, loot, and companion XP and affinity.
+2. Undo applies the rules in force when the target action was logged, not the current settings.
+3. A level gained by the undone action is reversed, including its MP discount or perk. Undo rewrites hero state from the replayed result.
+4. Undo cannot re-roll. Pressing Done again creates a fresh, logged repeat roll; the original resolution line stays.
+5. Undo reopens the matching task note: `status: open`, `completedDate` cleared, frontmatter only, all other fields and body unchanged. No previous-status lookup.
+6. Undo removes the one habit note history line stamped with the undone event’s timestamp. All other lines stay.
+7. Undoing a task whose loot was gifted removes the gifted item from the recipient and reduces the affinity raised by that gift by the same amount. The gift line stays in the event log and is treated as void on replay. A gift is not itself an undo target.
+
+> As a player, I want tagged story lines removed and untagged prose left alone, so that undo cleans up my turn without rewriting canon.
+
+1. The narrator tags each line it writes in response to a resolved action with a trailing `<!-- evt:<eventId> -->` comment in `Story/`, `Campaign/`, `World/`, and `Characters/` notes.
+2. Undo removes every line in those four folders carrying the target action’s event ID and collapses the resulting blank-line gap. Prose, tables, and links without that tag stay unchanged, even when they mention the undone action.
+3. Untagged story text is never removed, rewritten, or reworded by undo. The message reports how many story lines were removed and that untagged story text was left in place.
+4. A story tag must match the event ID exactly; malformed or unknown tags are ignored. Tags outside the four story folders are ignored.
+5. The daily note’s “Today’s turns” section is regenerated from the event log, so it corrects itself without a separate story write.
+6. If no matching task note, habit history line, or story tag is found, the correction still applies and the message says what was not found.
+7. The correcting event is written before note changes. If the log write fails, nothing changes. If a note write fails after the log write, the correction stands and the message says it was saved and must not be pressed again.
 
 ### 3.18 Dice threat level
 
-- Each project has a threat level.
-- Threat rises by 1 per finished arc, capped at +4 by default.
-- Threat raises that project’s roll thresholds.
-- At threat +3, success requires 12+ and partial success requires 9–11.
-- Non-project tasks use base thresholds.
-- Boss challenges are not dice-based and are unaffected.
+**User stories**
+
+> As a player, I want threat to rise as a project’s arcs finish, so that later arcs feel harder without new rules.
+
+1. Each project has a threat level.
+2. Threat rises by 1 per finished arc, capped at +4 by default.
+3. Threat raises that project’s roll thresholds.
+4. At threat +3, success requires 12+ and partial success requires 9–11.
+5. Non-project tasks use base thresholds.
+6. Boss challenges are not dice-based and are unaffected.
 
 ### 3.19 Task sizing help
 
-- Size is a TaskNotes user field selected by the user.
-- The custom New task form and usual-size suggestion are removed from step 3.
-- Future sizing assistance requires a separate decision.
-- On Sundays, the recap may add one neutral line flagging tasks that stayed open much longer than their size suggests.
+**User stories**
+
+> As a player, I want to pick task size myself, with at most one neutral nudge, so that sizing stays a deliberate choice.
+
+1. Size is a TaskNotes user field selected by the user.
+2. The custom New task form and usual-size suggestion are removed from step 3; future sizing assistance requires a separate decision.
+3. On Sundays, the recap may add one neutral line flagging tasks that stayed open much longer than their size suggests.
 
 ### 3.20 Progress review
 
-- A live dashboard shows HP, MP, skill levels, habit measures, and tasks done.
-- On Sundays, the narrator adds a weekly recap to the morning briefing.
-- The recap covers planned versus completed MP, focus project, habit cost-tier changes, and one neutral observation.
-- A lightweight monthly page updates automatically.
+**User stories**
+
+> As a player, I want progress visible at any time and reviewed each week, so that I can adjust what I do next.
+
+1. A live dashboard shows HP, MP, skill levels, habit measures, and tasks done, and every value matches current engine state.
+2. On Sundays, the narrator adds a weekly recap to the morning briefing covering planned versus completed MP, focus project, habit cost-tier changes, and one neutral observation.
+3. A lightweight monthly page updates automatically.
 
 ### 3.21 Keeping it fresh
 
-- The narrator offers a shake-up when it detects staleness.
-- Default triggers: Done presses below half the 4-week average for 7 days, or three “not for me” selections in one week.
-- Maximum one offer every two weeks.
-- A shake-up may be a tone shift, new place or character, side event, or new table entries.
-- The narrator picks from onboarding options; the user may request a different option.
-- The offer appears as one briefing line, with no pressure to accept.
-- A “shake it up” button is available any time.
-- Staleness signals come from the event log and work without AI.
+**User stories**
+
+> As a player, I want a shake-up offered when my Done presses drop or I reject three entries in one week, so that the game changes before boredom wins.
+
+1. The narrator offers a shake-up when Done presses fall below half the 4-week average for 7 days, or after three “not for me” selections in one week.
+2. At most one offer appears every two weeks.
+3. A shake-up may be a tone shift, new place or character, side event, or new table entries. The narrator picks from onboarding options; the user may request a different option.
+4. The offer appears as one briefing line, with no pressure to accept.
+5. A “shake it up” button is available any time.
+6. Staleness signals come from the event log and work without AI.
 
 ### 3.22 Day boundary, offline mode, and portraits
 
-- Default day boundary is 4:00 AM.
-- A habit completed at 1 AM counts for the previous day.
-- Offline engine: buttons, dice, and stats work without AI.
-- If Vault Operator or the model provider is unavailable, narration catches up later.
-- Characters are text-only for now.
-- Each hero and companion profile may hold one portrait image.
-- Ambient sound, scene images, and voices are later features.
+**User stories**
+
+> As a player, I want a habit completed at 1 AM to count for the previous day, so that late nights do not break my streak bookkeeping.
+
+1. The default day boundary is 4:00 AM.
+2. A 1 AM completion counts toward the previous game day.
+
+> As a player, I want the game to keep working without AI and without art assets, so that it never blocks on a provider or a missing image.
+
+1. Buttons, dice, and stats work offline, without AI.
+2. If the AI agent host or the model provider is unavailable, narration catches up later.
+3. Characters are text-only for now, and each hero and companion profile may hold one portrait image.
+4. Ambient sound, scene images, and voices are later features.
 
 ### 3.23 Settings
 
-- One settings note holds every tunable number and preference.
-- Tunable values include max MP, habit cost tiers, XP bonuses, loot chance, monthly rest days, threat cap, day rollover, and shake-up triggers.
-- Preferences include real talk, briefing length, and model assignment.
-- Meta Bind displays values as simple fields.
-- The engine ignores values outside sensible ranges.
-- A setting change never rewrites the past.
-- Each change is logged with its date.
-- The engine applies old rules to earlier days and new rules from the change onward.
-- A “re-run history with new rules” command may be added later.
+**User stories**
+
+> As a player, I want one settings note whose changes apply only from their date forward, so that tuning the game never rewrites past days.
+
+1. One settings note holds every tunable number and preference, displayed by Meta Bind as simple fields.
+2. Tunable values include max MP, habit cost tiers, XP bonuses, loot chance, monthly rest days, threat cap, day rollover, and shake-up triggers. Preferences include real talk, briefing length, and model assignment.
+3. The engine ignores values outside sensible ranges.
+4. Each change is logged with its date, and the engine applies old rules to earlier days and new rules from the change onward.
+5. A “re-run history with new rules” command may be added later.
 
 ### 3.24 Finished tasks and low points
 
-- After 30 days, finished tasks are folded into one monthly archive note.
-- Each archive line records date done, name, skill, size and project.
-- Individual task notes are removed after archiving; originals remain in GitHub history.
-- Cleanup runs alongside daily-note pruning when the vault opens.
-- Tasks in unfinished arcs remain until the arc completes.
-- If the journal shows the user is struggling, the narrator continues normally.
-- There are no proactive check-ins or automatic pauses.
-- Rest days and pause remain user-controlled.
+**User stories**
+
+> As a player, I want finished tasks folded into a monthly archive after 30 days, so that the vault stays lean while history survives.
+
+1. After 30 days, finished tasks are folded into one monthly archive note, each line recording date done, name, skill, size, and project.
+2. Individual task notes are removed after archiving; originals remain in GitHub history.
+3. Cleanup runs alongside daily-note pruning when the vault opens, and tasks in unfinished arcs remain until the arc completes.
+
+> As a player, I want the narrator to keep playing normally when I am struggling, so that a hard week never triggers guilt or automatic pauses.
+
+1. If the journal shows the user is struggling, the narrator continues normally.
+2. There are no proactive check-ins or automatic pauses. Rest days and pause remain user-controlled.
 
 ### 3.25 Trial week and sharing
 
-- The first week uses a light setup: one habit, a few tasks, and the narrator.
-- Existing routines continue alongside it.
-- At week’s end, the user answers a one-minute check.
-- Answers are written to the event log for comparison with the week-4 check.
-- The user then decides whether to continue, adjust, or stop.
 - The engine reads skills, names, and numbers from settings, not hard-coded values.
 - Separate engine, world, campaign, character, and journal folders allow a future starter-vault package.
 - Sharing is decided after the first month of real use.
+
+**User stories**
+
+> As a player, I want a light first week with a one-minute check at the end, so that I decide whether to continue, adjust, or stop with evidence.
+
+1. The first week uses one habit, a few tasks, and the narrator, with existing routines continuing alongside it.
+2. At week’s end the user answers a one-minute check, and the answers are written to the event log for comparison with the week-4 check.
+3. The user then decides whether to continue, adjust, or stop.
 
 ## 4. Leaning
 
@@ -367,9 +525,9 @@ These are starting values, not immutable rules.
 | Hero persona                              | Name, background, class, personality, goals, flaws, skill relationships                                                                            |
 | Multiple campaigns                        | Shared world canon and player progression; independent campaign story logs, arcs, and quest boards                                                 |
 | Phone                                     | Test habit button in step 2; fallback is desktop logging with a catch-up button                                                                    |
-| QuickAdd starting Vault Operator          | Test in step 4; fallback is pasting prompt or using a Vault Operator skill                                                                         |
+| QuickAdd starting the AI agent host       | Test in step 4 with the chosen host; fallback is pasting a prepared prompt or using a reusable prompt or skill where supported                      |
 | Result card                               | One screen, tap to dismiss; mobile fallback is a short notice                                                                                      |
-| Undo                                      | Same-day tasks and habits only; boss challenges and gifts cannot be undone                                                                         |
+| Undo                                      | Same-day tasks and habits only; boss challenges and gifts are never undo targets; undoing a task removes loot gifted from it and the affinity that gift raised |
 | Projects                                  | One note per project; arcs as headings; quests as linked TaskNotes tasks                                                                           |
 | Companions                                | Affinity 0–10; perks at 5 and 10                                                                                                                   |
 | Loot                                      | Item notes with name, description, rarity, source, owner; about 10 starter templates; no inventory limit                                           |
@@ -392,33 +550,43 @@ These are aspirational targets, not pass/fail requirements.
 
 ## 7. Scope
 
+v1 is one closed daily loop: open the vault, get today's quests, resolve a task or habit, see the result, undo if needed. It carries no projects, companions, inventory, or story rollback. Rules for deferred features remain specified in section 3 but are out of v1 scope; nothing built for them is exposed or validated in v1.
+
 ### Must-have v1
 
-- Onboarding quiz, narrator persona, hero persona with portrait, GM-only preferences note
-- Tutorial arc with staged unlocks
-- Trial week and one-minute end-of-week check
 - One tested engine script used by all macros
 - TaskNotes task creation, planning and user fields
-- QuickAdd wrappers: Task done, habit Done, rest day, pause/resume, Undo last, recalculate
 - Event log and hero note with Meta Bind panels
 - Settings note for mechanics and preferences
-- TaskNotes backlog and scheduling views
-- Habit notes for 3–5 core habits with 30-day cost
-- Dice Roller 2d6 rolls and narrator-built random tables with “not for me”
-- One starting companion, layered memory, session summaries, one Vault Operator agent per character
-- Morning briefing and “Today’s quests” note
+- QuickAdd wrappers: Task done, habit Done, Undo last, recalculate, rest day, pause/resume
 - Task result card and habit toast
-- Daily note “Today’s turns” and 30-day pruning with GitHub backup
-- Monthly archive of finished tasks
-- Live dashboard and Sunday recap
-- Projects with arcs and quests, focus project, threat level
-- Companion perks and team-ups
-- Loot drops, inventory, and gifts
-- Staleness shake-ups
-- Engine-checked boss challenges and perk items
+- Habit notes for 3–5 core habits with 30-day cost
+- Onboarding quiz, narrator persona and hero persona. No portrait and no GM-only preferences note in v1
+- Morning briefing and “Today’s quests” note, run by the single narrator agent in the chosen AI host
+- Trial week and one-minute end-of-week check
 
 ### Should-have
 
+Wanted for the next version after the trial week. Deferred from v1 and not built or validated yet.
+
+- Tutorial arc with staged unlocks
+- TaskNotes backlog and scheduling views
+- Dice Roller 2d6 rolls and narrator-built random tables with “not for me”
+- One starting companion: layered memory, session summaries, one agent per character
+- Daily note “Today’s turns” and 30-day pruning with GitHub backup
+- Monthly archive of finished tasks
+- Projects with arcs and quests, focus project, threat level
+- Loot drops, inventory, and gifts
+- Hero persona portrait and GM-only preferences note
+
+### Could-have
+
+Nice to have once the should-haves land. Order is not a commitment.
+
+- Companion perks and team-ups
+- Staleness shake-ups
+- Engine-checked boss challenges and perk items
+- Live dashboard and Sunday recap
 - Catch-up button
 - Storyteller Suite maps or Atlas VTT
 - NPC generator
@@ -437,8 +605,8 @@ These are aspirational targets, not pass/fail requirements.
 ## 8. Assumptions
 
 - Obsidian desktop plus mobile app, synced with Fit.
-- Vault Operator runs on desktop with Gemini or GitHub Copilot.
-- VS Code with GitHub Copilot builds and tests the engine.
+- The AI agent host is undecided. Candidates are Obsidian Copilot, Text Generator and Vault Operator; the requirement is host-agnostic behavior, not a named plugin. Whichever host is chosen runs on desktop and connects to a supported model provider.
+- Any coding agent with terminal access builds and tests the engine. No specific assistant or vendor is required.
 - The vault is backed up on GitHub.
 - Tasks are marked Done in TaskNotes, then Task done is run manually in phase 1.
 - Core plugins and folders are installed; restructuring is acceptable.

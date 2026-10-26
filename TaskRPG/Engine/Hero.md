@@ -2,12 +2,12 @@
 type: hero-state
 hp: 10
 maxHP: 10
-mp: 6
+mp: 5
 maxMP: 10
 xp_focus: 0
-xp_vitality: 14
+xp_vitality: 6
 xp_craft: 0
-xp_mind: 0
+xp_mind: 7
 xp_presence: 0
 ---
 # Hero state
