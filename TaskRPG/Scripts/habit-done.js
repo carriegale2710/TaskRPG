@@ -30,7 +30,7 @@ module.exports = async ({ app, quickAddApi }) => {
     );
     if (onTime !== true && onTime !== false) return;
     const settings = engine.parseSettingsNote(await files.read(SETTINGS));
-    const previous = (await files.exists(LOG)) ? await files.read(LOG) : "";
+    const previous = await utils.readLog(files, LOG);
     const events = engine.parseEvents(previous);
     const timestamp = engine.localStamp();
     const action = {
@@ -43,12 +43,7 @@ module.exports = async ({ app, quickAddApi }) => {
     };
     const out = engine.recordAction(events, action, settings, timestamp);
     const state = engine.recalculate(out.events, settings, timestamp).state;
-    const lines =
-      out.added.map((event) => JSON.stringify(event)).join("\n") + "\n";
-    await files.write(
-      LOG,
-      `${previous.trimEnd()}${previous.trim() ? "\n" : ""}${lines}`,
-    );
+    await utils.appendEvents(files, LOG, previous, out.added);
     committed = true;
     const label = file.basename;
     const status = `${label} complete! +${out.result.hp} HP, +${out.result.xp} XP, -${out.result.mpCost} MP (MP ${state.MP}/${state.maxMP})`;

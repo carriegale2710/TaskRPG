@@ -689,4 +689,156 @@ describe("task-utils.test.js", () => {
       assert.equal(updated.endsWith("# Task"), true);
     });
   });
+
+  describe("event log helpers", () => {
+    const vault = (initial = {}) => {
+      const store = new Map(Object.entries(initial));
+      const reads = [];
+      return {
+        store,
+        reads,
+        exists: async (path) => store.has(path),
+        read: async (path) => {
+          reads.push(path);
+          return store.get(path);
+        },
+        write: async (path, text) => {
+          store.set(path, text);
+        },
+      };
+    };
+    const LOG = "TaskRPG/Engine/Events.md";
+    const a = { id: "a", type: "habit_done" };
+    const b = { id: "b", type: "undo" };
+    const lineA = JSON.stringify(a);
+    const lineB = JSON.stringify(b);
+
+    describe("readLog", () => {
+      test("returns an empty string without reading when the log does not exist", async () => {
+        const files = vault();
+
+        assert.equal(await utils.readLog(files, LOG), "");
+        assert.deepEqual(files.reads, []);
+      });
+
+      test("returns the log text exactly as stored", async () => {
+        const text = `${lineA}\r\n${lineB}\n\n`;
+        const files = vault({ [LOG]: text });
+
+        assert.equal(await utils.readLog(files, LOG), text);
+      });
+
+      test("returns an empty string for an existing empty log", async () => {
+        const files = vault({ [LOG]: "" });
+
+        assert.equal(await utils.readLog(files, LOG), "");
+      });
+    });
+
+    describe("appendEvents", () => {
+      test("writes one line with a trailing newline to an empty log", async () => {
+        const files = vault();
+
+        await utils.appendEvents(files, LOG, "", [a]);
+
+        assert.equal(files.store.get(LOG), `${lineA}\n`);
+      });
+
+      test("treats a whitespace-only log as empty", async () => {
+        const files = vault({ [LOG]: " \n\n" });
+
+        await utils.appendEvents(files, LOG, " \n\n", [a]);
+
+        assert.equal(files.store.get(LOG), `${lineA}\n`);
+      });
+
+      test("keeps leading whitespace on the first line", async () => {
+        const previous = `  ${lineA}\n`;
+        const files = vault({ [LOG]: previous });
+
+        await utils.appendEvents(files, LOG, previous, [b]);
+
+        assert.equal(files.store.get(LOG), `  ${lineA}\n${lineB}\n`);
+      });
+
+      test("appends after a log that ends with a newline without adding a blank line", async () => {
+        const previous = `${lineA}\n`;
+        const files = vault({ [LOG]: previous });
+
+        await utils.appendEvents(files, LOG, previous, [b]);
+
+        assert.equal(files.store.get(LOG), `${lineA}\n${lineB}\n`);
+      });
+
+      test("appends after a log that does not end with a newline", async () => {
+        const previous = lineA;
+        const files = vault({ [LOG]: previous });
+
+        await utils.appendEvents(files, LOG, previous, [b]);
+
+        assert.equal(files.store.get(LOG), `${lineA}\n${lineB}\n`);
+      });
+
+      test("collapses trailing blank lines into a single newline", async () => {
+        const previous = `${lineA}\n\n\n`;
+        const files = vault({ [LOG]: previous });
+
+        await utils.appendEvents(files, LOG, previous, [b]);
+
+        assert.equal(files.store.get(LOG), `${lineA}\n${lineB}\n`);
+      });
+
+      test("keeps CRLF lines already in the log and writes the new line with LF", async () => {
+        const previous = `${lineA}\r\n`;
+        const files = vault({ [LOG]: previous });
+
+        await utils.appendEvents(files, LOG, previous, [b]);
+
+        assert.equal(files.store.get(LOG), `${lineA}\n${lineB}\n`);
+      });
+
+      test("keeps CRLF between earlier lines untouched", async () => {
+        const previous = `${lineA}\r\n${lineA}\r\n`;
+        const files = vault({ [LOG]: previous });
+
+        await utils.appendEvents(files, LOG, previous, [b]);
+
+        assert.equal(files.store.get(LOG), `${lineA}\r\n${lineA}\n${lineB}\n`);
+      });
+
+      test("writes several events in order, one per line, with one trailing newline", async () => {
+        const files = vault({ [LOG]: `${lineA}\n` });
+
+        await utils.appendEvents(files, LOG, `${lineA}\n`, [b, a]);
+
+        assert.equal(files.store.get(LOG), `${lineA}\n${lineB}\n${lineA}\n`);
+      });
+
+      test("writes only to the path it is given", async () => {
+        const files = vault({ [LOG]: lineA, other: "keep" });
+
+        await utils.appendEvents(files, "other", "keep", [b]);
+
+        assert.equal(files.store.get(LOG), lineA);
+        assert.equal(files.store.get("other"), `keep\n${lineB}\n`);
+      });
+
+      test("matches the log text the macros wrote before the helper existed", async () => {
+        for (const previous of ["", lineA, `${lineA}\n`, `${lineA}\n\n`]) {
+          const added = [a, b];
+          const lines = added.map((e) => JSON.stringify(e)).join("\n") + "\n";
+          const expected = `${previous.trimEnd()}${previous.trim() ? "\n" : ""}${lines}`;
+          const files = vault({ [LOG]: previous });
+
+          await utils.appendEvents(files, LOG, previous, added);
+
+          assert.equal(
+            files.store.get(LOG),
+            expected,
+            JSON.stringify(previous),
+          );
+        }
+      });
+    });
+  });
 });

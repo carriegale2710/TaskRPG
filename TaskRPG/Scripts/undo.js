@@ -17,7 +17,7 @@ module.exports = async ({ app }) => {
     const utils = await loadModule(files, UTILS);
     const engine = await loadModule(files, ENGINE);
     const settings = engine.parseSettingsNote(await files.read(SETTINGS));
-    const previous = (await files.exists(LOG)) ? await files.read(LOG) : "";
+    const previous = await utils.readLog(files, LOG);
     const events = engine.parseEvents(previous);
     const timestamp = engine.localStamp();
     const day = engine.gameDay(timestamp, settings.dayRolloverHour);
@@ -49,12 +49,7 @@ module.exports = async ({ app }) => {
       settings,
       timestamp,
     );
-    const lines =
-      out.added.map((event) => JSON.stringify(event)).join("\n") + "\n";
-    await files.write(
-      LOG,
-      `${previous.trimEnd()}${previous.trim() ? "\n" : ""}${lines}`,
-    );
+    await utils.appendEvents(files, LOG, previous, out.added);
     committed = true;
     const state = engine.recalculate(out.events, settings, timestamp).state;
 

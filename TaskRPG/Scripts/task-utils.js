@@ -258,9 +258,23 @@ function hasUnresolvedTaskDone(events, taskId) {
   return Boolean(last && last.type === "task_done");
 }
 
+// The event log is append-only and the source of truth, so every macro reads
+// and writes it through these two helpers and the write stays identical.
+const readLog = async (files, path) =>
+  (await files.exists(path)) ? files.read(path) : "";
+
+async function appendEvents(files, path, previous, added) {
+  const lines = added.map((e) => JSON.stringify(e)).join("\n") + "\n";
+  await files.write(
+    path,
+    `${previous.trimEnd()}${previous.trim() ? "\n" : ""}${lines}`,
+  );
+}
+
 module.exports = {
   OPEN_TASK_STATUS,
   OUTCOME_TABLE,
+  appendEvents,
   findTaskNote,
   formatResultCard,
   hasTag,
@@ -269,6 +283,7 @@ module.exports = {
   parseFrontmatter,
   parseTags,
   pickTableResult,
+  readLog,
   reopenTaskNote,
   removeHabitLogLine,
   renderHero,

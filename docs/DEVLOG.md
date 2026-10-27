@@ -6,6 +6,43 @@ Rule of thumb: if a fact explains a choice or records what happened during the w
 
 Timeline uses commit dates from `git log`, newest first. Not changelog release dates: the `0.4.0` block bundles commits from 2026-10-15 and 2026-10-16, and `0.1.0`/`0.2.0` both landed on 2026-10-14.
 
+## 2026-10-27 — readLog/appendEvents helpers for macros
+
+### Goal
+
+Close issue #27, a sub-issue of #26: write the event-log read and append once in `task-utils.js` instead of in each macro.
+
+### Why
+
+`task-done.js`, `undo.js` and `habit-done.js` each repeated the exists-check read and the `trimEnd` + newline + lines write. The log is append-only and the source of truth, so a fix in one copy could silently miss the others. The issue's fourth copy, `engine-smoke.js`, was already deleted under #30.
+
+### Did
+
+- `task-utils.test.js` (new, 13 tests): `readLog` for a missing, existing and empty log; `appendEvents` for an empty, whitespace-only, newline-terminated, unterminated, blank-line-padded and CRLF log, several events, and a comparison with the old inline expression. Written first and red.
+- `task-done.js`, `undo.js`, `habit-done.js`: call the helpers. `committed = true` still follows the append.
+
+### Outcome
+
+- Refactor only. The log text written should be byte-identical to before.
+- Sandbox only (Node 20, stand-in `task-utils.js`): the new tests failed without the helpers and passed with them. Removing `trimEnd()` failed 7. The helpers matched the old expression on 7 log shapes.
+- `node --test` : all 187 tests pass.
+- 3 macro tests passing.
+
+### Decisions
+
+- One commit per macro, so a CI failure points at one file.
+
+### Assumptions
+
+- Files were rewritten through the GitHub API. [Confirm line endings are unchanged.]
+
+### Links
+
+- Issues: #27, parent #26. Branch: `refactor/26-remove-duplicated-scripts-code`.
+- Commits: `c5f88b8`, `afc3bd4`, `95de119`, `b4e25b6`, `9f3ea59`.
+- Files: `task-done.js`, `undo.js`, `habit-done.js`.
+- Tests: `TaskRPG/Scripts/task-utils.test.js`.
+
 ## 2026-10-27 — habit-done.js uses utils.parseFrontmatter
 
 ### Goal

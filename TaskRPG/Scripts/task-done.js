@@ -50,7 +50,7 @@ module.exports = async ({ app }) => {
     if (!settings.taskSizes[task.size])
       throw new Error(`Unknown size: ${task.size}`);
 
-    const previous = (await files.exists(LOG)) ? await files.read(LOG) : "";
+    const previous = await utils.readLog(files, LOG);
     const events = engine.parseEvents(previous);
 
     // TaskNotes completion and RPG resolution are separate. Prevent duplicate
@@ -86,12 +86,7 @@ module.exports = async ({ app }) => {
     const result = out.result;
     const state = engine.recalculate(out.events, settings, timestamp).state;
     const tableResult = utils.pickTableResult(result.outcome, dice.lootRoll);
-    const lines =
-      out.added.map((event) => JSON.stringify(event)).join("\n") + "\n";
-    await files.write(
-      LOG,
-      `${previous.trimEnd()}${previous.trim() ? "\n" : ""}${lines}`,
-    );
+    await utils.appendEvents(files, LOG, previous, out.added);
     committed = true;
 
     // TaskNotes detects the written status value directly, so Task done owns the
