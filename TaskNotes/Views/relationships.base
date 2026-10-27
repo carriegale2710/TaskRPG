@@ -1,7 +1,3 @@
-# Relationships
-# This view shows all relationships for the current file
-# Dynamically shows/hides tabs based on available data
-
 formulas:
   priorityWeight: if(priority=="none",0,if(priority=="low",1,if(priority=="normal",2,if(priority=="high",3,999))))
   daysUntilDue: if((due.isEmpty() == false), ((number(date(due)) - number(today())) / 86400000).floor(), null)
@@ -43,14 +39,16 @@ formulas:
   urgencyScore: if(due.isEmpty() && scheduled.isEmpty(), formula.priorityWeight, formula.priorityWeight + max(0, 10 - if(formula.daysUntilNext, formula.daysUntilNext, 0)) + (1 - ((number(date(formula.nextDate)) - number(date(date(formula.nextDate).format("YYYY-MM-DD")))) / 86400000)))
   timeTrackedFormatted: if(timeEntries, if(list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) >= 60, (list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) / 60).floor() + "h " + (list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) % 60).round() + "m", list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round() + "m"), "0m")
   dueDateDisplay: if(due.isEmpty(), "", if(date(due).format("YYYY-MM-DD") == today().format("YYYY-MM-DD"), "Today", if(date(due).format("YYYY-MM-DD") == (today() + "1 day").format("YYYY-MM-DD"), "Tomorrow", if(date(due).format("YYYY-MM-DD") == (today() - "1 day").format("YYYY-MM-DD"), "Yesterday", if(date(due) < today(), formula.daysUntilDue * -1 + "d ago", if(date(due).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD"), date(due).format("ddd"), date(due).format("MMM D")))))))
-
 views:
   - type: tasknotesKanban
-    name: "Subtasks"
+    name: Subtasks
     filters:
       and:
         - file.hasTag("task")
         - file.hasLink(this.file) && list(note.projects).map(file(value.replace(/^\[[^\]]+\]\((.*)\)$/, "$1").replace(/%20/g, " ")).asLink()).contains(this.file.asLink())
+    groupBy:
+      property: status
+      direction: ASC
     order:
       - status
       - priority
@@ -65,13 +63,11 @@ views:
       - complete_instances
       - file.tasks
     sort:
-      - column: tasknotes_manual_order
+      - property: tasknotes_manual_order
         direction: DESC
-    groupBy:
-      property: status
-      direction: ASC
+    columnOrder: '{"note.status":["none","in-progress","open","done"]}'
   - type: tasknotesTaskList
-    name: "Occurrences"
+    name: Occurrences
     filters:
       and:
         - file.hasTag("task")
@@ -91,10 +87,10 @@ views:
       - complete_instances
       - file.tasks
     sort:
-      - column: occurrence_date
+      - property: occurrence_date
         direction: ASC
   - type: tasknotesTaskList
-    name: "Projects"
+    name: Projects
     filters:
       and:
         - list(this.projects).map(file(value.replace(/^\[[^\]]+\]\((.*)\)$/, "$1").replace(/%20/g, " ")).asLink()).contains(file.asLink())
@@ -112,7 +108,7 @@ views:
       - complete_instances
       - file.tasks
   - type: tasknotesTaskList
-    name: "Blocked By"
+    name: Blocked By
     filters:
       and:
         - file.hasTag("task")
@@ -131,14 +127,17 @@ views:
       - complete_instances
       - file.tasks
     sort:
-      - column: tasknotes_manual_order
+      - property: tasknotes_manual_order
         direction: DESC
   - type: tasknotesKanban
-    name: "Blocking"
+    name: Blocking
     filters:
       and:
         - file.hasTag("task")
         - list(note.blockedBy).map(file(if(value.isType("object"), value.uid, value)).asLink()).contains(this.file.asLink())
+    groupBy:
+      property: status
+      direction: ASC
     order:
       - status
       - priority
@@ -153,8 +152,5 @@ views:
       - complete_instances
       - file.tasks
     sort:
-      - column: tasknotes_manual_order
+      - property: tasknotes_manual_order
         direction: DESC
-    groupBy:
-      property: status
-      direction: ASC
