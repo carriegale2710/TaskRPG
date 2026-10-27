@@ -6,6 +6,39 @@ Rule of thumb: if a fact explains a choice or records what happened during the w
 
 Timeline uses commit dates from `git log`, newest first. Not changelog release dates: the `0.4.0` block bundles commits from 2026-10-15 and 2026-10-16, and `0.1.0`/`0.2.0` both landed on 2026-10-14.
 
+## 2026-10-27 — Events.md shape tests for Task done
+
+### Goal
+
+Close issue #15: `Events.md` empty, with trailing blank lines, and with CRLF all append correctly.
+
+### Why
+
+Six of eight criteria were already met in `task-done.test.js`, `undo.test.js` and `task-undo-resolution.test.js`; a separate `task-wrappers.test.js` would only copy the harness. A missing log was already covered (TC-3).
+
+### Did
+
+- `event log shapes` in `task-done.test.js`: one loop over the three shapes, reusing `harness`, `seededLog` and `eventsOf`.
+- Each case asserts old events parse unchanged and exactly the expected events are appended.
+- `docs/TESTING.md` row and note; `docs/BUILD_PLAN.md` TC-90 to TC-92.
+
+### Outcome
+
+- Test-only. CI passes. Break checks: dropping the `\n` separator fails the two non-empty cases, not the empty one (nothing to glue to). Skipping the append fails all three once the assertion is exact.
+
+### Decisions
+
+- Tests live in `task-done.test.js`; no new `node --test` command.
+- CRLF logs are not normalised: the file ends up with mixed endings, which `parseEvents` reads. Normalising would rewrite history.
+
+### Failed / learned
+
+- First assertion was `all.at(-1).type === "task_done"`. The seeded log already ends in a `task_done`, so skipping the append still passed. Assert the exact appended events, and run the break check before trusting a test.
+
+### Links
+
+- Issue: #15. Branch: `test/15-events-log-shapes`.
+
 ## 2026-10-27 — Undo/guard regression tests and helper hardening
 
 ### Goal
