@@ -32,9 +32,8 @@ module.exports = async ({ app }) => {
     // saved so a duplicate taskId leaves the log, notes and Hero untouched.
     let taskNote = null;
     if (target?.type === "task_done" && target.taskId) {
-      taskNote = await findTaskPath(
+      taskNote = await utils.findTaskNote(
         files,
-        utils,
         await utils.taskFolder(files),
         target.taskId,
       );
@@ -116,21 +115,6 @@ function taskUndoNotice(taskNote, reopened) {
   if (taskNote)
     return "Undo saved, but the task note was not found. Fix the note by hand.";
   return "Undo saved, but this event has no taskId, so no task note was updated. Fix the note by hand.";
-}
-
-async function findTaskPath(files, utils, folder, taskId) {
-  if (!(await files.exists(folder)))
-    return { status: "folder_missing", path: "" };
-  const { files: names = [] } = await files.list(folder);
-  const matches = [];
-  for (const name of names) {
-    if (!name.endsWith(".md")) continue;
-    if (utils.parseFrontmatter(await files.read(name)).taskId === taskId)
-      matches.push(name);
-  }
-  if (matches.length === 1) return { status: "found", path: matches[0] };
-  if (matches.length > 1) return { status: "ambiguous", path: "" };
-  return { status: "not_found", path: "" };
 }
 
 async function findHabitPath(files, utils, habitId) {
