@@ -15,14 +15,10 @@ module.exports = async ({ app, quickAddApi }) => {
         "Open a note in TaskRPG/Engine/Habits/ before pressing Done.",
       );
     }
+    const utils = await loadModule(files, UTILS);
+    const engine = await loadModule(files, ENGINE);
     const habitText = await files.read(file.path);
-    const frontmatter = /^---\r?\n([\s\S]*?)\r?\n---/.exec(habitText)?.[1];
-    const field = (name) =>
-      new RegExp(`^${name}:\\s*([^\\r\\n]+)`, "m")
-        .exec(frontmatter || "")?.[1]
-        ?.trim();
-    const habitId = field("habitId");
-    const skill = field("skill");
+    const { habitId, skill } = utils.parseFrontmatter(habitText);
     if (!habitId || !skill || !/^[a-z0-9-]+$/.test(habitId)) {
       throw new Error(
         "Habit note needs habitId (lowercase letters, digits, hyphens) and skill in frontmatter.",
@@ -33,16 +29,10 @@ module.exports = async ({ app, quickAddApi }) => {
       [true, false],
     );
     if (onTime !== true && onTime !== false) return;
-    const m = { exports: {} };
-    new Function("module", "exports", await files.read(ENGINE))(m, m.exports);
-    const E = m.exports;
-    const u = { exports: {} };
-    new Function("module", "exports", await files.read(UTILS))(u, u.exports);
-    const utils = u.exports;
-    const settings = E.parseSettingsNote(await files.read(SETTINGS));
+    const settings = engine.parseSettingsNote(await files.read(SETTINGS));
     const previous = (await files.exists(LOG)) ? await files.read(LOG) : "";
-    const events = E.parseEvents(previous);
-    const timestamp = E.localStamp();
+    const events = engine.parseEvents(previous);
+    const timestamp = engine.localStamp();
     const action = {
       id: `habit-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       type: "habit_done",
@@ -51,9 +41,10 @@ module.exports = async ({ app, quickAddApi }) => {
       skill,
       onTime,
     };
-    const out = E.recordAction(events, action, settings, timestamp);
-    const state = E.recalculate(out.events, settings, timestamp).state;
-    const lines = out.added.map((e) => JSON.stringify(e)).join("\n") + "\n";
+    const out = engine.recordAction(events, action, settings, timestamp);
+    const state = engine.recalculate(out.events, settings, timestamp).state;
+    const lines =
+      out.added.map((event) => JSON.stringify(event)).join("\n") + "\n";
     await files.write(
       LOG,
       `${previous.trimEnd()}${previous.trim() ? "\n" : ""}${lines}`,
@@ -74,3 +65,12 @@ module.exports = async ({ app, quickAddApi }) => {
     );
   }
 };
+
+async function loadModule(files, path) {
+  const module = { exports: {} };
+  new Function("module", "exports", await files.read(path))(
+    module,
+    module.exports,
+  );
+  return module.exports;
+}
