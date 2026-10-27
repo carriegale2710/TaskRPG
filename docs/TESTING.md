@@ -14,17 +14,28 @@ TaskNotes owns task creation, planning and user fields. TaskRPG owns only `Task 
 - `isPlannedToday()` compares that date with `engine.gameDay(timestamp, settings.dayRolloverHour)`, so the engine owns the rollover rule.
 - At 01:00 with a 04:00 rollover, the previous calendar date is still the current game day; at 04:00, the game day flips.
 
+`task-utils.test.js` also covers result presentation:
+
+- `pickTableResult()` returns the table entry for rolls 1 to 6. Any other roll (0, 7, negative, non-integer, string, `NaN`, `Infinity`, `null`, `undefined`, array) throws `Table roll must be 1 to 6.` An unknown outcome, including inherited names such as `constructor` and `__proto__`, throws `Unknown outcome` before the roll is checked.
+- Every outcome table has six non-empty entries. Sweeping all 36 dice pairs through `engine.recordAction` returns exactly the outcomes that have a table, so no outcome lacks a table and no table is unreachable.
+- `formatResultCard()` is checked line by line, with the Tired line before the loot line and both after the MP line. A paid cost shows `MP: -3`; a free action shows `MP: 0`, not `-0`.
+
 `task-done.test.js` runs the real `TaskRPG/Scripts/task-done.js` against an in-memory vault whose note sits in `TaskNotes/Tasks/…` (folder from TaskNotes `data.json`). Checks the `task_done` event, completion fields, and rewritten `TaskRPG/Engine/Hero.md` (derived HP, MP, skill XP). It also checks that a `scheduled` value containing a time, or wrapped in quotes, counts as planned for the current game day. One test starts at `status: open` and asserts the script overwrites it with `done`. Another asserts the result card is exactly one Notice containing `**Outcome:**` (D-025). Proves the script refuses a note missing `skill`, `size` or `taskId` (absent, empty or YAML `null`), leaving log and note untouched. A second task note sharing the pressed note's `taskId` makes the script stop with "Change taskID to prevent duplicate id, nothing was saved." and write nothing (D-033); a note with a different `taskId` does not block it.
 
 A note is a task only when it carries TaskNotes' configured `taskTag`.
 
-`task-utils.test.js` covers the shared duplicate-resolution guard (`hasUnresolvedTaskDone`, the same helper `task-done.js` calls):
+`task-undo-resolution.test.js` covers the shared duplicate-resolution guard (`hasUnresolvedTaskDone`, the same helper `task-done.js` calls). Its tests build the log with the real engine: `engine.recordAction`, serialised as JSON lines, read back with `engine.parseEvents`, then passed to the guard. Assertions use event types and ids, not event counts.
 
 - Unresolved task can be resolved.
 - Second resolution blocked while the latest relevant event is an unresolved `task_done`.
-- `undo` releases the guard by following `targetEventId`.
-- Undo of another task does not release this task's guard.
-- A fresh resolution after an undo stays blocked until that new `task_done` is itself undone.
+- `undo` releases the guard by following `targetEventId`, not `taskId`.
+- Undo of another task does not release this task's guard; with interleaved tasks, each undo releases only the task it targets.
+- A fresh resolution after an undo stays blocked until that new `task_done` is itself undone; done, undo, done, undo ends unblocked.
+- `habit_done` events never affect the guard, and an undo that targets a habit does not release a task.
+- Hand-built logs the engine rejects (an undo with a dangling `targetEventId`, an undo listed before its target): `recalculate` throws, and the guard, which reads the log in file order, keeps the task blocked.
+- Task ids compare strictly: numeric `1` and string `"1"` are different tasks, and an empty, `null` or `undefined` id never matches a real task's events.
+
+Undo reaches only the current game day (PRD 3.17). `task-undo-resolution.test.js` proves what happens when the only action is from an earlier game day: `recordAction` throws `Nothing to undo for this game day.`, nothing is appended, and the guard keeps blocking `Task done` for that `taskId`. `engine.test.js` covers an explicit target from an earlier action or day. Before the 4:00 AM rollover the previous calendar day is still the current game day, so undo still works then. There is no supported way yet to re-resolve a task whose resolution is from an earlier game day; that is an open question, not tested behavior.
 
 `task-utils-find-task-note.test.js` covers the shared `findTaskNote()` lookup that both scripts use: one match is `found` with its path, no match is `not_found`, a missing folder is `folder_missing`, several matches are `ambiguous` with no path, and non-`.md` files are ignored.
 
@@ -89,7 +100,8 @@ A good run ends `# fail 0`. Passing a directory to `--test` fails on Node 22 wit
 | Rest days and pause                                                              | `rest days`, `pause and resume`, `missed deadlines are exempt`                                                                                                                                                           |
 | Settings changes (prospective, validated)                                        | `settings change`, `settings are validated`, `lowering max`, `the live Settings.md`                                                                                                                                      |
 | Undo                                                                             | `undo`, `pressing Done again`                                                                                                                                                                                            |
-| Undo-linked task resolution guard                                                | `task resolution guard`, `undo is linked`, `duplicate resolution guard`                                                                                                                                                  |
+| Undo-linked task resolution guard                                                | `engine round trip`, `undo for a previous game day`, `guard on hand-built log shapes`, `duplicate-resolution guard` (suite names in `task-undo-resolution.test.js`)                                                       |
+| Result card and outcome tables                                                   | `result presentation` (suite name in `task-utils.test.js`)                                                                                                                                                               |
 | Duplicate `taskId` blocks Undo and Task done                                     | `refuses to resolve a task whose taskId is shared`, `undo with duplicate taskId`, `returns ambiguous`                                                                                                                    |
 | Task folder from TaskNotes data                                                  | `taskFolder`, `configured TaskNotes folder`                                                                                                                                                                              |
 | Task tag from TaskNotes data                                                     | `taskTag`, `task tag`, `refuses a note`                                                                                                                                                                                  |
@@ -120,7 +132,7 @@ Manual checks follow the same rule: write steps and expected notice, log line an
 
 Runner prints `expected` and `actual`. Decide which is wrong. Rule changed on purpose: update the test. It didn't: fix `TaskRPG/Scripts/engine.js`.
 
-Rule tests run against a frozen copy of the starting settings at the top of `TaskRPG/Scripts/engine.test.js`, not the live `TaskRPG/Engine/Settings.md`, so tuning in Obsidian never breaks them. Only `the live Settings.md is present and valid` reads the live file. Change a default on purpose: update the frozen copy and dependent tests in the same edit.
+Rule tests run against a frozen copy of the starting settings at the top of `TaskRPG/Scripts/engine.test.js`, not the live `TaskRPG/Engine/Settings.md`, so tuning in Obsidian never breaks them. Only `the live Settings.md is present and valid` reads the live file. Change a default on purpose: update the frozen copy and dependent tests in the same edit. `task-undo-resolution.test.js` keeps its own copy of that frozen block because `engine.test.js` does not export it; update it too.
 
 ## 2. Manual test inside Obsidian
 

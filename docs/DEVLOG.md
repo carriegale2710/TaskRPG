@@ -6,6 +6,52 @@ Rule of thumb: if a fact explains a choice or records what happened during the w
 
 Timeline uses commit dates from `git log`, newest first. Not changelog release dates: the `0.4.0` block bundles commits from 2026-10-15 and 2026-10-16, and `0.1.0`/`0.2.0` both landed on 2026-10-14.
 
+## 2026-10-27 — Undo/guard regression tests and helper hardening
+
+### Goal
+
+Close issue #16: tighter regression coverage for undo and the duplicate-resolution guard, and more edge cases for the `task-utils` helpers.
+
+### Why
+
+PR #23 was an empty draft (Copilot hit quota limits) cut from a stale `main`. Part of the issue text was already out of date: the duplicated `scheduled` assertion, the misleading "accepts an undo…" test and the duplicate `targetEventId` test were already gone from `task-utils.test.js`. The guard tests also lived apart from the engine tests that produce the logs they query.
+
+### Did
+
+- Merged current `main` into the PR branch before writing anything.
+- New `task-undo-resolution.test.js`: engine round trip (`recordAction` → JSON lines → `parseEvents` → `hasUnresolvedTaskDone`), guard cases (dangling and out-of-order undo, habit events, undo of a habit, done/undo/done/undo, interleaved tasks, empty/`null`/`undefined` id, `1` vs `"1"`), and undo when only a previous-game-day action exists.
+- Moved the 7 guard tests from `task-utils.test.js` into the new file and dropped one exact duplicate. Added first, removed second, so coverage never dipped.
+- Helper tests in `task-utils.test.js`: `pickTableResult` bad rolls and unknown outcomes, six-entry tables, an engine/table outcome sweep, result card layout and line order.
+- Fixed `pickTableResult` accepting inherited keys (`constructor`, `__proto__`), and a free action printing `MP: -0`.
+- Tests for both fixes.
+- `docs/TESTING.md`: guard tests, previous-day limitation, result-presentation tests, test map.
+
+### Outcome
+
+- Sandbox only: new tests pass; deliberate breaks of the code under test each failed at least one test; both fixes went red → green. Run on trimmed copies of `engine.js` and `task-utils.js`, with Node 20.
+- CI tests passing.
+
+### Decisions
+
+- Guard tests live with the engine round trip, not beside the helper they query.
+- `Object.prototype.hasOwnProperty.call` instead of `Object.hasOwn`, so it runs on older mobile webviews.
+- Free action shows `MP: 0`. PRD 3.15 does not say; chosen as the least surprising, not settled.
+
+### Failed / learned
+
+- Issue text was written against an older tree; read the branch before planning from the issue.
+- A plain object lookup treats `constructor` as a known key. Look up with an own-property check whenever the key comes from outside.
+- An input-copy of a file is not a build. State what was and was not run.
+
+### Blockers / next
+
+- Open question: no supported way yet to re-resolve a task whose resolution is from an earlier game day (PRD 3.17 limits undo to the current game day). Needs an owner decision; gaps belong in `docs/BUILD_PLAN.md`.
+
+### Links
+
+- PR: #23. Issue: #16.
+- Tests: `task-undo-resolution.test.js`, `task-utils.test.js`.
+
 ## 2026-10-27 — Duplicate taskId guard for Undo and Task done
 
 ### Goal
