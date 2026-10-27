@@ -6,6 +6,48 @@ Rule of thumb: if a fact explains a choice or records what happened during the w
 
 Timeline uses commit dates from `git log`, newest first. Not changelog release dates: the `0.4.0` block bundles commits from 2026-10-15 and 2026-10-16, and `0.1.0`/`0.2.0` both landed on 2026-10-14.
 
+## 2026-10-27 — Duplicate taskId guard for Undo and Task done
+
+### Goal
+
+Fix issue #18: Undo must report missing or ambiguous task note, not claim full success.
+
+### Why
+
+Undo said success while note untouched. Two notes sharing `taskId`: first match silently reopened, maybe wrong note (inferred from issue text).
+
+### Did
+
+- `findTaskNote()` in `task-utils.js` returns found / not_found / folder_missing / ambiguous. Shared by `undo.js` and `task-done.js`.
+- `undo.js` looks up note before writing log. Ambiguous: Notice, nothing saved. Missing note, folder or `taskId`: undo saved, distinct Notice.
+- `task-done.js` refuses duplicate `taskId` before any write.
+- Tests: `undo.test.js` (folder missing, duplicate), `task-done.test.js` (2 duplicate tests), new `task-utils-find-task-note.test.js` (5).
+
+### Decisions
+
+- Duplicate = error, nothing saved. Not first-match-with-warning. Also satisfies #15 duplicate criterion.
+- Lookup shared in `task-utils.js`, not copied per script.
+
+### Failed / learned
+
+- Copilot's first version saved undo then warned on duplicate. Changed: saved-but-warned leaves log and notes disagreeing.
+
+### Assumptions
+
+- Tests not run locally. CI `test` check succeeded on branch head `e96555a`.
+- Manual Obsidian duplicate check not run.
+
+### Blockers / next
+
+- Run manual duplicate check.
+- Lookup scans top level of tasks folder only.
+
+### Links
+
+- Branch: `copilot/carriegale2710-undo-must-report`
+- PR: #22, issues #18, #15
+- Tests: `undo.test.js`, `task-done.test.js`, `task-utils-find-task-note.test.js`
+
 ## 2026-10-26 — Planned-task game day fix
 
 ### Goal

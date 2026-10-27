@@ -14,7 +14,7 @@ TaskNotes owns task creation, planning and user fields. TaskRPG owns only `Task 
 - `isPlannedToday()` compares that date with `engine.gameDay(timestamp, settings.dayRolloverHour)`, so the engine owns the rollover rule.
 - At 01:00 with a 04:00 rollover, the previous calendar date is still the current game day; at 04:00, the game day flips.
 
-`task-done.test.js` runs the real `TaskRPG/Scripts/task-done.js` against an in-memory vault whose note sits in `TaskNotes/Tasks/…` (folder from TaskNotes `data.json`). Checks the `task_done` event, completion fields, and rewritten `TaskRPG/Engine/Hero.md` (derived HP, MP, skill XP). It also checks that a `scheduled` value containing a time, or wrapped in quotes, counts as planned for the current game day. One test starts at `status: open` and asserts the script overwrites it with `done`. Another asserts the result card is exactly one Notice containing `**Outcome:**` (D-025). Proves the script refuses a note missing `skill`, `size` or `taskId` (absent, empty or YAML `null`), leaving log and note untouched.
+`task-done.test.js` runs the real `TaskRPG/Scripts/task-done.js` against an in-memory vault whose note sits in `TaskNotes/Tasks/…` (folder from TaskNotes `data.json`). Checks the `task_done` event, completion fields, and rewritten `TaskRPG/Engine/Hero.md` (derived HP, MP, skill XP). It also checks that a `scheduled` value containing a time, or wrapped in quotes, counts as planned for the current game day. One test starts at `status: open` and asserts the script overwrites it with `done`. Another asserts the result card is exactly one Notice containing `**Outcome:**` (D-025). Proves the script refuses a note missing `skill`, `size` or `taskId` (absent, empty or YAML `null`), leaving log and note untouched. A second task note sharing the pressed note's `taskId` makes the script stop with "Change taskID to prevent duplicate id, nothing was saved." and write nothing (D-033); a note with a different `taskId` does not block it.
 
 A note is a task only when it carries TaskNotes' configured `taskTag`.
 
@@ -26,13 +26,15 @@ A note is a task only when it carries TaskNotes' configured `taskTag`.
 - Undo of another task does not release this task's guard.
 - A fresh resolution after an undo stays blocked until that new `task_done` is itself undone.
 
+`task-utils-find-task-note.test.js` covers the shared `findTaskNote()` lookup that both scripts use: one match is `found` with its path, no match is `not_found`, a missing folder is `folder_missing`, several matches are `ambiguous` with no path, and non-`.md` files are ignored.
+
 `undo.test.js` covers undo itself, at engine level and against the real script:
 
 - Resolve → undo → resolve gives a fresh resolution marked `repeat`.
 - Original `task_done` remains; the undo appends a correction.
 - Real `TaskRPG/Scripts/undo.js` against an in-memory adapter writes `status: open` and `completedDate: ""`, leaves a second Done note untouched, appends `undo`, rewrites `TaskRPG/Engine/Hero.md`.
 - Habit undo removes the history line the undone press added (matched by timestamp), leaves other habit lines and task notes untouched, and the Notice says the line was removed.
-- Two error paths: a task undo and a habit undo with no matching note still append the correction and say so in the Notice. This leaves five script-level tests behind the real `undo.js`, two of them error-path notices; the rest are engine-level.
+- Four error paths: a task undo and a habit undo with no matching note still append the correction and say so in the Notice; a missing TaskNotes tasks folder does the same with its own message; two task notes sharing the target's `taskId` write nothing (no `undo` event, no note or `Hero.md` change) and the Notice says to change the `taskID` (D-033). This leaves seven script-level tests behind the real `undo.js`, four of them error paths; the rest are engine-level.
 
 The guard tests import `hasUnresolvedTaskDone` from `TaskRPG/Scripts/task-utils.js`, the same implementation `task-done.js` uses. The stubbed-vault tests run the real `undo.js` path, but prove nothing about QuickAdd inside Obsidian or TaskNotes field preservation. For that: create and schedule a task, mark it Done, run `Task done`, inspect, run `Undo last`; check desktop and phone. Never point this at an important task or concurrent synced devices: Step 3 writes the live `TaskRPG/Engine/Events.md`; the Step 1 smoke test below uses `TaskRPG/Engine/Test Events.md`.
 
@@ -88,6 +90,7 @@ A good run ends `# fail 0`. Passing a directory to `--test` fails on Node 22 wit
 | Settings changes (prospective, validated)                                        | `settings change`, `settings are validated`, `lowering max`, `the live Settings.md`                                                                                                                                      |
 | Undo                                                                             | `undo`, `pressing Done again`                                                                                                                                                                                            |
 | Undo-linked task resolution guard                                                | `task resolution guard`, `undo is linked`, `duplicate resolution guard`                                                                                                                                                  |
+| Duplicate `taskId` blocks Undo and Task done                                     | `refuses to resolve a task whose taskId is shared`, `undo with duplicate taskId`, `returns ambiguous`                                                                                                                    |
 | Task folder from TaskNotes data                                                  | `taskFolder`, `configured TaskNotes folder`                                                                                                                                                                              |
 | Task tag from TaskNotes data                                                     | `taskTag`, `task tag`, `refuses a note`                                                                                                                                                                                  |
 | `Task done` writes `done`                                                        | `status done over`                                                                                                                                                                                                       |
