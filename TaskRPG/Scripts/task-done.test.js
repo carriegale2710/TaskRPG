@@ -14,6 +14,7 @@ const readRepo = (name) =>
   fs.readFileSync(path.join(__dirname, "..", name), "utf8");
 
 const NOTE = "TaskNotes/Tasks/fix the fence.md";
+const COPY = "TaskNotes/Tasks/fix the fence copy.md";
 const LOG = "TaskRPG/Engine/Events.md";
 const HERO = "TaskRPG/Engine/Hero.md";
 
@@ -51,7 +52,8 @@ function noteText(overrides = {}) {
 
 // opts:
 // - active: active-note path, or null for no active note
-// - extraFiles: additional vault files, keyed by path
+// - extraFiles: additional vault files, keyed by path; those inside the tasks
+//   folder are also listed there, like real task notes
 // - log: initial Events.md contents
 // - settings: initial Settings.md contents
 // - failWrite: (path) => boolean; makes the matching write throw
@@ -87,7 +89,15 @@ function harness(overrides = {}, opts = {}) {
       if (failWrite?.(p)) throw new Error("disk full");
       data.set(p, text);
     },
-    list: async () => ({ files: [NOTE], folders: [] }),
+    list: async () => ({
+      files: [
+        NOTE,
+        ...Object.keys(extraFiles).filter((p) =>
+          p.startsWith("TaskNotes/Tasks/"),
+        ),
+      ],
+      folders: [],
+    }),
   };
 
   const app = {
@@ -421,6 +431,35 @@ describe("task-done.test.js", () => {
   });
 
   describe("duplicate and undo behaviour", () => {
+    test("refuses to resolve a task whose taskId is shared and saves nothing", async () => {
+      const h = harness({}, { extraFiles: { [COPY]: noteText() } });
+      const originalNote = h.data.get(NOTE);
+      const originalCopy = h.data.get(COPY);
+
+      await h.press();
+
+      assert.deepEqual(h.notices, [
+        "TaskRPG: Change taskID to prevent duplicate id, nothing was saved.",
+      ]);
+      assert.equal(h.data.has(LOG), false, "no event log was created");
+      assert.equal(h.data.has(HERO), false, "no Hero cache was created");
+      assert.equal(h.data.get(NOTE), originalNote);
+      assert.equal(h.data.get(COPY), originalCopy);
+    });
+
+    test("still resolves a task when another note has a different taskId", async () => {
+      const h = harness(
+        {},
+        { extraFiles: { [COPY]: noteText({ taskId: "task-2" }) } },
+      );
+
+      await h.press();
+
+      assert.equal(h.notices.length, 1);
+      assert.match(h.notices[0], /Task complete/);
+      assert.equal(taskDoneEventsOf(h).length, 1);
+    });
+
     test("blocks a second resolution and changes nothing", async () => {
       const h = harness({ status: "open" });
 

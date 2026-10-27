@@ -213,6 +213,7 @@ v1 is the closed daily loop in PRD §7: plan in TaskNotes, resolve one task, see
 12. [x] **AC-12 Duplicate guard (PRD 3.9.6).** A second **Task done** for the same `taskId` is blocked while the latest relevant event is an unresolved `task_done`. An `undo` releases the guard only when its `targetEventId` is that task's event; an undo for another task does not.
 13. [x] **AC-13 Failure handling (PRD 3.15, 3.17.7).** A failure before the log write leaves the log, task note, and `Hero.md` unchanged and says nothing was logged. A failure after the log write leaves the correction standing and says the event was saved and **Task done** must not be pressed again.
 14. [x] **AC-14 Hero display (PRD 5).** After a successful resolution, `Hero.md` shows the state recalculated from the log, including new MP, HP, skill XP, and levels. Inventory, companion, and focus state are not shown in v1.
+15. [x] **AC-15 Unique task ID (D-033).** If more than one note in the tasks folder carries the pressed note's `taskId`, **Task done** stops before any write and shows "TaskRPG: Change taskID to prevent duplicate id, nothing was saved." The log, task notes, and `Hero.md` are unchanged. A different `taskId` in another note does not block.
 
 #### Testing
 
@@ -295,6 +296,8 @@ Legend: **Automated** is covered by `node --test`. **Not covered** means no auto
 | TC-82 | Undo for a different task, then **Task done** on this one                                            | Guard stays closed; second resolution blocked                                                                                                                                  | ✅ Automated (`task-utils.test.js`)                           |
 | TC-83 | Existing `Events.md` is malformed                                                                    | Rejected before any write; no log, note, or Hero change                                                                                                                        | ✅ Automated (`task-done.test.js`)                            |
 | TC-84 | Complete a task whose scheduled value is the current game day, written as YYYY-MM-DDTHH:mm or quoted | planned is true; the task pays only its size MP cost. Before dayRolloverHour, the prior calendar date counts as the current game day; missing or empty scheduled is unplanned. | ✅ Automated (task-done.test.js, task-utils.test.js) (passed) |
+| TC-88 | Another task note shares the pressed note's `taskId`                                                 | Rejected; nothing written; Notice says to change the `taskID` to prevent the duplicate (D-033)                                                                                 | ✅ Automated (`task-done.test.js`)                            |
+| TC-89 | Another task note has a different `taskId`                                                           | Not blocked; resolves normally                                                                                                                                                 | ✅ Automated (`task-done.test.js`)                            |
 
 #### Final manual smoke checklist
 
@@ -365,6 +368,8 @@ Acceptance criteria map to PRD 3.17. Section numbers in brackets are PRD referen
 
 - [x] No eligible action in the current game day: nothing is written, and the Notice says there is nothing to undo.
 - [x] Missing task note or habit history line: the correction still applies, and one Notice reports what was reversed and what was not found.
+- [x] Missing TaskNotes tasks folder, or a `task_done` event with no `taskId`: the correction still applies, and the Notice names that case instead of "note not found".
+- [x] Duplicate `taskId` across task notes: nothing is written (no `undo` event, no note or `Hero.md` change), and the Notice says to change the `taskID` to prevent the duplicate (D-033).
 - [x] Note write failure after the log write: the correction stands, and the Notice says it was saved and must not be pressed again.
 
 **Regression tests**
@@ -386,7 +391,7 @@ Acceptance criteria map to PRD 3.17. Section numbers in brackets are PRD referen
 
 Same command as 3.1 (`node --test`).
 
-`task-utils.test.js`: `hasUnresolvedTaskDone`, `targetEventId` linkage, and the guard staying closed after a fresh resolution. `undo.test.js`: repeat after undo, original event preserved, real-script task reopen and habit history-line removal, plus the two missing-note notices. Neither file exercises QuickAdd, TaskNotes compatibility, the result Notice or hero-state updates. Level-up reversal and undo after a settings change have no tests yet.
+`task-utils.test.js`: `hasUnresolvedTaskDone`, `targetEventId` linkage, and the guard staying closed after a fresh resolution. `undo.test.js`: repeat after undo, original event preserved, real-script task reopen and habit history-line removal, plus the missing-note, missing-folder and duplicate-`taskId` outcomes. `task-utils-find-task-note.test.js`: the `findTaskNote` statuses (`found`, `not_found`, `folder_missing`, `ambiguous`) and non-`.md` files ignored. None of these files exercise QuickAdd, TaskNotes compatibility, the result Notice or hero-state updates. Level-up reversal and undo after a settings change have no tests yet.
 
 #### Test cases
 
@@ -408,45 +413,48 @@ Legend, same as 3.1: **Automated** is covered by `node --test`. **Not covered** 
 
 **Edge cases and failure paths**
 
-| ID    | Case                                                                         | Expected                                                                             | Status                                                      |
-| ----- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
-| TC-47 | No eligible action on the current game day (empty log, or only earlier days) | Nothing written; Notice says there is nothing to undo                                | Engine throws (`engine.test.js`); script Notice not covered |
-| TC-49 | `targetEventId` names an action from an earlier game day                     | Replay rejects the undo; nothing written                                             | ✅ Automated (`engine.test.js`)                             |
-| TC-53 | An `undo` line is the newest line                                            | `undo` is never a target; the next press reverses the action before it               | ✅ Automated (`engine.test.js`)                             |
-| TC-55 | Matching task note is absent                                                 | Correction stands; Notice says no matching task note was found                       | ✅ Automated (`undo.test.js`)                               |
-| TC-57 | Task note has no `completedDate` field                                       | Field inserted as `completedDate: ""`; other fields and body kept                    | ✅ Automated (`task-utils.test.js`)                         |
-| TC-58 | Note uses CRLF line endings                                                  | Frontmatter edit inserts or replaces fields and keeps CRLF                           | ✅ Automated (`task-utils.test.js`)                         |
-| TC-59 | `status:` also appears in the note body                                      | Only the frontmatter value changes                                                   | ✅ Automated (`task-utils.test.js`)                         |
-| TC-60 | A field value contains `$&` or `$1`                                          | Written literally                                                                    | ✅ Automated (`task-utils.test.js`)                         |
-| TC-61 | Matching habit note is absent                                                | Correction stands; Notice says no matching habit note or line was found              | ✅ Automated (`undo.test.js`)                               |
-| TC-64 | Habit note uses CRLF                                                         | Removed line only; CRLF preserved                                                    | ✅ Automated (`task-utils.test.js`)                         |
-| TC-68 | Undo targets another task's event                                            | Duplicate-resolution guard for this task stays closed                                | ✅ Automated (`task-utils.test.js`)                         |
-| TC-69 | Undo, then resolve again, then check the guard                               | Guard stays closed until that new `task_done` is itself undone                       | ✅ Automated (`task-utils.test.js`)                         |
-| TC-70 | Press **Task done** again hoping to re-roll                                  | Allowed only as a fresh resolution flagged `repeat`; the original roll never changes | Automated engine; policy is documentation only (no block)   |
+| ID    | Case                                                                             | Expected                                                                                                  | Status                                                      |
+| ----- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| TC-47 | No eligible action on the current game day (empty log, or only earlier days)     | Nothing written; Notice says there is nothing to undo                                                     | Engine throws (`engine.test.js`); script Notice not covered |
+| TC-49 | `targetEventId` names an action from an earlier game day                         | Replay rejects the undo; nothing written                                                                  | ✅ Automated (`engine.test.js`)                             |
+| TC-53 | An `undo` line is the newest line                                                | `undo` is never a target; the next press reverses the action before it                                    | ✅ Automated (`engine.test.js`)                             |
+| TC-55 | Matching task note is absent                                                     | Correction stands; Notice says the task note was not found and to fix it by hand                          | ✅ Automated (`undo.test.js`)                               |
+| TC-85 | TaskNotes tasks folder is missing                                                | Correction stands; Notice says the tasks folder was not found                                             | ✅ Automated (`undo.test.js`)                               |
+| TC-86 | Two task notes share the target's `taskId`                                       | Nothing written: no `undo` event, no note or `Hero.md` change; Notice says to change the `taskID` (D-033) | ✅ Automated (`undo.test.js`)                               |
+| TC-87 | `findTaskNote`: one match, no match, missing folder, duplicates, non-`.md` files | `found`, `not_found`, `folder_missing`, `ambiguous`; non-`.md` files ignored                              | ✅ Automated (`task-utils-find-task-note.test.js`)          |
+| TC-57 | Task note has no `completedDate` field                                           | Field inserted as `completedDate: ""`; other fields and body kept                                         | ✅ Automated (`task-utils.test.js`)                         |
+| TC-58 | Note uses CRLF line endings                                                      | Frontmatter edit inserts or replaces fields and keeps CRLF                                                | ✅ Automated (`task-utils.test.js`)                         |
+| TC-59 | `status:` also appears in the note body                                          | Only the frontmatter value changes                                                                        | ✅ Automated (`task-utils.test.js`)                         |
+| TC-60 | A field value contains `$&` or `$1`                                              | Written literally                                                                                         | ✅ Automated (`task-utils.test.js`)                         |
+| TC-61 | Matching habit note is absent                                                    | Correction stands; Notice says no matching habit note or line was found                                   | ✅ Automated (`undo.test.js`)                               |
+| TC-64 | Habit note uses CRLF                                                             | Removed line only; CRLF preserved                                                                         | ✅ Automated (`task-utils.test.js`)                         |
+| TC-68 | Undo targets another task's event                                                | Duplicate-resolution guard for this task stays closed                                                     | ✅ Automated (`task-utils.test.js`)                         |
+| TC-69 | Undo, then resolve again, then check the guard                                   | Guard stays closed until that new `task_done` is itself undone                                            | ✅ Automated (`task-utils.test.js`)                         |
+| TC-70 | Press **Task done** again hoping to re-roll                                      | Allowed only as a fresh resolution flagged `repeat`; the original roll never changes                      | Automated engine; policy is documentation only (no block)   |
 
 ### Version 2 — deferred Undo test cases
 
 These cases do not block Step 4 or v1's closed daily loop.
 
-| ID    | Case                                                                    | Expected                                                                                   | Status                                                |
-| ----- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
-| TC-38 | Target action pushed a skill over a level threshold                     | Level, dice bonus, and MP discount from that level are reversed                            | Not covered                                           |
-| TC-39 | Target action put the hero at 0 MP or 0 HP                              | Tired and Wounded flags return to their pre-action values; the roll penalty goes with them | Not covered                                           |
-| TC-40 | Undo after a settings change                                            | Target replays with rules in force when logged, not current settings (D-028)               | Not covered                                           |
-| TC-46 | TaskNotes re-reads the reopened note                                    | Keeps `status: open`, empty `completedDate`, and all other fields and body                 | Manual, verified                                      |
-| TC-48 | `targetEventId` names an action that is not newest                      | Replay rejects undo; nothing written; error Notice                                         | Automated (`engine.test.js`); Notice path not covered |
-| TC-50 | Action at 03:59, undo at 04:01                                          | Different game days; nothing to undo                                                       | Not covered                                           |
-| TC-51 | Two actions share a timestamp                                           | Later log line is newer and is undo target                                                 | Not covered                                           |
-| TC-52 | Newest line is rest, pause, resume, settings change, or missed deadline | Line skipped; older eligible action is target                                              | Not covered                                           |
-| TC-54 | Target `task_done` has no `taskId`                                      | Correction applies; no note lookup; Notice reports no matching task note                   | Not covered                                           |
-| TC-56 | Task note sits in subfolder or outside `tasksFolder`                    | Correction stands; note stays Done; Notice reports miss                                    | Not covered; lookup is non-recursive (known gap)      |
-| TC-62 | Habit history line missing, reworded, or timestamp reformatted          | Correction stands; line untouched; Notice reports no removal                               | Not covered                                           |
-| TC-63 | Habit note has two history lines with same stamp                        | Only first match removed; second stays                                                     | Not covered                                           |
-| TC-65 | Log write fails                                                         | Nothing changed; Notice says nothing changed                                               | Not covered                                           |
-| TC-66 | Task, habit, or `Hero.md` write fails after log write                   | Correction stands; Notice says saved; do not press again                                   | Not covered                                           |
-| TC-67 | `Settings.md` missing/unreadable, or log invalid                        | Press fails with error Notice; nothing written                                             | Not covered                                           |
-| TC-71 | Undo with story prose tagged to undone action                           | No story rollback; undo removes no prose                                                   | Gap                                                   |
-| TC-72 | Settings change moves 4:00 AM boundary during day                       | Boundary rule undecided; ask before implementing                                           | Gap                                                   |
+| ID    | Case                                                                    | Expected                                                                                             | Status                                                |
+| ----- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| TC-38 | Target action pushed a skill over a level threshold                     | Level, dice bonus, and MP discount from that level are reversed                                      | Not covered                                           |
+| TC-39 | Target action put the hero at 0 MP or 0 HP                              | Tired and Wounded flags return to their pre-action values; the roll penalty goes with them           | Not covered                                           |
+| TC-40 | Undo after a settings change                                            | Target replays with rules in force when logged, not current settings (D-028)                         | Not covered                                           |
+| TC-46 | TaskNotes re-reads the reopened note                                    | Keeps `status: open`, empty `completedDate`, and all other fields and body                           | Manual, verified                                      |
+| TC-48 | `targetEventId` names an action that is not newest                      | Replay rejects undo; nothing written; error Notice                                                   | Automated (`engine.test.js`); Notice path not covered |
+| TC-50 | Action at 03:59, undo at 04:01                                          | Different game days; nothing to undo                                                                 | Not covered                                           |
+| TC-51 | Two actions share a timestamp                                           | Later log line is newer and is undo target                                                           | Not covered                                           |
+| TC-52 | Newest line is rest, pause, resume, settings change, or missed deadline | Line skipped; older eligible action is target                                                        | Not covered                                           |
+| TC-54 | Target `task_done` has no `taskId`                                      | Correction applies; no note lookup; Notice says the event has no taskId, so no task note was updated | Not covered                                           |
+| TC-56 | Task note sits in subfolder or outside `tasksFolder`                    | Correction stands; note stays Done; Notice reports miss                                              | Not covered; lookup is non-recursive (known gap)      |
+| TC-62 | Habit history line missing, reworded, or timestamp reformatted          | Correction stands; line untouched; Notice reports no removal                                         | Not covered                                           |
+| TC-63 | Habit note has two history lines with same stamp                        | Only first match removed; second stays                                                               | Not covered                                           |
+| TC-65 | Log write fails                                                         | Nothing changed; Notice says nothing changed                                                         | Not covered                                           |
+| TC-66 | Task, habit, or `Hero.md` write fails after log write                   | Correction stands; Notice says saved; do not press again                                             | Not covered                                           |
+| TC-67 | `Settings.md` missing/unreadable, or log invalid                        | Press fails with error Notice; nothing written                                                       | Not covered                                           |
+| TC-71 | Undo with story prose tagged to undone action                           | No story rollback; undo removes no prose                                                             | Gap                                                   |
+| TC-72 | Settings change moves 4:00 AM boundary during day                       | Boundary rule undecided; ask before implementing                                                     | Gap                                                   |
 
 **Manual validation**
 
@@ -456,6 +464,7 @@ These cases do not block Step 4 or v1's closed daily loop.
 **Known gaps and validation status**
 
 - Duplicate-resolution guard end-to-end pending.
+- Duplicate `taskId` checks (Task done and Undo) scan only the top level of the tasks folder; a duplicate in a subfolder is not detected. Not yet checked in Obsidian.
 - Task note status write: undo writes plugin default `open` and clears `completedDate`. Verified against TaskNotes 4.13.8 (`defaultTaskStatus: "open"`, `done` configured `isCompleted: true`).
 - Deferred edge cases and Obsidian device checks are listed under Version 2.
 - ~~Habit undo does not remove habit-note history.~~

@@ -221,6 +221,24 @@ async function taskTag(files) {
   return tag || "task";
 }
 
+// Finds the task note carrying `taskId` directly inside `folder`. Several
+// matches are "ambiguous" and return no path, so callers never guess which note
+// is the real one. Statuses: found, not_found, folder_missing, ambiguous.
+async function findTaskNote(files, folder, taskId) {
+  if (!(await files.exists(folder)))
+    return { status: "folder_missing", path: "" };
+  const { files: names = [] } = await files.list(folder);
+  const matches = [];
+  for (const name of names) {
+    if (!name.endsWith(".md")) continue;
+    if (parseFrontmatter(await files.read(name)).taskId === taskId)
+      matches.push(name);
+  }
+  if (matches.length === 1) return { status: "found", path: matches[0] };
+  if (matches.length > 1) return { status: "ambiguous", path: "" };
+  return { status: "not_found", path: "" };
+}
+
 // A task is unresolved when its latest relevant RPG event is task_done.
 // Undo events identify the action they reverse with targetEventId, so follow
 // that link back to the task_done event instead of filtering undo by taskId.
@@ -241,6 +259,7 @@ function hasUnresolvedTaskDone(events, taskId) {
 module.exports = {
   OPEN_TASK_STATUS,
   OUTCOME_TABLE,
+  findTaskNote,
   formatResultCard,
   hasTag,
   hasUnresolvedTaskDone,
