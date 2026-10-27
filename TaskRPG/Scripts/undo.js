@@ -40,18 +40,20 @@ module.exports = async ({ app }) => {
     const state = engine.recalculate(out.events, settings, timestamp).state;
 
     let reopened = false;
+    let taskLookup = "not_checked";
     if (target?.type === "task_done" && target.taskId) {
-      const path = await findTaskPath(
+      const taskPath = await findTaskPath(
         files,
         utils,
         await utils.taskFolder(files),
         target.taskId,
       );
-      if (path) {
-        const text = await files.read(path);
+      taskLookup = taskPath.status;
+      if (taskPath.path) {
+        const text = await files.read(taskPath.path);
         // TaskNotes owns task status. Undo restores its default open status and
         // clears the completion date, editing only the frontmatter block.
-        await files.write(path, utils.reopenTaskNote(text));
+        await files.write(taskPath.path, utils.reopenTaskNote(text));
         reopened = true;
       }
     }
@@ -73,7 +75,9 @@ module.exports = async ({ app }) => {
       target?.type === "task_done"
         ? reopened
           ? "Undid the last RPG action. TaskNotes status restored to open."
-          : "Undid the last RPG action, but no matching task note was found. Check TaskNotes' tasks folder."
+          : taskLookup === "ambiguous"
+            ? "Undo saved, but multiple task notes share this taskId. Fix the note by hand."
+            : "Undo saved, but the task note was not found. Fix the note by hand."
         : target?.type === "habit_done"
           ? habitRemoved
             ? "Undid the last RPG action. Habit history line removed."
@@ -99,14 +103,17 @@ async function loadModule(files, path) {
 }
 
 async function findTaskPath(files, utils, folder, taskId) {
-  if (!(await files.exists(folder))) return "";
+  if (!(await files.exists(folder))) return { status: "folder_missing", path: "" };
   const { files: names = [] } = await files.list(folder);
+  const matches = [];
   for (const name of names) {
     if (!name.endsWith(".md")) continue;
     if (utils.parseFrontmatter(await files.read(name)).taskId === taskId)
-      return name;
+      matches.push(name);
   }
-  return "";
+  if (matches.length === 1) return { status: "found", path: matches[0] };
+  if (matches.length > 1) return { status: "ambiguous", path: "" };
+  return { status: "not_found", path: "" };
 }
 
 async function findHabitPath(files, utils, habitId) {

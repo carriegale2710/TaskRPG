@@ -103,6 +103,8 @@ function undoHarness({
   action,
   notes = { [TASKS.matching]: "task-1", [TASKS.other]: "task-2" },
   habits = {},
+  tasknotesData = { tasksFolder: "TaskNotes/Tasks" },
+  taskFolderExists = true,
 } = {}) {
   const event =
     action ??
@@ -118,8 +120,7 @@ function undoHarness({
     ["TaskRPG/Engine/Events.md", `${JSON.stringify(event)}\n`],
     // Mirrors the vault: TaskNotes stores tasks in its configured tasksFolder,
     // so the lookup has to leave the TaskNotes root to find one.
-    [TASKNOTES_DATA, JSON.stringify({ tasksFolder: "TaskNotes/Tasks" })],
-    ["TaskNotes/Tasks", ""],
+    [TASKNOTES_DATA, JSON.stringify(tasknotesData)],
     ["TaskRPG/Engine/Habits", ""],
     ["TaskNotes/Start Here.md", "---\ntype: index\n---\n# TaskNotes"],
     ...Object.entries(notes).map(([file, taskId]) => [
@@ -128,6 +129,8 @@ function undoHarness({
     ]),
     ...Object.entries(habits).map(([file, habit]) => [file, habitNote(habit)]),
   ]);
+  if (taskFolderExists && tasknotesData.tasksFolder)
+    data.set(tasknotesData.tasksFolder, "");
   const notices = [];
   global.Notice = class {
     constructor(message) {
@@ -327,6 +330,47 @@ describe("undo.test.js", () => {
     const events = engine.parseEvents(h.data.get("TaskRPG/Engine/Events.md"));
     assert.equal(events.length, 3);
     assert.equal(events.at(-1).type, "undo");
-    assert.match(h.notices[0], /no matching task note/);
+    assert.equal(
+      h.notices[0],
+      "Undo saved, but the task note was not found. Fix the note by hand.",
+    );
+  });
+
+  test("undo with a missing TaskNotes tasks folder still logs the correction and reports the note as not found", async () => {
+    const h = undoHarness({
+      taskFolderExists: false,
+      notes: {},
+    });
+
+    await h.press();
+
+    const events = engine.parseEvents(h.data.get("TaskRPG/Engine/Events.md"));
+    assert.equal(events.length, 3);
+    assert.equal(events.at(-1).type, "undo");
+    assert.equal(
+      h.notices[0],
+      "Undo saved, but the task note was not found. Fix the note by hand.",
+    );
+  });
+
+  test("undo with duplicate taskId notes reports ambiguity and leaves both notes unchanged", async () => {
+    const dupA = "TaskNotes/Tasks/fix the fence.md";
+    const dupB = "TaskNotes/Tasks/fix the fence copy.md";
+    const h = undoHarness({
+      notes: { [dupA]: "task-1", [dupB]: "task-1" },
+    });
+    const beforeA = h.data.get(dupA);
+    const beforeB = h.data.get(dupB);
+
+    await h.press();
+
+    const events = engine.parseEvents(h.data.get("TaskRPG/Engine/Events.md"));
+    assert.equal(events.at(-1).type, "undo");
+    assert.equal(h.data.get(dupA), beforeA);
+    assert.equal(h.data.get(dupB), beforeB);
+    assert.equal(
+      h.notices[0],
+      "Undo saved, but multiple task notes share this taskId. Fix the note by hand.",
+    );
   });
 });
