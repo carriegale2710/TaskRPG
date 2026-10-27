@@ -3,7 +3,7 @@
 const LOG = "TaskRPG/Engine/Test Events.md";
 const STATE = "TaskRPG/Engine/Test State.md";
 const SETTINGS = "TaskRPG/Engine/Settings.md";
-const ENGINE = "Scripts/engine.js";
+const ENGINE = "TaskRPG/Scripts/engine.js";
 
 module.exports = async ({ app, quickAddApi }) => {
   const files = app.vault.adapter;

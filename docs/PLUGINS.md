@@ -4,15 +4,15 @@ For coding agents building TaskRPG and AI agents running it in whichever host th
 
 ## 1. Boundaries
 
-| Layer               | Responsibility                                                 |
-| ------------------- | -------------------------------------------------------------- |
-| Engine              | Game rules, action results, state rebuilt from events          |
-| Settings note       | Tunable values, skill definitions, configuration               |
-| QuickAdd wrappers   | Call the engine for resolution, undo and other actions         |
-| Meta Bind           | Buttons, input fields, displays                                |
-| TaskNotes and Bases | Task creation, planning, task fields, task views               |
-| Dice Roller         | Approved narrative-table draws                                 |
-| AI agent host       | Narration, personas, story, scoped memory                      |
+| Layer               | Responsibility                                         |
+| ------------------- | ------------------------------------------------------ |
+| Engine              | Game rules, action results, state rebuilt from events  |
+| Settings note       | Tunable values, skill definitions, configuration       |
+| QuickAdd wrappers   | Call the engine for resolution, undo and other actions |
+| Meta Bind           | Buttons, input fields, displays                        |
+| TaskNotes and Bases | Task creation, planning, task fields, task views       |
+| Dice Roller         | Approved narrative-table draws                         |
+| AI agent host       | Narration, personas, story, scoped memory              |
 
 Rules:
 
@@ -32,17 +32,17 @@ Rules:
 
 Confirm each plugin is installed, enabled and working before its build step.
 
-| Plugin             | From    | Use                                                                   | Check                                                                |
-| ------------------ | ------- | --------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| QuickAdd           | Step 0  | Thin wrappers: resolution, undo, recalculate, briefing launch          | Script loading, command invocation, phone behaviour                  |
-| Templater          | Step 0  | Scaffold daily notes, habits, personas                                | Template paths; keep game logic out                                  |
-| Lazy Plugin Loader | Step 0  | Startup optimisation                                                  | Do not delay dependencies needed at startup                          |
-| Meta Bind          | Step 2  | Habit/task buttons, hero panels, settings inputs                      | Bindings, command actions, mobile rendering                          |
-| Fit                | Step 2  | Desktop/phone sync                                                    | Log and note sync, conflicts, device-local config                    |
-| TaskNotes          | Step 3  | Task creation, planning, task fields, backlog, views                  | Required fields, scheduled dates, completion timestamps, custom props |
-| Bases              | Step 3  | Core Obsidian feature used by TaskNotes views                         | Enabled; installed TaskNotes requirements                            |
-| Dice Roller        | Step 3  | Narrative outcomes from table notes                                   | Table syntax, weighting, integration method                          |
-| AI agent host       | Step 4  | Narrator, onboarding, chats, summaries, briefing                      | Host choice, model connection, agent setup, memory scope, approvals   |
+| Plugin             | From   | Use                                                           | Check                                                                 |
+| ------------------ | ------ | ------------------------------------------------------------- | --------------------------------------------------------------------- |
+| QuickAdd           | Step 0 | Thin wrappers: resolution, undo, recalculate, briefing launch | Script loading, command invocation, phone behaviour                   |
+| Templater          | Step 0 | Scaffold daily notes, habits, personas                        | Template paths; keep game logic out                                   |
+| Lazy Plugin Loader | Step 0 | Startup optimisation                                          | Do not delay dependencies needed at startup                           |
+| Meta Bind          | Step 2 | Habit/task buttons, hero panels, settings inputs              | Bindings, command actions, mobile rendering                           |
+| Fit                | Step 2 | Desktop/phone sync                                            | Log and note sync, conflicts, device-local config                     |
+| TaskNotes          | Step 3 | Task creation, planning, task fields, backlog, views          | Required fields, scheduled dates, completion timestamps, custom props |
+| Bases              | Step 3 | Core Obsidian feature used by TaskNotes views                 | Enabled; installed TaskNotes requirements                             |
+| Dice Roller        | Step 3 | Narrative outcomes from table notes                           | Table syntax, weighting, integration method                           |
+| AI agent host      | Step 4 | Narrator, onboarding, chats, summaries, briefing              | Host choice, model connection, agent setup, memory scope, approvals   |
 
 Planned stack, not verified installation status. Do not install two plugins for one role.
 
@@ -208,15 +208,15 @@ Keep personal data and credentials out of fixtures. Keep plugin settings, tokens
 
 ## 7. Build checks and issue dependencies
 
-| Step                   | Issue | Validate                                                              |
-| ---------------------- | ----- | --------------------------------------------------------------------- |
-| Habit button           | #2    | Button calls QuickAdd; event and hero update; toast; phone result      |
-| Task resolution        | #3    | TaskNotes fields and scheduling; resolution, result card, undo; props  |
-| Onboarding and tables  | #4    | Quiz resumes; personas reviewed; approved tables integrate             |
-| Companion and briefing | #5    | Scoped memory, linked quests, briefing launch or documented fallback   |
+| Step                   | Issue | Validate                                                                |
+| ---------------------- | ----- | ----------------------------------------------------------------------- |
+| Habit button           | #2    | Button calls QuickAdd; event and hero update; toast; phone result       |
+| Task resolution        | #3    | TaskNotes fields and scheduling; resolution, result card, undo; props   |
+| Onboarding and tables  | #4    | Quiz resumes; personas reviewed; approved tables integrate              |
+| Companion and briefing | #5    | Scoped memory, linked quests, briefing launch or documented fallback    |
 | Agent safeguards       | #8    | Write controls, minimal context, campaign isolation, AI-outage recovery |
-| Trial week             | #6    | Minimal routine, feedback, continue/adjust/stop                        |
-| Expansion              | #7    | Explicit approval; one feature at a time                               |
+| Trial week             | #6    | Minimal routine, feedback, continue/adjust/stop                         |
+| Expansion              | #7    | Explicit approval; one feature at a time                                |
 
 Order: #2 → #3 → #4 → #5 → #6 → #7. #8 runs alongside #4–#5 and must validate before #6.
 

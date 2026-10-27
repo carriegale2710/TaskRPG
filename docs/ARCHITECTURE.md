@@ -129,18 +129,18 @@ Requirements, so a future Obsidian plugin is a swap rather than a rewrite.
 
 Paths relative to `TaskRPG/`.
 
-| Folder        | Contents                                                                 | Writer                                 |
-| ------------- | ------------------------------------------------------------------------ | -------------------------------------- |
-| `Engine/`     | Event log, derived hero state, habit records, settings                   | QuickAdd wrappers only                 |
-| `Scripts/`    | Standalone engine and thin QuickAdd scripts                              | Coding agent                           |
-| `Journal/`    | Daily notes and “Today’s turns”; only this folder is pruned after backup | User and macros                        |
-| `TaskNotes/`  | Task records, scheduling, user fields                                    | User, TaskNotes, TaskRPG status writes |
-| `Campaign/`   | Current campaign state (`00 Hero`, rules, story so far, quest board)     | User and Game Master AI agent          |
-| `Story/`      | Cross-campaign canon, approved by the user                               | Game Master AI agent                   |
-| `World/`      | NPCs, quests, regions                                                    | User and Game Master AI agent          |
-| `Characters/` | Character persona files                                                  | User and Game Master AI agent          |
-| `Assets/`     | Banners and character art                                                | User                                   |
-| `Backlog/`    | Reserved; unused in v1                                                   | —                                      |
+| Folder                | Contents                                                                 | Writer                                 |
+| --------------------- | ------------------------------------------------------------------------ | -------------------------------------- |
+| `TaskRPG/Engine/`     | Event log, derived hero state, habit records, settings                   | QuickAdd wrappers only                 |
+| `TaskRPG/Scripts/`    | Standalone engine and thin QuickAdd scripts                              | Coding agent                           |
+| `TaskRPG/Journal/`    | Daily notes and “Today’s turns”; only this folder is pruned after backup | User and macros                        |
+| `TaskNotes/`          | Task records, scheduling, user fields                                    | User, TaskNotes, TaskRPG status writes |
+| `TaskRPG/Campaign/`   | Current campaign state (`00 Hero`, rules, story so far, quest board)     | User and Game Master AI agent          |
+| `TaskRPG/Story/`      | Cross-campaign canon, approved by the user                               | Game Master AI agent                   |
+| `TaskRPG/World/`      | NPCs, quests, regions                                                    | User and Game Master AI agent          |
+| `TaskRPG/Characters/` | Character persona files                                                  | User and Game Master AI agent          |
+| `TaskRPG/Assets/`     | Banners and character art                                                | User                                   |
+| `TaskRPG/Backlog/`    | Reserved; unused in v1                                                   | —                                      |
 
 ### Rules
 

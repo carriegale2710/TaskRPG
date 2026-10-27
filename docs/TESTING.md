@@ -14,7 +14,7 @@ TaskNotes owns task creation, planning and user fields. TaskRPG owns only `Task 
 - `isPlannedToday()` compares that date with `engine.gameDay(timestamp, settings.dayRolloverHour)`, so the engine owns the rollover rule.
 - At 01:00 with a 04:00 rollover, the previous calendar date is still the current game day; at 04:00, the game day flips.
 
-`task-done.test.js` runs the real `Scripts/task-done.js` against an in-memory vault whose note sits in `TaskNotes/Tasks/…` (folder from TaskNotes `data.json`). Checks the `task_done` event, completion fields, and rewritten `Engine/Hero.md` (derived HP, MP, skill XP). It also checks that a `scheduled` value containing a time, or wrapped in quotes, counts as planned for the current game day. One test starts at `status: open` and asserts the script overwrites it with `done`. Another asserts the result card is exactly one Notice containing `**Outcome:**` (D-025). Proves the script refuses a note missing `skill`, `size` or `taskId` (absent, empty or YAML `null`), leaving log and note untouched.
+`task-done.test.js` runs the real `TaskRPG/Scripts/task-done.js` against an in-memory vault whose note sits in `TaskNotes/Tasks/…` (folder from TaskNotes `data.json`). Checks the `task_done` event, completion fields, and rewritten `TaskRPG/Engine/Hero.md` (derived HP, MP, skill XP). It also checks that a `scheduled` value containing a time, or wrapped in quotes, counts as planned for the current game day. One test starts at `status: open` and asserts the script overwrites it with `done`. Another asserts the result card is exactly one Notice containing `**Outcome:**` (D-025). Proves the script refuses a note missing `skill`, `size` or `taskId` (absent, empty or YAML `null`), leaving log and note untouched.
 
 A note is a task only when it carries TaskNotes' configured `taskTag`.
 
@@ -30,11 +30,11 @@ A note is a task only when it carries TaskNotes' configured `taskTag`.
 
 - Resolve → undo → resolve gives a fresh resolution marked `repeat`.
 - Original `task_done` remains; the undo appends a correction.
-- Real `Scripts/undo.js` against an in-memory adapter writes `status: open` and `completedDate: ""`, leaves a second Done note untouched, appends `undo`, rewrites `Engine/Hero.md`.
+- Real `TaskRPG/Scripts/undo.js` against an in-memory adapter writes `status: open` and `completedDate: ""`, leaves a second Done note untouched, appends `undo`, rewrites `TaskRPG/Engine/Hero.md`.
 - Habit undo removes the history line the undone press added (matched by timestamp), leaves other habit lines and task notes untouched, and the Notice says the line was removed.
 - Two error paths: a task undo and a habit undo with no matching note still append the correction and say so in the Notice. This leaves five script-level tests behind the real `undo.js`, two of them error-path notices; the rest are engine-level.
 
-The guard tests import `hasUnresolvedTaskDone` from `Scripts/task-utils.js`, the same implementation `task-done.js` uses. The stubbed-vault tests run the real `undo.js` path, but prove nothing about QuickAdd inside Obsidian or TaskNotes field preservation. For that: create and schedule a task, mark it Done, run `Task done`, inspect, run `Undo last`; check desktop and phone. Never point this at an important task or concurrent synced devices: Step 3 writes the live `Engine/Events.md`; the Step 1 smoke test below uses `Engine/Test Events.md`.
+The guard tests import `hasUnresolvedTaskDone` from `TaskRPG/Scripts/task-utils.js`, the same implementation `task-done.js` uses. The stubbed-vault tests run the real `undo.js` path, but prove nothing about QuickAdd inside Obsidian or TaskNotes field preservation. For that: create and schedule a task, mark it Done, run `Task done`, inspect, run `Undo last`; check desktop and phone. Never point this at an important task or concurrent synced devices: Step 3 writes the live `TaskRPG/Engine/Events.md`; the Step 1 smoke test below uses `TaskRPG/Engine/Test Events.md`.
 
 Story rollback is specified in PRD 3.17 and has no tests yet: a line-tag helper must prove matching lines are removed, untagged neighbours and malformed tags survive, tags outside the four story folders are ignored, and CRLF is preserved. Until that helper exists, an undo removes no story prose, and no test may claim it does.
 
@@ -53,20 +53,20 @@ Record manual results in `docs/BUILD_PLAN.md` (Known gaps and validation status)
 Node.js 22+. Nothing to install; Node's built-in runner.
 
 ```powershell
-node --test Scripts/engine.test.js
+node --test TaskRPG/Scripts/engine.test.js
 ```
 
 A good run ends `# fail 0`. Passing a directory to `--test` fails on Node 22 with "Cannot find module"; always give the file path.
 
 | To do this                   | Run                                                                                     |
 | ---------------------------- | --------------------------------------------------------------------------------------- |
-| Run one test by name         | `node --test --test-name-pattern="undo" Scripts/engine.test.js`                         |
-| Re-run on every file change  | `node --test --watch "Scripts/**/*.test.js"`                                            |
-| Rebuild the saved hero state | `node Scripts/engine.js recalc`                                                         |
-| Use other files              | `node Scripts/engine.js recalc <events file> <settings note> <state file>`              |
+| Run one test by name         | `node --test --test-name-pattern="undo" TaskRPG/Scripts/engine.test.js`                 |
+| Re-run on every file change  | `node --test --watch "**/*.test.js"`                                                    |
+| Rebuild the saved hero state | `node TaskRPG/Scripts/engine.js recalc`                                                 |
+| Use other files              | `node TaskRPG/Scripts/engine.js recalc <events file> <settings note> <state file>`      |
 | See MP at a given moment     | add `--now=2026-10-14T09:00:00+11:00` (4:00 AM refill, so this shows the next day's MP) |
 
-`recalc` reads `Engine/Events.jsonl` (none = fresh hero) and `Engine/Settings.md`, writes `Engine/State.json`, prints it. Same inputs, same output. Since Step 2 the live log is `Engine/Events.md`, so pass it explicitly: `node Scripts/engine.js recalc Engine/Events.md Engine/Settings.md Engine/State.json`. It does not rebuild the Meta Bind `Engine/Hero.md`.
+`recalc` reads `TaskRPG/Engine/Events.jsonl` (none = fresh hero) and `TaskRPG/Engine/Settings.md`, writes `TaskRPG/Engine/State.json`, prints it. Same inputs, same output. Since Step 2 the live log is `TaskRPG/Engine/Events.md`, so pass it explicitly: `node TaskRPG/Scripts/engine.js recalc TaskRPG/Engine/Events.md TaskRPG/Engine/Settings.md TaskRPG/Engine/State.json`. It does not rebuild the Meta Bind `TaskRPG/Engine/Hero.md`.
 
 ### What the tests cover
 
@@ -102,9 +102,9 @@ Fixed dates and fixed dice, so results are machine- and time-zone-stable. Change
 
 The `write-tests` skill governs this. Repo default:
 
-1. Add the test to the matching `Scripts/*.test.js` (or a new file for a new module), fixed dates and dice, inside that file's `describe()`.
+1. Add the test to the matching `TaskRPG/Scripts/*.test.js` (or a new file for a new module), fixed dates and dice, inside that file's `describe()`.
 2. Run it. It must fail on the intended assertion, not a typo, wrong path or missing import.
-3. Change `Scripts/engine.js` (or the script under test). Never delete, skip or loosen an assertion.
+3. Change `TaskRPG/Scripts/engine.js` (or the script under test). Never delete, skip or loosen an assertion.
 4. Re-run the file; read the whole run.
 5. Prove it bites: break the implementation, confirm red, restore.
 6. Bug: reproduce red first, then fix the cause.
@@ -115,13 +115,13 @@ Manual checks follow the same rule: write steps and expected notice, log line an
 
 ### If a test fails
 
-Runner prints `expected` and `actual`. Decide which is wrong. Rule changed on purpose: update the test. It didn't: fix `Scripts/engine.js`.
+Runner prints `expected` and `actual`. Decide which is wrong. Rule changed on purpose: update the test. It didn't: fix `TaskRPG/Scripts/engine.js`.
 
-Rule tests run against a frozen copy of the starting settings at the top of `Scripts/engine.test.js`, not the live `Engine/Settings.md`, so tuning in Obsidian never breaks them. Only `the live Settings.md is present and valid` reads the live file. Change a default on purpose: update the frozen copy and dependent tests in the same edit.
+Rule tests run against a frozen copy of the starting settings at the top of `TaskRPG/Scripts/engine.test.js`, not the live `TaskRPG/Engine/Settings.md`, so tuning in Obsidian never breaks them. Only `the live Settings.md is present and valid` reads the live file. Change a default on purpose: update the frozen copy and dependent tests in the same edit.
 
 ## 2. Manual test inside Obsidian
 
-Checks QuickAdd can run the engine and that it behaves in the real app. Uses a **test log** (`Engine/Test Events.md`), never the real log. Step 1 smoke test, not the Step 3 workflow. Step 2 has a real habit button; `Scripts/engine-smoke.js` stays an isolated engine check.
+Checks QuickAdd can run the engine and that it behaves in the real app. Uses a **test log** (`TaskRPG/Engine/Test Events.md`), never the real log. Step 1 smoke test, not the Step 3 workflow. Step 2 has a real habit button; `TaskRPG/Scripts/engine-smoke.js` stays an isolated engine check.
 
 ### Before you start
 
@@ -141,37 +141,37 @@ Step 1 only uses QuickAdd. Other rows are an "is it installed and enabled" pass.
 ### Set up the macro (once)
 
 1. Settings → **QuickAdd** → **Add Choice**. Name `TaskRPG: engine check`, choose **Macro**, **Add Choice**.
-2. Gear icon → under _User scripts_ (or **Add user script** in the command bar), pick `Scripts/engine-smoke.js`, close.
+2. Gear icon → under _User scripts_ (or **Add user script** in the command bar), pick `TaskRPG/Scripts/engine-smoke.js`, close.
 3. Lightning bolt beside the choice so it appears in the command palette.
 4. Run: command palette → `QuickAdd: TaskRPG: engine check`. Menu: **Recalculate**, **Log a test habit**, **Log a test task**, **Undo last**.
 
-Each run ends with a notice showing the result and `HP x/10, MP x/10`, and rewrites `Engine/Test State.md`.
+Each run ends with a notice showing the result and `HP x/10, MP x/10`, and rewrites `TaskRPG/Engine/Test State.md`.
 
 If QuickAdd says the script isn't found, it is not in a visible, non-hidden folder or the path is wrong. `TaskRPG engine: …` means the engine reports a problem; read it.
 
 ### Checks
 
-In order. Open `Engine/Test Events.md` and `Engine/Test State.md` beside the note to watch them change.
+In order. Open `TaskRPG/Engine/Test Events.md` and `TaskRPG/Engine/Test State.md` beside the note to watch them change.
 
-| #   | Do this                                                                                                       | You should see                                                                                                                                                                |
-| --- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | **Recalculate** with no test log                                                                              | Notice `Recalculated. HP 10/10, MP 10/10`. `Test State.md` created, all skills level 1. No `Test Events.md`                                                                   |
-| 2   | **Log a test habit**                                                                                          | Notice includes `mpCost: 2, mp: 8, xp: 1` and `MP 8/10`. New habit costs 2 MP. `Test Events.md` has two lines: long `settings_changed`, then `habit_done`. `vitality` XP is 1 |
-| 3   | **Log a test task**                                                                                           | Notice shows roll `total`, `outcome` (success, partial, setback), `mpCost: 1`, `xp: 1`, `loot`. MP 7. Repeat: outcome and loot vary, cost and XP do not                       |
-| 4   | **Undo last**                                                                                                 | MP back up by the task's cost. New `undo` line. **No line removed or changed**                                                                                                |
-| 5   | **Undo last** again, then once more                                                                           | Habit undone (MP 10); Notice says no matching habit note or history line. Third press: `Nothing to undo for this game day.` and nothing added                                 |
-| 6   | Edit `Engine/Settings.md`: `"small": { "mp": 1` → `"mp": 2`, then **Log a test task**                         | Notice `mpCost: 2`. A second `settings_changed` line before the task. Earlier lines untouched. Set it back to 1                                                               |
-| 7   | Set `"maxMP": 0`, run any option                                                                              | Notice names the setting: `Settings: maxMP must be a whole number from 1 to 100.` Nothing added. Restore 10                                                                   |
-| 8   | Add `not json` to the end of `Test Events.md`, **Recalculate**                                                | Notice `Event log line N is not valid JSON`, right line number. Remove the line                                                                                               |
-| 9   | Change a habit or task line's date to yesterday (keep format), **Recalculate**                                | MP 10/10 (new game day refills). Undo no longer works on yesterday's actions                                                                                                  |
-| 10  | Change a line's time to `03:59` today, **Recalculate**                                                        | `Test State.md` `"day"` is yesterday's date; at `04:00` it is today's                                                                                                         |
-| 11  | Terminal: `node Scripts/engine.js recalc "Engine/Test Events.md" Engine/Settings.md "Engine/Test State.json"` | Printed state matches `Test State.md` JSON (same game day). Delete `Test State.json` afterwards                                                                               |
+| #   | Do this                                                                                                                                       | You should see                                                                                                                                                                |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **Recalculate** with no test log                                                                                                              | Notice `Recalculated. HP 10/10, MP 10/10`. `Test State.md` created, all skills level 1. No `Test Events.md`                                                                   |
+| 2   | **Log a test habit**                                                                                                                          | Notice includes `mpCost: 2, mp: 8, xp: 1` and `MP 8/10`. New habit costs 2 MP. `Test Events.md` has two lines: long `settings_changed`, then `habit_done`. `vitality` XP is 1 |
+| 3   | **Log a test task**                                                                                                                           | Notice shows roll `total`, `outcome` (success, partial, setback), `mpCost: 1`, `xp: 1`, `loot`. MP 7. Repeat: outcome and loot vary, cost and XP do not                       |
+| 4   | **Undo last**                                                                                                                                 | MP back up by the task's cost. New `undo` line. **No line removed or changed**                                                                                                |
+| 5   | **Undo last** again, then once more                                                                                                           | Habit undone (MP 10); Notice says no matching habit note or history line. Third press: `Nothing to undo for this game day.` and nothing added                                 |
+| 6   | Edit `TaskRPG/Engine/Settings.md`: `"small": { "mp": 1` → `"mp": 2`, then **Log a test task**                                                 | Notice `mpCost: 2`. A second `settings_changed` line before the task. Earlier lines untouched. Set it back to 1                                                               |
+| 7   | Set `"maxMP": 0`, run any option                                                                                                              | Notice names the setting: `Settings: maxMP must be a whole number from 1 to 100.` Nothing added. Restore 10                                                                   |
+| 8   | Add `not json` to the end of `Test Events.md`, **Recalculate**                                                                                | Notice `Event log line N is not valid JSON`, right line number. Remove the line                                                                                               |
+| 9   | Change a habit or task line's date to yesterday (keep format), **Recalculate**                                                                | MP 10/10 (new game day refills). Undo no longer works on yesterday's actions                                                                                                  |
+| 10  | Change a line's time to `03:59` today, **Recalculate**                                                                                        | `Test State.md` `"day"` is yesterday's date; at `04:00` it is today's                                                                                                         |
+| 11  | Terminal: `node TaskRPG/Scripts/engine.js recalc "TaskRPG/Engine/Test Events.md" TaskRPG/Engine/Settings.md "TaskRPG/Engine/Test State.json"` | Printed state matches `Test State.md` JSON (same game day). Delete `Test State.json` afterwards                                                                               |
 
 Checks 9 and 10 edit the test log by hand. That is the one time you should: the real log is append-only.
 
 ### Step 3 planned-task check
 
-Uses the real `Task done` workflow and a disposable task note. Do not use the live `Engine/Events.md` with an important task or concurrent synced devices.
+Uses the real `Task done` workflow and a disposable task note. Do not use the live `TaskRPG/Engine/Events.md` with an important task or concurrent synced devices.
 
 | #   | Do this                                                                                          | You should see                                         |
 | --- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
@@ -181,7 +181,7 @@ Uses the real `Task done` workflow and a disposable task note. Do not use the li
 
 ### On your phone
 
-1. Wait for Fit to sync `Scripts/`, `Engine/Settings.md` and test notes.
+1. Wait for Fit to sync `TaskRPG/Scripts/`, `TaskRPG/Engine/Settings.md` and test notes.
 2. QuickAdd settings do not sync by default. Opt in, or recreate the macro on the phone.
 3. Run **Recalculate**, then **Log a test habit**.
 4. Record what happened (works, missing notice, error) in your notes. Mobile QuickAdd support is unverified until you do.
@@ -190,11 +190,11 @@ The engine needs no Node features, so it should run on mobile. The check is whet
 
 ### Clean up
 
-Delete `Engine/Test Events.md`, `Engine/Test State.md`, `Engine/Test State.json`. The real log and state are never touched by this test.
+Delete `TaskRPG/Engine/Test Events.md`, `TaskRPG/Engine/Test State.md`, `TaskRPG/Engine/Test State.json`. The real log and state are never touched by this test.
 
 ### Known limits
 
-- `.jsonl` files do not show in Obsidian's file list, hence the `.md` test log. The engine accepts either. The live log is `Engine/Events.md`.
+- `.jsonl` files do not show in Obsidian's file list, hence the `.md` test log. The engine accepts either. The live log is `TaskRPG/Engine/Events.md`.
 - The first log line is long because it saves the full settings, so later changes keep old days on old rules.
 - Back-filling missed habit blocks, rest days, pause, weekly focus and project threat are not exposed in this script. Automated tests cover them; no vault UI is verified here.
 - The planned-task rollover boundary is tested through `isPlannedToday()` in `task-utils.test.js`. `task-done.test.js` uses the current game day but does not simulate a fixed pre- or post-rollover completion time, because `task-done.js` reads the current time through `engine.localStamp()`.

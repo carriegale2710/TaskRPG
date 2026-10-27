@@ -1,3 +1,0 @@
-{"id":"task-1792972458111-n7q3dtiphpe","type":"task_done","timestamp":"2026-10-26T10:54:18+11:00","taskId":"1792971193628hi6xa","skill":"mind","size":"large","planned":true,"important":false,"urgent":false,"roll":[3,3],"lootRoll":2,"outcome":"partial","xp":5,"mp":5}
-{"type":"undo","timestamp":"2026-10-26T10:54:29+11:00","id":"e-101","targetEventId":"task-1792972458111-n7q3dtiphpe"}
-{"id":"task-1792972470849-n2cpg2v57yp","type":"task_done","timestamp":"2026-10-26T10:54:30+11:00","taskId":"1792971193628hi6xa","skill":"mind","size":"large","planned":true,"important":false,"urgent":false,"roll":[6,5],"lootRoll":3,"outcome":"success","xp":5,"mp":5}
