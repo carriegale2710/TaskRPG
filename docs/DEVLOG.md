@@ -6,6 +6,33 @@ Rule of thumb: if a fact explains a choice or records what happened during the w
 
 Timeline uses commit dates from `git log`, newest first. Not changelog release dates: the `0.4.0` block bundles commits from 2026-10-15 and 2026-10-16, and `0.1.0`/`0.2.0` both landed on 2026-10-14.
 
+## 2026-10-27 — habit-done.js uses utils.parseFrontmatter
+
+### Goal
+
+Close issue #28, a sub-issue of #26: `habit-done.js` reads habit frontmatter through `utils.parseFrontmatter` instead of its own regex.
+
+### Why
+
+`habit-done.js` had its own frontmatter regex and a per-field `RegExp` closure, while `task-done.js` and `undo.js` use `parseFrontmatter`. Two parsers for one format could disagree on quotes, BOM and CRLF. The old one kept quotes on values and failed on a leading BOM.
+
+### Did
+
+- `habit-done.test.js`: `harness()` takes an optional habit note; new test for quoted, CRLF and BOM-prefixed notes.
+- `habit-done.js`: `const { habitId, skill } = utils.parseFrontmatter(habitText)`; same `loadModule` as `task-done.js` / `undo.js`; `E` renamed `engine`.
+- Validation and its error message unchanged.
+
+### Outcome
+
+- Behaviour change: quoted `habitId` / `skill` and BOM-prefixed notes now work. An empty `skill:` no longer reads the next line as its value.
+- Valid plain notes behave the same.
+- All 173 tests passing.
+
+### Links
+
+- Issues: #28, parent #26. Branch: `refactor/26-remove-duplicated-scripts-code`.
+- Files: `TaskRPG/Scripts/habit-done.js`. Tests: `TaskRPG/Scripts/habit-done.test.js`.
+
 ## 2026-10-27 — Delete engine-smoke.js
 
 ### Goal
