@@ -6,6 +6,47 @@ Rule of thumb: if a fact explains a choice or records what happened during the w
 
 Timeline uses commit dates from `git log`, newest first. Not changelog release dates: the `0.4.0` block bundles commits from 2026-10-15 and 2026-10-16, and `0.1.0`/`0.2.0` both landed on 2026-10-14.
 
+## 2026-10-27 — engine.js countAtLeast helper
+
+### Goal
+
+Close issue #29, a sub-issue of #26: write the `list.filter((x) => n >= x).length` expression once in `engine.js` instead of four times.
+
+### Why
+
+`recalculate()` repeated one expression for level, MP discount and dice bonus. The dice bonus rule was written twice (roll total and `state.diceBonus`), so a rule change meant two edits and a chance of missing one.
+
+### Did
+
+- Added `countAtLeast(list, n)` and used it for level and the MP discount.
+- Added `diceBonus(lvl, r)` beside `level`; the roll total and `state.diceBonus` both call it.
+- No test, setting or doc-rule changes.
+
+### Outcome
+
+- Refactor only. Engine output should be identical for every event log.
+- `node --test TaskRPG/Scripts/engine.test.js`: 43 tests, 0 failures.
+- mutation check: `>=` to `>` in `countAtLeast` failed 5 tests; restored, green.
+
+### Decisions
+
+- No new test: no behaviour changed, `engine.test.js` is the proof.
+- `diceBonus` takes `(lvl, r)` like `level`, so both read the rules in force for that event.
+- Left the stale `engine.js` header comments for the "smaller wins" list in #26.
+
+### Assumptions
+
+- The full-file rewrite was made through the GitHub API, so the tests were not run when the change was committed. [Confirm CRLF line endings are unchanged: `git diff --stat` showed N lines.]
+
+### Blockers / next
+
+- #30 next. It needs the owner's decision before `engine-smoke.js` is deleted.
+
+### Links
+
+- Issues: #29, parent #26. Branch: `refactor/26-remove-duplicated-scripts-code`. Commit: `d71a374`.
+- Files: `TaskRPG/Scripts/engine.js`. Tests: `TaskRPG/Scripts/engine.test.js`.
+
 ## 2026-10-27 — Events.md shape tests for Task done
 
 ### Goal

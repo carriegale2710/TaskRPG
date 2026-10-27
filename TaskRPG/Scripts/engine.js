@@ -155,6 +155,9 @@ function parseSettingsNote(text) {
   return validateSettings(parsed);
 }
 
+// How many entries in a sorted-or-not level list the given value has reached.
+const countAtLeast = (list, n) => list.filter((x) => n >= x).length;
+
 const canon = (v) =>
   JSON.stringify(v, (_, x) =>
     x && typeof x === "object" && !Array.isArray(x)
@@ -258,7 +261,8 @@ function recalculate(events, note, now) {
   const results = {};
   const byId = new Map(ctx.map((c) => [c.e.id, c.e]));
   const undoneTasks = new Set();
-  const level = (xp, r) => r.xpThresholds.filter((t) => xp >= t).length;
+  const level = (xp, r) => countAtLeast(r.xpThresholds, xp);
+  const diceBonus = (lvl, r) => countAtLeast(r.diceBonusLevels, lvl);
 
   for (const { e, rules: r, day } of ctx) {
     if (undone.has(e.id)) continue;
@@ -291,7 +295,7 @@ function recalculate(events, note, now) {
       if (!isInt(e.lootRoll, 1, 6))
         fail("lootRoll must be a die result, 1 to 6.");
       const lvl = level(state.skillXP[e.skill], r);
-      const discount = r.mpDiscountLevels.filter((l) => lvl >= l).length;
+      const discount = countAtLeast(r.mpDiscountLevels, lvl);
       const cost = Math.max(
         r.minTaskMP,
         size.mp +
@@ -320,11 +324,7 @@ function recalculate(events, note, now) {
       const tired = overdraft ? r.tiredPenalty : 0;
       const threat = e.projectId ? (state.projectThreat[e.projectId] ?? 0) : 0;
       const total =
-        e.roll[0] +
-        e.roll[1] +
-        r.diceBonusLevels.filter((l) => lvl >= l).length -
-        hpPenalty -
-        tired;
+        e.roll[0] + e.roll[1] + diceBonus(lvl, r) - hpPenalty - tired;
       const outcome =
         total >= r.successAt + threat
           ? "success"
@@ -434,10 +434,7 @@ function recalculate(events, note, now) {
     Object.entries(state.skillXP).map(([s, xp]) => [s, level(xp, rules)]),
   );
   state.diceBonus = Object.fromEntries(
-    Object.entries(state.levels).map(([s, l]) => [
-      s,
-      rules.diceBonusLevels.filter((x) => l >= x).length,
-    ]),
+    Object.entries(state.levels).map(([s, l]) => [s, diceBonus(l, rules)]),
   );
   state.wounded = state.HP === 0;
   state.paused = pauses.at(-1)?.end === null;
