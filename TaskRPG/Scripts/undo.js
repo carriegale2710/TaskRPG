@@ -7,6 +7,9 @@ const HERO = "TaskRPG/Engine/Hero.md";
 const ENGINE = "TaskRPG/Scripts/engine.js";
 const UTILS = "TaskRPG/Scripts/task-utils.js";
 
+const DUPLICATE_ID_NOTICE =
+  "TaskRPG: Duplicate taskId found in task notes, so Undo was not applied. Change taskID to prevent duplicate id, nothing was saved.";
+
 module.exports = async ({ app }) => {
   const files = app.vault.adapter;
   let committed = false;
@@ -24,6 +27,23 @@ module.exports = async ({ app }) => {
     if (!last) throw new Error("Nothing to undo for today.");
 
     const target = events.find((event) => event.id === last);
+
+    // Reopening a task needs exactly one note. Look it up before anything is
+    // saved so a duplicate taskId leaves the log, notes and Hero untouched.
+    let taskNote = null;
+    if (target?.type === "task_done" && target.taskId) {
+      taskNote = await findTaskPath(
+        files,
+        utils,
+        await utils.taskFolder(files),
+        target.taskId,
+      );
+      if (taskNote.status === "ambiguous") {
+        new Notice(DUPLICATE_ID_NOTICE, 12000);
+        return;
+      }
+    }
+
     const out = engine.recordAction(
       events,
       { type: "undo", timestamp },
@@ -40,22 +60,12 @@ module.exports = async ({ app }) => {
     const state = engine.recalculate(out.events, settings, timestamp).state;
 
     let reopened = false;
-    let taskLookup = "not_checked";
-    if (target?.type === "task_done" && target.taskId) {
-      const taskPath = await findTaskPath(
-        files,
-        utils,
-        await utils.taskFolder(files),
-        target.taskId,
-      );
-      taskLookup = taskPath.status;
-      if (taskPath.path) {
-        const text = await files.read(taskPath.path);
-        // TaskNotes owns task status. Undo restores its default open status and
-        // clears the completion date, editing only the frontmatter block.
-        await files.write(taskPath.path, utils.reopenTaskNote(text));
-        reopened = true;
-      }
+    if (taskNote?.path) {
+      const text = await files.read(taskNote.path);
+      // TaskNotes owns task status. Undo restores its default open status and
+      // clears the completion date, editing only the frontmatter block.
+      await files.write(taskNote.path, utils.reopenTaskNote(text));
+      reopened = true;
     }
 
     let habitRemoved = false;
@@ -73,11 +83,7 @@ module.exports = async ({ app }) => {
 
     new Notice(
       target?.type === "task_done"
-        ? reopened
-          ? "Undid the last RPG action. TaskNotes status restored to open."
-          : taskLookup === "ambiguous"
-            ? "Undo saved, but multiple task notes share this taskId. Fix the note by hand."
-            : "Undo saved, but the task note was not found. Fix the note by hand."
+        ? taskUndoNotice(taskNote, reopened)
         : target?.type === "habit_done"
           ? habitRemoved
             ? "Undid the last RPG action. Habit history line removed."
@@ -102,8 +108,19 @@ async function loadModule(files, path) {
   return module.exports;
 }
 
+function taskUndoNotice(taskNote, reopened) {
+  if (reopened)
+    return "Undid the last RPG action. TaskNotes status restored to open.";
+  if (taskNote?.status === "folder_missing")
+    return "Undo saved, but the TaskNotes tasks folder was not found. Check TaskNotes' tasks folder.";
+  if (taskNote)
+    return "Undo saved, but the task note was not found. Fix the note by hand.";
+  return "Undo saved, but this event has no taskId, so no task note was updated. Fix the note by hand.";
+}
+
 async function findTaskPath(files, utils, folder, taskId) {
-  if (!(await files.exists(folder))) return { status: "folder_missing", path: "" };
+  if (!(await files.exists(folder)))
+    return { status: "folder_missing", path: "" };
   const { files: names = [] } = await files.list(folder);
   const matches = [];
   for (const name of names) {

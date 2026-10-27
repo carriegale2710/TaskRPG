@@ -33,6 +33,16 @@ module.exports = async ({ app }) => {
     if (!utils.hasTag(task.tags, tag) || missing(task.taskId))
       throw new Error("This note is not a task.");
 
+    // Notes sharing a taskId make Undo and repeat detection guess which note is
+    // real, so refuse before anything is logged.
+    if (await hasDuplicateTaskId(files, utils, folder, task.taskId)) {
+      new Notice(
+        "TaskRPG: Change taskID to prevent duplicate id, nothing was saved.",
+        12000,
+      );
+      return;
+    }
+
     const settings = engine.parseSettingsNote(await files.read(SETTINGS));
     if (!settings.skills.includes(task.skill))
       throw new Error(`Unknown skill: ${task.skill}`);
@@ -124,4 +134,15 @@ async function loadModule(files, path) {
     module.exports,
   );
   return module.exports;
+}
+
+async function hasDuplicateTaskId(files, utils, folder, taskId) {
+  const { files: names = [] } = await files.list(folder);
+  let count = 0;
+  for (const name of names) {
+    if (!name.endsWith(".md")) continue;
+    if (utils.parseFrontmatter(await files.read(name)).taskId === taskId)
+      count += 1;
+  }
+  return count > 1;
 }

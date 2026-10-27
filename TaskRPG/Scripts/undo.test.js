@@ -336,7 +336,7 @@ describe("undo.test.js", () => {
     );
   });
 
-  test("undo with a missing TaskNotes tasks folder still logs the correction and reports the note as not found", async () => {
+  test("undo with a missing TaskNotes tasks folder still logs the correction and names the folder", async () => {
     const h = undoHarness({
       taskFolderExists: false,
       notes: {},
@@ -349,11 +349,11 @@ describe("undo.test.js", () => {
     assert.equal(events.at(-1).type, "undo");
     assert.equal(
       h.notices[0],
-      "Undo saved, but the task note was not found. Fix the note by hand.",
+      "Undo saved, but the TaskNotes tasks folder was not found. Check TaskNotes' tasks folder.",
     );
   });
 
-  test("undo with duplicate taskId notes reports ambiguity and leaves both notes unchanged", async () => {
+  test("undo with duplicate taskId notes saves nothing and reports the duplicate", async () => {
     const dupA = "TaskNotes/Tasks/fix the fence.md";
     const dupB = "TaskNotes/Tasks/fix the fence copy.md";
     const h = undoHarness({
@@ -361,16 +361,18 @@ describe("undo.test.js", () => {
     });
     const beforeA = h.data.get(dupA);
     const beforeB = h.data.get(dupB);
+    const logBefore = h.data.get("TaskRPG/Engine/Events.md");
 
     await h.press();
 
-    const events = engine.parseEvents(h.data.get("TaskRPG/Engine/Events.md"));
-    assert.equal(events.at(-1).type, "undo");
+    assert.equal(h.data.get("TaskRPG/Engine/Events.md"), logBefore);
+    assert.equal(h.data.has("TaskRPG/Engine/Hero.md"), false);
     assert.equal(h.data.get(dupA), beforeA);
     assert.equal(h.data.get(dupB), beforeB);
+    assert.equal(h.notices.length, 1);
     assert.equal(
       h.notices[0],
-      "Undo saved, but multiple task notes share this taskId. Fix the note by hand.",
+      "TaskRPG: Duplicate taskId found in task notes, so Undo was not applied. Change taskID to prevent duplicate id, nothing was saved.",
     );
   });
 });
