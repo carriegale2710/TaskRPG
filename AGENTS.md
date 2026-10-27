@@ -46,23 +46,23 @@ Where things live. Open the relevant file before working on that area.
 
 This table is the canonical index of where things live. Open the relevant file before working on that area. When a document is added, renamed, or moved, update this table and the repository map in the same change.
 
-| Need                                                     | File(s)                                                                                        |
-| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Project introduction, requirements, setup                | `README.md`                                                                                    |
-| Product behavior, game rules, scope, settled decisions   | `docs/PRD.md`                                                                                  |
-| System structure, data model, ownership, invariants      | `docs/ARCHITECTURE.md`                                                                         |
-| Why a choice was made; alternatives; decision status     | `docs/DECISIONS.md`                                                                            |
-| Build roadmap, build order, done/not-done status         | `docs/BUILD_PLAN.md`                                                                           |
-| Plugin and integration boundaries                        | `docs/PLUGINS.md`                                                                              |
-| Test commands, layout, rule-to-test map, manual checks   | `docs/TESTING.md`                                                                              |
-| How to write documentation; where new documentation goes | `docs/DOCUMENTATION.md`                                                                        |
-| Change history                                           | `CHANGELOG.md`                                                                                 |
-| Development context, decisions, blockers, next actions   | `docs/DEVLOG.md`                                                                               |
-| Engine rules and terminal tests                          | `TaskRPG/Scripts/engine.js`, `engine.test.js`                                                  |
-| QuickAdd macros, shared helpers, smoke check             | `TaskRPG/Scripts/task-done.js`, `undo.js`, `habit-done.js`, `task-utils.js`, `engine-smoke.js` |
-| Terminal narrator fallback                               | `TaskRPG/Scripts/gm_bridge.py`                                                                 |
-| Live vault state (never hand-edit)                       | `TaskRPG/Engine/Events.md`, `Hero.md`, `Settings.md`, `State.json`                             |
-| Narrative content                                        | `TaskRPG/Story/`, `TaskRPG/World/`, `TaskRPG/Campaign/`, `TaskRPG/Characters/`                 |
+| Need                                                     | File(s)                                                                        |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Project introduction, requirements, setup                | `README.md`                                                                    |
+| Product behavior, game rules, scope, settled decisions   | `docs/PRD.md`                                                                  |
+| System structure, data model, ownership, invariants      | `docs/ARCHITECTURE.md`                                                         |
+| Why a choice was made; alternatives; decision status     | `docs/DECISIONS.md`                                                            |
+| Build roadmap, build order, done/not-done status         | `docs/BUILD_PLAN.md`                                                           |
+| Plugin and integration boundaries                        | `docs/PLUGINS.md`                                                              |
+| Test commands, layout, rule-to-test map, manual checks   | `docs/TESTING.md`                                                              |
+| How to write documentation; where new documentation goes | `docs/DOCUMENTATION.md`                                                        |
+| Change history                                           | `CHANGELOG.md`                                                                 |
+| Development context, decisions, blockers, next actions   | `docs/DEVLOG.md`                                                               |
+| Engine rules and terminal tests                          | `TaskRPG/Scripts/engine.js`, `engine.test.js`                                  |
+| QuickAdd macros and shared helpers                       | `TaskRPG/Scripts/task-done.js`, `undo.js`, `habit-done.js`, `task-utils.js`    |
+| Terminal narrator fallback                               | `TaskRPG/Scripts/gm_bridge.py`                                                 |
+| Live vault state (never hand-edit)                       | `TaskRPG/Engine/Events.md`, `Hero.md`, `Settings.md`, `State.json`             |
+| Narrative content                                        | `TaskRPG/Story/`, `TaskRPG/World/`, `TaskRPG/Campaign/`, `TaskRPG/Characters/` |
 
 ## Session skills
 
@@ -83,7 +83,7 @@ Skills never override the PRD, this file, safety rules, test evidence, or confir
 - Do not touch the user's other notes; stay inside the TaskRPG folders defined in `docs/ARCHITECTURE.md` §5.
 - Never delete or rewrite event history to correct an action; use the engine’s undo/correction mechanism.
 - Treat every plugin integration listed in `docs/PLUGINS.md` as an assumption to verify until `docs/TESTING.md` records a result.
-- Never point `engine-smoke.js` or the throwaway test log at the live event log or important real tasks.
+- Never point manual checks at the live event log or important real tasks.
 - Treat `State.json` and `Events.md` as live state: do not edit them manually to correct behavior; use the engine’s undo/correction mechanism.
 
 ## Before coding

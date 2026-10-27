@@ -6,6 +6,36 @@ Rule of thumb: if a fact explains a choice or records what happened during the w
 
 Timeline uses commit dates from `git log`, newest first. Not changelog release dates: the `0.4.0` block bundles commits from 2026-10-15 and 2026-10-16, and `0.1.0`/`0.2.0` both landed on 2026-10-14.
 
+## 2026-10-27 — Delete engine-smoke.js
+
+### Goal
+
+Close issue #30, a sub-issue of #26: remove the throwaway Step 1 smoke script and every reference to it.
+
+### Why
+
+`engine-smoke.js` said to delete it once the Step 2 macros existed. They do (`task-done.js`, `undo.js`, `habit-done.js`). It carried its own copy of the module loader and log-append code. Owner confirmed the manual smoke check is no longer needed.
+
+### Did
+
+- Deleted `TaskRPG/Scripts/engine-smoke.js`.
+- `AGENTS.md`: removed it from the macros row and reworded the safety rule.
+- `docs/TESTING.md`: removed the macro setup and the 11-row Step 1 checks; kept the Step 3 planned-task check and phone steps.
+
+### Outcome
+
+- Docs and script removal only. No engine or macro code changed.
+- `Test Events.md` and `Test State.md` were not in the repo, so nothing else was removed.
+- All 172 tests passing.
+
+### Decisions
+
+- Smoke check dropped, not recorded in `docs/DECISIONS.md`, because it is not being kept.
+
+### Links
+
+- Issues: #30, parent #26. Branch: `refactor/26-remove-duplicated-scripts-code`.
+
 ## 2026-10-27 — engine.js countAtLeast helper
 
 ### Goal
