@@ -104,4 +104,24 @@ describe("habit-done.test.js", () => {
       assert.equal(event.skill, "vitality", name);
     }
   });
+
+  test("habit notes without a valid habitId or skill are rejected", async () => {
+    const plain = readRepo("Engine/Habits/Morning routine.md");
+    const variants = {
+      "no skill": plain.replace(/^skill:.*\r?\n/m, ""),
+      "empty skill": plain.replace("skill: vitality", "skill:"),
+      "no habitId": plain.replace(/^habitId:.*\r?\n/m, ""),
+      "bad habitId": plain.replace(
+        "habitId: morning-routine",
+        "habitId: Morning_Routine",
+      ),
+    };
+    for (const [name, note] of Object.entries(variants)) {
+      assert.notEqual(note, plain, name);
+      const h = harness(true, undefined, note);
+      await h.press();
+      assert.equal(h.data.has("TaskRPG/Engine/Events.md"), false, name);
+      assert.match(h.notices[0], /Habit note needs habitId/, name);
+    }
+  });
 });

@@ -19,6 +19,7 @@ Close issue #28, a sub-issue of #26: `habit-done.js` reads habit frontmatter thr
 ### Did
 
 - `habit-done.test.js`: `harness()` takes an optional habit note; new test for quoted, CRLF and BOM-prefixed notes.
+- `habit-done.test.js`: new test that rejects notes with a missing or empty `skill`, or a missing or invalid `habitId`, and checks the validation Notice. Nothing covered that validation before.
 - `habit-done.js`: `const { habitId, skill } = utils.parseFrontmatter(habitText)`; same `loadModule` as `task-done.js` / `undo.js`; `E` renamed `engine`.
 - Validation and its error message unchanged.
 
@@ -27,6 +28,13 @@ Close issue #28, a sub-issue of #26: `habit-done.js` reads habit frontmatter thr
 - Behaviour change: quoted `habitId` / `skill` and BOM-prefixed notes now work. An empty `skill:` no longer reads the next line as its value.
 - Valid plain notes behave the same.
 - All 173 tests passing.
+- Break checks: removing `|| !skill`, removing the `habitId` regex, and dropping `unquote` on the `key: value` assignment in `parseFrontmatter` each fail a test.
+
+### Failed / learned
+
+- First BOM break check stripped the BOM before calling `parseFrontmatter`. That is a no-op because the parser already accepts a BOM; the break has to go inside the parser.
+- Removing `|| !skill` first passed every test: no test fed `habit-done.js` a bad note. The validation Notice is asserted now, since the engine could reject a bad skill on its own and hide a missing check.
+- `unquote` has four call sites in `task-utils.js`; only the one on the `key: value` line affects habit notes. Dropping any other leaves `habit-done.test.js` green.
 
 ### Links
 
