@@ -11,15 +11,13 @@ const readRepo = (name) =>
 function harness(
   choice = true,
   active = "TaskRPG/Engine/Habits/Morning routine.md",
+  note = readRepo("Engine/Habits/Morning routine.md"),
 ) {
   const data = new Map([
     ["TaskRPG/Scripts/engine.js", readRepo("Scripts/engine.js")],
     ["TaskRPG/Scripts/task-utils.js", readRepo("Scripts/task-utils.js")],
     ["TaskRPG/Engine/Settings.md", readRepo("Engine/Settings.md")],
-    [
-      "TaskRPG/Engine/Habits/Morning routine.md",
-      readRepo("Engine/Habits/Morning routine.md"),
-    ],
+    ["TaskRPG/Engine/Habits/Morning routine.md", note],
     ["TaskRPG/Engine/Hero.md", readRepo("Engine/Hero.md")],
   ]);
   const notices = [];
@@ -84,6 +82,26 @@ describe("habit-done.test.js", () => {
     for (const h of [harness(null), harness(true, "")]) {
       await h.press();
       assert.equal(h.data.has("TaskRPG/Engine/Events.md"), false);
+    }
+  });
+
+  test("quoted, CRLF and BOM-prefixed habit notes are read", async () => {
+    const plain = readRepo("Engine/Habits/Morning routine.md");
+    const quoted = plain
+      .replace("habitId: morning-routine", 'habitId: "morning-routine"')
+      .replace("skill: vitality", "skill: 'vitality'");
+    assert.notEqual(quoted, plain);
+    const variants = {
+      quoted,
+      crlf: plain.replace(/\r?\n/g, "\r\n"),
+      bom: `\uFEFF${plain}`,
+    };
+    for (const [name, note] of Object.entries(variants)) {
+      const h = harness(true, undefined, note);
+      await h.press();
+      const [, event] = E.parseEvents(h.data.get("TaskRPG/Engine/Events.md"));
+      assert.equal(event.habitId, "morning-routine", name);
+      assert.equal(event.skill, "vitality", name);
     }
   });
 });
