@@ -375,7 +375,19 @@ describe("task-utils.test.js", () => {
     });
 
     test("rejects an unknown outcome, and checks it before the roll", () => {
-      for (const outcome of ["bogus", "", "Success", undefined, null]) {
+      const unknown = [
+        "bogus",
+        "",
+        "Success",
+        undefined,
+        null,
+        "constructor",
+        "toString",
+        "hasOwnProperty",
+        "__proto__",
+      ];
+
+      for (const outcome of unknown) {
         assert.throws(
           () => utils.pickTableResult(outcome, 3),
           /Unknown outcome/,
@@ -493,7 +505,7 @@ describe("task-utils.test.js", () => {
       assert.ok(at(/Tired/) < at(/Loot/));
     });
 
-    test("reports a 0 MP cost without breaking the card", () => {
+    test("shows a 0 MP cost as 0, not -0", () => {
       const card = utils.formatResultCard({
         name: "Write tests",
         roll: [4, 4],
@@ -507,9 +519,26 @@ describe("task-utils.test.js", () => {
         overdraft: false,
       });
 
-      assert.match(card, /\*\*MP:\*\* -?0 \(now 10\)/);
+      assert.match(card, /^\*\*MP:\*\* 0 \(now 10\)$/m);
+      assert.doesNotMatch(card, /-0/);
       assert.match(card, /\*\*XP:\*\* \+1/);
-      assert.doesNotMatch(card, /NaN|undefined/);
+    });
+
+    test("still shows a paid MP cost with a minus sign", () => {
+      const card = utils.formatResultCard({
+        name: "Write tests",
+        roll: [1, 1],
+        total: 2,
+        outcome: "setback",
+        tableResult: "The attempt stalls.",
+        xp: 1,
+        mpCost: 3,
+        mp: 7,
+        loot: false,
+        overdraft: false,
+      });
+
+      assert.match(card, /^\*\*MP:\*\* -3 \(now 7\)$/m);
     });
   });
 
