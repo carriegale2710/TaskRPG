@@ -280,4 +280,111 @@ describe("task-undo-resolution.test.js", () => {
       assert.equal(hasUnresolvedTaskDone(numberId, "1"), false);
     });
   });
+
+  describe("duplicate-resolution guard", () => {
+    const taskDoneEvent = ({
+      id = "task-event-1",
+      taskId = "task-1",
+      timestamp = "2026-10-15T09:00:00+11:00",
+    } = {}) => ({
+      id,
+      type: "task_done",
+      timestamp,
+      taskId,
+      skill: "mind",
+      size: "small",
+      planned: true,
+      important: false,
+      urgent: false,
+      roll: [3, 4],
+      lootRoll: 1,
+    });
+
+    const undoEvent = ({
+      id = "undo-event-1",
+      targetEventId = "task-event-1",
+      timestamp = "2026-10-15T09:05:00+11:00",
+    } = {}) => ({
+      id,
+      type: "undo",
+      timestamp,
+      targetEventId,
+    });
+
+    test("allows a TaskNotes task marked done when it has no RPG resolution", () => {
+      assert.equal(hasUnresolvedTaskDone([], "task-1"), false);
+    });
+
+    test("blocks a second resolution while the latest relevant event is an unresolved task_done", () => {
+      const events = [taskDoneEvent()];
+
+      assert.equal(hasUnresolvedTaskDone(events, "task-1"), true);
+    });
+
+    test("allows another resolution after an undo targets the task's task_done event", () => {
+      const events = [
+        taskDoneEvent(),
+        undoEvent({ targetEventId: "task-event-1" }),
+      ];
+
+      assert.equal(hasUnresolvedTaskDone(events, "task-1"), false);
+    });
+
+    test("does not let an undo for another task release this task's guard", () => {
+      const events = [
+        taskDoneEvent({ id: "task-event-1", taskId: "task-1" }),
+        taskDoneEvent({
+          id: "task-event-2",
+          taskId: "task-2",
+          timestamp: "2026-10-15T09:01:00+11:00",
+        }),
+        undoEvent({
+          id: "undo-event-2",
+          targetEventId: "task-event-2",
+          timestamp: "2026-10-15T09:06:00+11:00",
+        }),
+      ];
+
+      assert.equal(hasUnresolvedTaskDone(events, "task-1"), true);
+    });
+
+    test("blocks another resolution after an undo and a fresh task_done", () => {
+      const events = [
+        taskDoneEvent({ id: "task-event-1" }),
+        undoEvent({
+          id: "undo-event-1",
+          targetEventId: "task-event-1",
+        }),
+        taskDoneEvent({
+          id: "task-event-2",
+          timestamp: "2026-10-15T09:10:00+11:00",
+        }),
+      ];
+
+      assert.equal(hasUnresolvedTaskDone(events, "task-1"), true);
+    });
+
+    test("uses the latest relevant event, so an older unresolved task_done does not block after a later undo", () => {
+      const events = [
+        taskDoneEvent({ id: "task-event-1" }),
+        taskDoneEvent({
+          id: "task-event-2",
+          timestamp: "2026-10-15T09:01:00+11:00",
+        }),
+        undoEvent({
+          id: "undo-event-2",
+          targetEventId: "task-event-2",
+          timestamp: "2026-10-15T09:06:00+11:00",
+        }),
+      ];
+
+      assert.equal(hasUnresolvedTaskDone(events, "task-1"), false);
+    });
+
+    test("does not confuse a task_done for another task with this task's guard", () => {
+      const events = [taskDoneEvent({ id: "task-event-1", taskId: "task-2" })];
+
+      assert.equal(hasUnresolvedTaskDone(events, "task-1"), false);
+    });
+  });
 });
