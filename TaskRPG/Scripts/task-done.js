@@ -33,6 +33,17 @@ module.exports = async ({ app }) => {
     if (!utils.hasTag(task.tags, tag) || missing(task.taskId))
       throw new Error("This note is not a task.");
 
+    // Notes sharing a taskId make Undo and repeat detection guess which note is
+    // real, so refuse before anything is logged.
+    const lookup = await utils.findTaskNote(files, folder, task.taskId);
+    if (lookup.status === "ambiguous") {
+      new Notice(
+        "TaskRPG: Change taskID to prevent duplicate id, nothing was saved.",
+        12000,
+      );
+      return;
+    }
+
     const settings = engine.parseSettingsNote(await files.read(SETTINGS));
     if (!settings.skills.includes(task.skill))
       throw new Error(`Unknown skill: ${task.skill}`);
