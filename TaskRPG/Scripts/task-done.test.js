@@ -130,9 +130,7 @@ const settingsNote = (text = readRepo("Engine/Settings.md")) =>
 
 // Build dates from the current game day, independent of the host timezone.
 function ymd(offset) {
-  const date = new Date(
-    `${engine.gameDay(engine.localStamp(), 4)}T00:00:00Z`,
-  );
+  const date = new Date(`${engine.gameDay(engine.localStamp(), 4)}T00:00:00Z`);
   date.setUTCDate(date.getUTCDate() + offset);
 
   const pad = (value) => String(value).padStart(2, "0");
@@ -652,6 +650,30 @@ describe("task-done.test.js", () => {
       assert.equal(h.notices.length, 1, "exactly one user-facing Notice");
       assert.match(h.notices[0], /^TaskRPG: /);
       assert.match(h.notices[0], /Nothing was logged/);
+    });
+
+    describe("event log shapes", () => {
+      const seeded = seededLog([olderTaskDone]);
+
+      for (const [label, log, added] of [
+        ["empty", "", ["settings_changed", "task_done"]],
+        ["trailing blank lines", `${seeded}\n\n\n`, ["task_done"]],
+        ["CRLF endings", seeded.replace(/\n/g, "\r\n"), ["task_done"]],
+      ]) {
+        test(`appends to a log with ${label}`, async () => {
+          const h = harness({}, { log });
+          const before = engine.parseEvents(log);
+
+          await h.press();
+
+          const all = eventsOf(h);
+          assert.deepEqual(all.slice(0, before.length), before);
+          assert.deepEqual(
+            all.slice(before.length).map((event) => event.type),
+            added,
+          );
+        });
+      }
     });
   });
 
