@@ -101,7 +101,9 @@ function hasTag(value, tag) {
 }
 
 function pickTableResult(outcome, roll) {
-  const table = OUTCOME_TABLE[outcome];
+  const table = Object.prototype.hasOwnProperty.call(OUTCOME_TABLE, outcome)
+    ? OUTCOME_TABLE[outcome]
+    : undefined;
   if (!table) throw new Error(`Unknown outcome: ${outcome}`);
   if (!Number.isInteger(roll) || roll < 1 || roll > 6)
     throw new Error("Table roll must be 1 to 6.");
@@ -129,7 +131,7 @@ function formatResultCard({
     tableResult,
     "",
     `**XP:** +${xp}`,
-    `**MP:** -${mpCost} (now ${mp})`,
+    `**MP:** ${mpCost === 0 ? "0" : `-${mpCost}`} (now ${mp})`,
   ];
   if (overdraft)
     lines.push(

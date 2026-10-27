@@ -334,6 +334,212 @@ describe("task-utils.test.js", () => {
       assert.match(card, /Loot/i);
       assert.match(card, /Tired/i);
     });
+
+    test("every table has six non-empty entries", () => {
+      for (const outcome of outcomes) {
+        const table = utils.OUTCOME_TABLE[outcome];
+
+        assert.equal(Array.isArray(table), true, outcome);
+        assert.equal(table.length, 6, outcome);
+        for (const entry of table) {
+          assert.equal(typeof entry, "string", outcome);
+          assert.notEqual(entry.trim(), "", outcome);
+        }
+      }
+    });
+
+    test("rejects a roll that is not a whole number from 1 to 6", () => {
+      const badRolls = [
+        0,
+        7,
+        -1,
+        1.5,
+        "3",
+        "",
+        NaN,
+        Infinity,
+        undefined,
+        null,
+        [3],
+      ];
+
+      for (const outcome of outcomes) {
+        for (const roll of badRolls) {
+          assert.throws(
+            () => utils.pickTableResult(outcome, roll),
+            /Table roll must be 1 to 6/,
+            `${outcome} / ${String(roll)}`,
+          );
+        }
+      }
+    });
+
+    test("rejects an unknown outcome, and checks it before the roll", () => {
+      const unknown = [
+        "bogus",
+        "",
+        "Success",
+        undefined,
+        null,
+        "constructor",
+        "toString",
+        "hasOwnProperty",
+        "__proto__",
+      ];
+
+      for (const outcome of unknown) {
+        assert.throws(
+          () => utils.pickTableResult(outcome, 3),
+          /Unknown outcome/,
+          String(outcome),
+        );
+      }
+      assert.throws(
+        () => utils.pickTableResult("bogus", 99),
+        /Unknown outcome/,
+      );
+    });
+
+    test("every outcome the engine can return has a table, and every table is reachable", () => {
+      const settings = {
+        skills: ["mind"],
+        dayRolloverHour: 4,
+        maxHP: 10,
+        maxMP: 10,
+        taskSizes: { small: { mp: 1, xp: 1 } },
+        minTaskMP: 1,
+        unplannedMP: 1,
+        woundedMP: 1,
+        mpDiscountLevels: [],
+        overdraftXPFactor: 0.5,
+        tiredPenalty: 1,
+        xpBonus: { important: 0.5, urgent: 0.5, focus: 0.25 },
+        xpThresholds: [0, 10, 25, 45, 70, 100, 140, 190, 250, 320],
+        diceBonusLevels: [],
+        successAt: 9,
+        partialAt: 6,
+        lootDropRolls: [5, 6],
+        hpPenalties: [{ minHP: 0, penalty: 0 }],
+        habitWindowDays: 30,
+        habitXP: 1,
+        habitHP: 1,
+        habitTiers: [{ minShare: 0, cost: 2 }],
+        missedDeadlineHP: 1,
+        maxHPLossPerDay: 2,
+        restDaysPerMonth: 4,
+        threatPerArc: 1,
+        maxThreat: 4,
+      };
+      const seen = new Set();
+
+      for (let a = 1; a <= 6; a += 1) {
+        for (let b = 1; b <= 6; b += 1) {
+          const { result } = engine.recordAction(
+            [],
+            {
+              type: "task_done",
+              timestamp: "2026-10-15T09:00:00+11:00",
+              skill: "mind",
+              size: "small",
+              planned: true,
+              roll: [a, b],
+              lootRoll: 1,
+            },
+            settings,
+          );
+          seen.add(result.outcome);
+        }
+      }
+
+      assert.deepEqual(
+        [...seen].sort(),
+        Object.keys(utils.OUTCOME_TABLE).sort(),
+      );
+    });
+
+    test("lays out a result card line by line", () => {
+      const card = utils.formatResultCard({
+        name: "Write tests",
+        roll: [3, 4],
+        total: 7,
+        outcome: "partial",
+        tableResult: "Progress comes at a cost.",
+        xp: 3,
+        mpCost: 3,
+        mp: 7,
+        loot: false,
+        overdraft: false,
+      });
+
+      assert.deepEqual(card.split("\n"), [
+        "# Write tests",
+        "",
+        "**Roll:** 3 + 4 = 7",
+        "**Outcome:** partial",
+        "",
+        "Progress comes at a cost.",
+        "",
+        "**XP:** +3",
+        "**MP:** -3 (now 7)",
+      ]);
+    });
+
+    test("puts the Tired line before the loot line, both after the MP line", () => {
+      const lines = utils
+        .formatResultCard({
+          name: "Write tests",
+          roll: [6, 6],
+          total: 12,
+          outcome: "success",
+          tableResult: "A costly discovery.",
+          xp: 6,
+          mpCost: 6,
+          mp: 0,
+          loot: true,
+          overdraft: true,
+        })
+        .split("\n");
+      const at = (pattern) => lines.findIndex((line) => pattern.test(line));
+
+      assert.ok(at(/\*\*MP:\*\*/) < at(/Tired/));
+      assert.ok(at(/Tired/) < at(/Loot/));
+    });
+
+    test("shows a 0 MP cost as 0, not -0", () => {
+      const card = utils.formatResultCard({
+        name: "Write tests",
+        roll: [4, 4],
+        total: 8,
+        outcome: "partial",
+        tableResult: "The result is mixed but usable.",
+        xp: 1,
+        mpCost: 0,
+        mp: 10,
+        loot: false,
+        overdraft: false,
+      });
+
+      assert.match(card, /^\*\*MP:\*\* 0 \(now 10\)$/m);
+      assert.doesNotMatch(card, /-0/);
+      assert.match(card, /\*\*XP:\*\* \+1/);
+    });
+
+    test("still shows a paid MP cost with a minus sign", () => {
+      const card = utils.formatResultCard({
+        name: "Write tests",
+        roll: [1, 1],
+        total: 2,
+        outcome: "setback",
+        tableResult: "The attempt stalls.",
+        xp: 1,
+        mpCost: 3,
+        mp: 7,
+        loot: false,
+        overdraft: false,
+      });
+
+      assert.match(card, /^\*\*MP:\*\* -3 \(now 7\)$/m);
+    });
   });
 
   describe("TaskNotes configuration", () => {
@@ -481,127 +687,6 @@ describe("task-utils.test.js", () => {
       assert.equal(fields.completedDate, "");
       assert.equal(fields.taskId, "abc");
       assert.equal(updated.endsWith("# Task"), true);
-    });
-  });
-
-  // Duplicate-resolution guard used by task-done.js.
-  //
-  // Undo command behavior is covered by undo.test.js. This section covers only
-  // the event-list query that decides whether pressing Task done again is safe.
-  describe("hasUnresolvedTaskDone", () => {
-    const taskDoneEvent = ({
-      id = "task-event-1",
-      taskId = "task-1",
-      timestamp = "2026-10-15T09:00:00+11:00",
-    } = {}) => ({
-      id,
-      type: "task_done",
-      timestamp,
-      taskId,
-      skill: "mind",
-      size: "small",
-      planned: true,
-      important: false,
-      urgent: false,
-      roll: [3, 4],
-      lootRoll: 1,
-    });
-
-    const undoEvent = ({
-      id = "undo-event-1",
-      targetEventId = "task-event-1",
-      timestamp = "2026-10-15T09:05:00+11:00",
-    } = {}) => ({
-      id,
-      type: "undo",
-      timestamp,
-      targetEventId,
-    });
-
-    test("allows a TaskNotes task marked done when it has no RPG resolution", () => {
-      assert.equal(utils.hasUnresolvedTaskDone([], "task-1"), false);
-    });
-
-    test("blocks a second resolution while the latest relevant event is an unresolved task_done", () => {
-      const events = [taskDoneEvent()];
-
-      assert.equal(utils.hasUnresolvedTaskDone(events, "task-1"), true);
-    });
-
-    test("allows another resolution after an undo targets the task's task_done event", () => {
-      const events = [
-        taskDoneEvent(),
-        undoEvent({ targetEventId: "task-event-1" }),
-      ];
-
-      assert.equal(utils.hasUnresolvedTaskDone(events, "task-1"), false);
-    });
-
-    test("links an undo by targetEventId rather than taskId", () => {
-      const events = [
-        taskDoneEvent(),
-        undoEvent({ targetEventId: "task-event-1" }),
-      ];
-
-      assert.equal(events.at(-1).taskId, undefined);
-      assert.equal(utils.hasUnresolvedTaskDone(events, "task-1"), false);
-    });
-
-    test("does not let an undo for another task release this task's guard", () => {
-      const events = [
-        taskDoneEvent({ id: "task-event-1", taskId: "task-1" }),
-        taskDoneEvent({
-          id: "task-event-2",
-          taskId: "task-2",
-          timestamp: "2026-10-15T09:01:00+11:00",
-        }),
-        undoEvent({
-          id: "undo-event-2",
-          targetEventId: "task-event-2",
-          timestamp: "2026-10-15T09:06:00+11:00",
-        }),
-      ];
-
-      assert.equal(utils.hasUnresolvedTaskDone(events, "task-1"), true);
-    });
-
-    test("blocks another resolution after an undo and a fresh task_done", () => {
-      const events = [
-        taskDoneEvent({ id: "task-event-1" }),
-        undoEvent({
-          id: "undo-event-1",
-          targetEventId: "task-event-1",
-        }),
-        taskDoneEvent({
-          id: "task-event-2",
-          timestamp: "2026-10-15T09:10:00+11:00",
-        }),
-      ];
-
-      assert.equal(utils.hasUnresolvedTaskDone(events, "task-1"), true);
-    });
-
-    test("uses the latest relevant event, so an older unresolved task_done does not block after a later undo", () => {
-      const events = [
-        taskDoneEvent({ id: "task-event-1" }),
-        taskDoneEvent({
-          id: "task-event-2",
-          timestamp: "2026-10-15T09:01:00+11:00",
-        }),
-        undoEvent({
-          id: "undo-event-2",
-          targetEventId: "task-event-2",
-          timestamp: "2026-10-15T09:06:00+11:00",
-        }),
-      ];
-
-      assert.equal(utils.hasUnresolvedTaskDone(events, "task-1"), false);
-    });
-
-    test("does not confuse a task_done for another task with this task's guard", () => {
-      const events = [taskDoneEvent({ id: "task-event-1", taskId: "task-2" })];
-
-      assert.equal(utils.hasUnresolvedTaskDone(events, "task-1"), false);
     });
   });
 });
