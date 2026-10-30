@@ -70,7 +70,7 @@ If the agent supports project skills:
 
 - If available, load `caveman` at start of every session. Stop only if user says so.
 - If available, load `ponytail` writing, refactoring code or brainstorming solutions or ideas to solve user problems.
-- Load `write-tests` before the first test or engine change.
+- Default to using test driven development workflow for building any new features.
 - If a required skill cannot load, say so and continue without silently skipping the underlying rule.
 
 Skills never override the PRD, this file, safety rules, test evidence, or confirmation requirements.
@@ -117,13 +117,12 @@ Skills never override the PRD, this file, safety rules, test evidence, or confir
 
 ## Documentation
 
+- Update documentation after each significant decision and coding session, especially before every large commit and before opening a PR.
 - Read `docs/DOCUMENTATION.md` for how to write documentation and where new documentation goes: file responsibilities, separation of concerns, starter templates, placement rules.
-- Run `/log-decision` when a new decision should be recorded in the PRD.
-- Run `/update-docs` after each significant decision and coding session, especially before every large commit and before opening a PR.
 - Update directly related documentation in the same change.
-- Update `docs/DEVLOG.md` regularly, normally with 1-2 concise lines per commit, using `.agents/skills/devlog/SKILL.md`.
+- Update `docs/DEVLOG.md` regularly, normally with 1-2 concise lines per commit.
 - Update `CHANGELOG.md` only after finishing a major feature or update; do not update it for every commit.
-- Changelog entries always use caveman ultra prose, per `.agents/skills/changelog/SKILL.md`. Compress prose only; keep markdown structure, version numbers, file paths, and technical facts unchanged.
+- Changelog entries always use caveman ultra prose. Compress prose only; keep markdown structure, version numbers, file paths, and technical facts unchanged.
 - Do not claim behavior that does not exist; label test-only changes as test-only.
 - Record changes to rules, behavior, architecture, public APIs, plugin mappings, limitations, validation status, and follow-ups.
 - Do not edit `README.md` unless its existing content is contradictory or outdated; correct it rather than expanding it.
