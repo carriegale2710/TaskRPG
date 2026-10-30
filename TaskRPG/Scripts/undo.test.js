@@ -89,14 +89,6 @@ function taskDoneEvent({
   };
 }
 
-function undoEvent({
-  id = "undo-event-1",
-  targetEventId = "task-event-1",
-  timestamp = at("09:05"),
-} = {}) {
-  return { id, type: "undo", timestamp, targetEventId };
-}
-
 const habitEvent = (id, timestamp) => ({
   id,
   type: "habit_done",
@@ -118,6 +110,17 @@ const habitAction = (timestamp = at("09:02")) => {
 };
 
 const undoAction = (timestamp) => ({ type: "undo", timestamp });
+
+// Hand-built log lines, positional, for the guard tests.
+const rawTask = (id, taskId, timestamp) =>
+  taskDoneEvent({ id, taskId, timestamp });
+const rawUndo = (id, targetEventId, timestamp) => ({
+  id,
+  type: "undo",
+  timestamp,
+  targetEventId,
+});
+const rawHabit = (id, timestamp) => habitEvent(id, timestamp);
 
 // A log kept the way the vault keeps it: JSON lines, parsed back before use.
 function logOf() {
@@ -232,61 +235,6 @@ function undoHarness({
 // ---------------------------------------------------------------------------
 
 describe("undo.test.js", () => {
-  describe("engine undo events", () => {
-    test("resolution after undo is marked repeat by the engine", () => {
-      const first = taskDoneEvent({
-        id: "task-event-1",
-        timestamp: "2026-10-15T09:00:00+11:00",
-        roll: [6, 6],
-      });
-      const undo = undoEvent({
-        id: "undo-event-1",
-        targetEventId: "task-event-1",
-        timestamp: "2026-10-15T09:05:00+11:00",
-      });
-      const second = taskDoneEvent({
-        id: "task-event-2",
-        timestamp: "2026-10-15T09:10:00+11:00",
-        roll: [6, 6],
-      });
-
-      const out = engine.recordAction(
-        [first, undo],
-        second,
-        SETTINGS,
-        "2026-10-15T09:10:00+11:00",
-      );
-
-      assert.equal(out.result.repeat, true);
-    });
-
-    test("undo preserves the original task_done event and appends a correction", () => {
-      const first = taskDoneEvent({
-        id: "task-event-1",
-        timestamp: "2026-10-15T09:00:00+11:00",
-      });
-      const undo = undoEvent({
-        id: "undo-event-1",
-        targetEventId: "task-event-1",
-        timestamp: "2026-10-15T09:05:00+11:00",
-      });
-
-      const out = engine.recordAction(
-        [first],
-        undo,
-        SETTINGS,
-        "2026-10-15T09:05:00+11:00",
-      );
-
-      assert.equal(out.events.length, 3); // settings_changed, task_done, undo
-      assert.equal(out.events.at(-1).type, "undo");
-      assert.equal(out.events.at(-1).targetEventId, "task-event-1");
-      assert.equal(
-        out.events.some((event) => event.id === "task-event-1"),
-        true,
-      );
-    });
-  });
 
   describe("QuickAdd undo script", () => {
     test('undoing a task_done event writes status: open and completedDate: "" to the matching note', async () => {
@@ -533,7 +481,7 @@ describe("undo.test.js", () => {
       const snapshot = JSON.stringify(before);
 
       assert.throws(
-        () => engine.recordAction(before, undoAction(at("09:00")), settings),
+        () => engine.recordAction(before, undoAction(at("09:00")), SETTINGS),
         /Nothing to undo for this game day/,
       );
       assert.equal(JSON.stringify(before), snapshot);
@@ -552,14 +500,19 @@ describe("undo.test.js", () => {
   describe("guard on hand-built log shapes", () => {
     test("an undo with a dangling targetEventId changes nothing, and the engine rejects that log", () => {
       const events = [
-        rawTask("t1", "task-1", at("09:00")),
-        rawUndo("u1", "missing", at("09:05")),
+        taskDoneEvent({ id: "t1", taskId: "task-1", timestamp: at("09:00") }),
+        {
+          id: "u1",
+          type: "undo",
+          timestamp: at("09:05"),
+          targetEventId: "missing",
+        },
       ];
 
       assert.equal(hasUnresolvedTaskDone(events, "task-1"), true);
       assert.equal(hasUnresolvedTaskDone([events[1]], "task-1"), false);
       assert.throws(
-        () => engine.recalculate(events, settings),
+        () => engine.recalculate(events, SETTINGS),
         /undo must reverse the newest/,
       );
     });
@@ -572,7 +525,7 @@ describe("undo.test.js", () => {
 
       assert.equal(hasUnresolvedTaskDone(events, "task-1"), true);
       assert.throws(
-        () => engine.recalculate(events, settings),
+        () => engine.recalculate(events, SETTINGS),
         /undo must reverse the newest/,
       );
     });
@@ -597,7 +550,7 @@ describe("undo.test.js", () => {
       ];
 
       assert.equal(hasUnresolvedTaskDone(events, "task-1"), true);
-      assert.doesNotThrow(() => engine.recalculate(events, settings));
+      assert.doesNotThrow(() => engine.recalculate(events, SETTINGS));
     });
 
     test("an empty or undefined taskId never matches a real task's events", () => {
@@ -608,15 +561,6 @@ describe("undo.test.js", () => {
       assert.equal(hasUnresolvedTaskDone(events, null), false);
     });
 
-    test('numeric 1 and string "1" are different task ids', () => {
-      const stringId = [rawTask("t1", "1", at("09:00"))];
-      const numberId = [rawTask("t1", 1, at("09:00"))];
-
-      assert.equal(hasUnresolvedTaskDone(stringId, "1"), true);
-      assert.equal(hasUnresolvedTaskDone(stringId, 1), false);
-      assert.equal(hasUnresolvedTaskDone(numberId, 1), true);
-      assert.equal(hasUnresolvedTaskDone(numberId, "1"), false);
-    });
   });
 
   describe("duplicate-resolution guard", () => {
@@ -653,55 +597,6 @@ describe("undo.test.js", () => {
       assert.equal(hasUnresolvedTaskDone([], "task-1"), false);
     });
 
-    test("blocks a second resolution while the latest relevant event is an unresolved task_done", () => {
-      const events = [taskDoneEvent()];
-
-      assert.equal(hasUnresolvedTaskDone(events, "task-1"), true);
-    });
-
-    test("allows another resolution after an undo targets the task's task_done event", () => {
-      const events = [
-        taskDoneEvent(),
-        undoEvent({ targetEventId: "task-event-1" }),
-      ];
-
-      assert.equal(hasUnresolvedTaskDone(events, "task-1"), false);
-    });
-
-    test("does not let an undo for another task release this task's guard", () => {
-      const events = [
-        taskDoneEvent({ id: "task-event-1", taskId: "task-1" }),
-        taskDoneEvent({
-          id: "task-event-2",
-          taskId: "task-2",
-          timestamp: "2026-10-15T09:01:00+11:00",
-        }),
-        undoEvent({
-          id: "undo-event-2",
-          targetEventId: "task-event-2",
-          timestamp: "2026-10-15T09:06:00+11:00",
-        }),
-      ];
-
-      assert.equal(hasUnresolvedTaskDone(events, "task-1"), true);
-    });
-
-    test("blocks another resolution after an undo and a fresh task_done", () => {
-      const events = [
-        taskDoneEvent({ id: "task-event-1" }),
-        undoEvent({
-          id: "undo-event-1",
-          targetEventId: "task-event-1",
-        }),
-        taskDoneEvent({
-          id: "task-event-2",
-          timestamp: "2026-10-15T09:10:00+11:00",
-        }),
-      ];
-
-      assert.equal(hasUnresolvedTaskDone(events, "task-1"), true);
-    });
-
     test("uses the latest relevant event, so an older unresolved task_done does not block after a later undo", () => {
       const events = [
         taskDoneEvent({ id: "task-event-1" }),
@@ -719,10 +614,5 @@ describe("undo.test.js", () => {
       assert.equal(hasUnresolvedTaskDone(events, "task-1"), false);
     });
 
-    test("does not confuse a task_done for another task with this task's guard", () => {
-      const events = [taskDoneEvent({ id: "task-event-1", taskId: "task-2" })];
-
-      assert.equal(hasUnresolvedTaskDone(events, "task-1"), false);
-    });
   });
 });

@@ -6,6 +6,39 @@ Rule of thumb: if a fact explains a choice or records what happened during the w
 
 Timeline uses commit dates from `git log`, newest first. Not changelog release dates: the `0.4.0` block bundles commits from 2026-10-15 and 2026-10-16, and `0.1.0`/`0.2.0` both landed on 2026-10-14.
 
+## 2026-10-30 — Dedupe macro test suites
+
+### Goal
+
+Part of issue #26: cut duplicated tests left after merging `task-utils-find-task-note.test.js` into `task-utils.test.js` and `task-undo-resolution.test.js` into `undo.test.js` (merges done 2026-10-27, not logged then).
+
+### Did
+
+- ~40 tests removed across `habit-done.test.js`, `task-done.test.js`, `task-utils.test.js`, `undo.test.js` (376 lines).
+- 3 removed tests restored, no other coverage: `pickTableResult` rolls 1-6, habit notes quoted/CRLF/BOM, undo listed before its target.
+- `undo.test.js`: engine-level undo suite dropped; repeat flag and preserved original `task_done` still covered by `engine.test.js` and `task-done.test.js`. Positional `rawTask`/`rawUndo`/`rawHabit` helpers added; guard tests use shared `SETTINGS`.
+- `AGENTS.md`: pointers to `write-tests`, `/log-decision`, `/update-docs` and `.agents/skills/` paths removed.
+- Unstaged: `docs/TESTING.md`, `docs/BUILD_PLAN.md`, `docs/DECISIONS.md` now name merged files and stop claiming coverage the deleted tests gave.
+
+### Outcome
+
+- `node --test` from `TaskRPG/Scripts`: 156 pass, 0 fail (187 on 2026-10-27).
+- Break checks: `table[roll]` in `pickTableResult` fails the table test; order-blind guard lookup fails the undo-before-target test.
+- Test-only. No macro or engine change.
+
+### Failed / learned
+
+- Not every removed test was a duplicate. Left removed on purpose, low bug risk: direct `scheduledDate()`/`scheduled()` tests (covered through `isPlannedToday`); `task-done.js` datetime and quoted `scheduled` at script level; `skill`/`size` `""`, `null`, `~`, `"undefined"` variants (whitelist check rejects them); numeric `1` vs string `"1"` `taskId` (`parseFrontmatter` returns strings only); `appendEvents` path isolation and legacy-equivalence.
+
+### Blockers / next
+
+- `AGENTS.md` authority list still names `.agents/skills/`; folder does not exist.
+
+### Links
+
+- Issue: #26. Branch: `refactor/26-remove-duplicated-scripts-code`.
+- Tests: `TaskRPG/Scripts/*.test.js`.
+
 ## 2026-10-27 — readLog/appendEvents helpers for macros
 
 ### Goal

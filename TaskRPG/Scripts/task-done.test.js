@@ -293,10 +293,6 @@ describe("task-done.test.js", () => {
     for (const [label, value] of [
       ["missing", undefined],
       ["empty", ""],
-      ["quoted-empty", '""'],
-      ["null", null],
-      ["YAML null", "~"],
-      ["the word undefined", "undefined"],
     ]) {
       test(`does nothing when skill is ${label}`, async () => {
         const h = harness({ skill: value });
@@ -314,10 +310,6 @@ describe("task-done.test.js", () => {
     for (const [label, value] of [
       ["missing", undefined],
       ["empty", ""],
-      ["quoted-empty", '""'],
-      ["null", null],
-      ["YAML null", "~"],
-      ["the word undefined", "undefined"],
     ]) {
       test(`does nothing when size is ${label}`, async () => {
         const h = harness({ size: value });
@@ -382,29 +374,6 @@ describe("task-done.test.js", () => {
       });
     }
 
-    test("a scheduled value with a time component is planned for the current game day", async () => {
-      const currentGameDay = engine.gameDay(engine.localStamp(), 4);
-      const h = harness({ scheduled: `${currentGameDay}T09:00` });
-
-      await h.press();
-
-      const done = firstTaskDoneOf(h);
-
-      assert.equal(done.planned, true);
-      assert.equal(done.mp, 1);
-    });
-
-    test("a quoted scheduled value is planned for the current game day", async () => {
-      const currentGameDay = engine.gameDay(engine.localStamp(), 4);
-      const h = harness({ scheduled: `"${currentGameDay}"` });
-
-      await h.press();
-
-      const done = firstTaskDoneOf(h);
-
-      assert.equal(done.planned, true);
-      assert.equal(done.mp, 1);
-    });
   });
 
   describe("priority tags", () => {

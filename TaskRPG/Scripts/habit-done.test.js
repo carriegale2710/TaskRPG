@@ -94,7 +94,7 @@ describe("habit-done.test.js", () => {
     const variants = {
       quoted,
       crlf: plain.replace(/\r?\n/g, "\r\n"),
-      bom: `\uFEFF${plain}`,
+      bom: `﻿${plain}`,
     };
     for (const [name, note] of Object.entries(variants)) {
       const h = harness(true, undefined, note);

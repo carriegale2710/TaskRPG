@@ -12,7 +12,7 @@ Statuses: **Accepted** (settled; agents follow it), **Provisional** (revisable d
 - **Context:** `findTaskPath` silently used the first matching note, so Undo could reopen the wrong note (issue #18). Issue #15 left "first match vs error" undecided. The first version of PR #22 saved the undo event and warned; the user chose to save nothing instead.
 - **Rationale:** With two notes sharing an ID, neither script can tell which note the event belongs to. Saving a correction that cannot be applied to the right note leaves the log and the vault disagreeing. Refusing keeps them aligned and sends the user to the cause.
 - **Alternatives considered:** Use the first match and warn (may edit the wrong note); save the undo event and warn (log and notes disagree until fixed by hand).
-- **Implications:** One shared lookup, `findTaskNote()` in `task-utils.js`, returns `found`, `not_found`, `folder_missing` or `ambiguous`; both scripts call it. The lookup scans only the top level of the tasks folder, so a duplicate in a subfolder is not detected. Covered by `undo.test.js`, `task-done.test.js` and `task-utils-find-task-note.test.js`.
+- **Implications:** One shared lookup, `findTaskNote()` in `task-utils.js`, returns `found`, `not_found`, `folder_missing` or `ambiguous`; both scripts call it. The lookup scans only the top level of the tasks folder, so a duplicate in a subfolder is not detected. Covered by `undo.test.js`, `task-done.test.js` and `task-utils.test.js`.
 - **Revisit when:** TaskNotes writes its own unique ID, or the lookup must search subfolders.
 
 ## D-032—AI agent host stays undecided and docs stay host-agnostic

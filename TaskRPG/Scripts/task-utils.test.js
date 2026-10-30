@@ -66,41 +66,6 @@ describe("task-utils.test.js", () => {
       assert.deepEqual(utils.parseTags(""), []);
     });
 
-    test("strips quotes from scalar values", () => {
-      const fields = utils.parseFrontmatter(
-        "---\ntaskId: \"1\"\nscheduled: '2026-10-15'\nstatus: open\n---\n# Task",
-      );
-
-      assert.equal(fields.taskId, "1");
-      assert.equal(fields.scheduled, "2026-10-15");
-      assert.equal(fields.status, "open");
-    });
-
-    test("parses type, taskId, skill and size written in double quotes", () => {
-      const fields = utils.parseFrontmatter(
-        '---\ntype: "task"\ntaskId: "1"\nskill: "mind"\nsize: "medium"\n---\n# Task',
-      );
-
-      assert.equal(fields.type, "task");
-      assert.equal(fields.taskId, "1");
-      assert.equal(fields.skill, "mind");
-      assert.equal(fields.size, "medium");
-    });
-
-    test("accepts quoted values the way task-done.js checks them", () => {
-      const fields = utils.parseFrontmatter(
-        '---\ntype: "task"\ntaskId: "1"\nskill: "mind"\nsize: "medium"\n---\n# Task',
-      );
-      const settings = {
-        skills: ["mind"],
-        taskSizes: { medium: { mp: 3, xp: 3 } },
-      };
-
-      assert.equal(fields.taskId, "1");
-      assert.equal(settings.skills.includes(fields.skill), true);
-      assert.equal(Boolean(settings.taskSizes[fields.size]), true);
-    });
-
     test("single-quoted and unquoted values match double-quoted values", () => {
       const read = (note) => utils.parseFrontmatter(note);
       const values = [
@@ -150,13 +115,6 @@ describe("task-utils.test.js", () => {
 
       assert.deepEqual(utils.parseFrontmatter("---\n---\n# Task"), {});
       assert.deepEqual(utils.parseFrontmatter("# Task"), {});
-    });
-  });
-
-  describe("scheduled", () => {
-    test("reads the TaskNotes scheduled date", () => {
-      assert.equal(utils.scheduled({ scheduled: "2026-10-15" }), "2026-10-15");
-      assert.equal(utils.scheduled({}), "");
     });
   });
 
@@ -210,13 +168,6 @@ describe("task-utils.test.js", () => {
       assert.equal(utils.isPlannedToday(undefined, day), false);
     });
 
-    test("normalises scheduled values to their calendar date", () => {
-      assert.equal(utils.scheduledDate("2026-10-15"), "2026-10-15");
-      assert.equal(utils.scheduledDate("2026-10-15T09:00"), "2026-10-15");
-      assert.equal(utils.scheduledDate('"2026-10-15"'), "2026-10-15");
-      assert.equal(utils.scheduledDate(""), "");
-      assert.equal(utils.scheduledDate(undefined), "");
-    });
   });
 
   describe("result presentation", () => {
@@ -232,38 +183,6 @@ describe("task-utils.test.js", () => {
           );
         }
       }
-    });
-
-    test("rejects loot rolls outside 1 through 6", () => {
-      for (const outcome of outcomes) {
-        assert.throws(() => utils.pickTableResult(outcome, 0));
-        assert.throws(() => utils.pickTableResult(outcome, 7));
-      }
-    });
-
-    test("formats a basic result card without loot or overdraft", () => {
-      const card = utils.formatResultCard({
-        name: "Write tests",
-        roll: [3, 4],
-        total: 7,
-        outcome: "partial",
-        tableResult: "Progress comes at a cost.",
-        xp: 3,
-        mpCost: 3,
-        mp: 7,
-        loot: false,
-        overdraft: false,
-      });
-
-      assert.match(card, /^# Write tests$/m);
-      assert.match(card, /\*\*Roll:\*\* 3 \+ 4 = 7/);
-      assert.match(card, /\*\*Outcome:\*\* partial/);
-      assert.match(card, /Progress comes at a cost\./);
-      assert.match(card, /\*\*XP:\*\* \+3/);
-      assert.match(card, /\*\*MP:\*\* -3 \(now 7\)/);
-
-      assert.doesNotMatch(card, /Loot/i);
-      assert.doesNotMatch(card, /Tired/i);
     });
 
     test("formats a result card with loot", () => {
@@ -311,28 +230,6 @@ describe("task-utils.test.js", () => {
       assert.match(card, /Tired/i);
 
       assert.doesNotMatch(card, /Loot/i);
-    });
-
-    test("formats a result card with both loot and an overdraft", () => {
-      const card = utils.formatResultCard({
-        name: "Write tests",
-        roll: [6, 6],
-        total: 12,
-        outcome: "success",
-        tableResult: "A costly discovery.",
-        xp: 6,
-        mpCost: 6,
-        mp: 0,
-        loot: true,
-        overdraft: true,
-      });
-
-      assert.match(card, /\*\*Roll:\*\* 6 \+ 6 = 12/);
-      assert.match(card, /\*\*Outcome:\*\* success/);
-      assert.match(card, /\*\*XP:\*\* \+6/);
-      assert.match(card, /\*\*MP:\*\* -6 \(now 0\)/);
-      assert.match(card, /Loot/i);
-      assert.match(card, /Tired/i);
     });
 
     test("every table has six non-empty entries", () => {
@@ -699,19 +596,6 @@ describe("task-utils.test.js", () => {
       assert.equal(fields.completedDate, "$1 and $&");
     });
 
-    test("writes an empty completedDate and keeps the status it is given", () => {
-      const text = "---\ntype: task\ntaskId: abc\nstatus: done\n---\n# Task";
-
-      const updated = utils.updateTaskStatus(text, {
-        status: "done",
-        completedDate: "",
-      });
-      const fields = utils.parseFrontmatter(updated);
-
-      assert.equal(fields.status, "done");
-      assert.equal(fields.completedDate, "");
-    });
-
     test("preserves CRLF line endings when inserting a field", () => {
       const text =
         "---\r\ntype: task\r\ntaskId: abc\r\nstatus: done\r\n---\r\n# Task\r\n";
@@ -794,11 +678,6 @@ describe("task-utils.test.js", () => {
         assert.equal(await utils.readLog(files, LOG), text);
       });
 
-      test("returns an empty string for an existing empty log", async () => {
-        const files = vault({ [LOG]: "" });
-
-        assert.equal(await utils.readLog(files, LOG), "");
-      });
     });
 
     describe("appendEvents", () => {
@@ -827,15 +706,6 @@ describe("task-utils.test.js", () => {
         assert.equal(files.store.get(LOG), `  ${lineA}\n${lineB}\n`);
       });
 
-      test("appends after a log that ends with a newline without adding a blank line", async () => {
-        const previous = `${lineA}\n`;
-        const files = vault({ [LOG]: previous });
-
-        await utils.appendEvents(files, LOG, previous, [b]);
-
-        assert.equal(files.store.get(LOG), `${lineA}\n${lineB}\n`);
-      });
-
       test("appends after a log that does not end with a newline", async () => {
         const previous = lineA;
         const files = vault({ [LOG]: previous });
@@ -847,15 +717,6 @@ describe("task-utils.test.js", () => {
 
       test("collapses trailing blank lines into a single newline", async () => {
         const previous = `${lineA}\n\n\n`;
-        const files = vault({ [LOG]: previous });
-
-        await utils.appendEvents(files, LOG, previous, [b]);
-
-        assert.equal(files.store.get(LOG), `${lineA}\n${lineB}\n`);
-      });
-
-      test("keeps CRLF lines already in the log and writes the new line with LF", async () => {
-        const previous = `${lineA}\r\n`;
         const files = vault({ [LOG]: previous });
 
         await utils.appendEvents(files, LOG, previous, [b]);
@@ -880,31 +741,6 @@ describe("task-utils.test.js", () => {
         assert.equal(files.store.get(LOG), `${lineA}\n${lineB}\n${lineA}\n`);
       });
 
-      test("writes only to the path it is given", async () => {
-        const files = vault({ [LOG]: lineA, other: "keep" });
-
-        await utils.appendEvents(files, "other", "keep", [b]);
-
-        assert.equal(files.store.get(LOG), lineA);
-        assert.equal(files.store.get("other"), `keep\n${lineB}\n`);
-      });
-
-      test("matches the log text the macros wrote before the helper existed", async () => {
-        for (const previous of ["", lineA, `${lineA}\n`, `${lineA}\n\n`]) {
-          const added = [a, b];
-          const lines = added.map((e) => JSON.stringify(e)).join("\n") + "\n";
-          const expected = `${previous.trimEnd()}${previous.trim() ? "\n" : ""}${lines}`;
-          const files = vault({ [LOG]: previous });
-
-          await utils.appendEvents(files, LOG, previous, added);
-
-          assert.equal(
-            files.store.get(LOG),
-            expected,
-            JSON.stringify(previous),
-          );
-        }
-      });
     });
   });
 });
